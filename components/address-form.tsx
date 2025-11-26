@@ -9,62 +9,59 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { ArrowRightIcon, ArrowRightSquare, CircleUserRound, User } from "lucide-react"
+import { ArrowLeftIcon, Check, CircleUserRound, House } from "lucide-react"
 
-export function SignupForm({
+export function AddressForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
   return (
     <form className={cn("flex flex-col gap-6", className)} {...props}>
-      <FieldGroup className="gap-3">
+      <FieldGroup className="gap-4">
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Create your account</h1>
         </div>
 
         <div className="flex flex-row gap-1 justify-center items-center bg-gray-100 p-2 rounded-xl"> 
-          <CircleUserRound size={20} strokeWidth={1.5}/>
-          <p className="text-lg text-center">Personal Information</p>
+          <House size={20} strokeWidth={1.5}/>
+          <p className="text-lg text-center">Primary Address</p>
         </div>
 
         <div className="flex flex-row gap-3">
           <Field>
-            <FieldLabel htmlFor="name">First Name</FieldLabel>
+            <FieldLabel htmlFor="name">House No.</FieldLabel>
             <Input id="name" type="text" placeholder="John" required />
           </Field>
           <Field>
-            <FieldLabel htmlFor="name">Last Name</FieldLabel>
+            <FieldLabel htmlFor="name">Zip code</FieldLabel>
             <Input id="name" type="text" placeholder="Doe" required />
           </Field>
         </div>
         <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="johndoe@example.com" required />
+          <FieldLabel htmlFor="email">Addresss Line 1</FieldLabel>
+          <Input id="email" type="email" placeholder="m@example.com" required />
         </Field>
-        
-        <div className="flex flex-row gap-3">
-          <Field>
-            <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Input id="password" type="password" required />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-            <Input id="confirm-password" type="password" required />
-          </Field>
-        </div>
-        <div className="flex flex-row gap-3">
-          <Field>
-            <FieldLabel htmlFor="mobile">Contact(Mobile)</FieldLabel>
-            <Input id="mobile" type="text" required />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="work">Contact(Work)</FieldLabel>
-            <Input id="work" type="text" required />
-          </Field>
-        </div>
-        
         <Field>
-          <Button type="submit">Next <ArrowRightIcon/> </Button>
+          <FieldLabel htmlFor="email">Address Line 2</FieldLabel>
+          <Input id="email" type="email" placeholder="m@example.com" required />
+        </Field>
+        <div className="flex flex-row gap-3">
+          <Field>
+            <FieldLabel htmlFor="name">Nearest City</FieldLabel>
+            <Input id="name" type="text" placeholder="John" required />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="name">Province</FieldLabel>
+            <Input id="name" type="text" placeholder="Doe" required />
+          </Field>
+        </div>
+        <Field className="flex flex-row">
+          <Field>
+            <Button type="submit" > <ArrowLeftIcon /> Back</Button>
+          </Field>
+          <Field>
+            <Button type="submit" > <Check /> Confirm</Button>
+          </Field>
         </Field>
         {/* <FieldSeparator>Or continue with</FieldSeparator> */}
         <Field>
