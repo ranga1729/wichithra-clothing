@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  firstName    String   @db.VarChar(50)
+  lastName     String   @db.VarChar(50)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @db.VarChar(255)
+  roleId       String   @db.Uuid
+  isActive     Boolean  @default(true)
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relationships
+  role         Role     @relation(fields: [roleId], references: [id])
+  addresses    Address[]
+  phoneNumbers PhoneNumber[]
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.VarChar(255)
+  permissions Json?
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relationships
+  users User[]
+
+  @@map("roles")
+}
+
+model Address {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  houseNumber  String?  @db.VarChar(20)
+  addressLine1 String   @db.VarChar(255)
+  addressLine2 String?  @db.VarChar(255)
+  city         String   @db.VarChar(100)
+  province     String   @db.VarChar(100)
+  zipcode      String   @db.VarChar(20)
+  country      String   @db.VarChar(100) @default("Sri Lanka")
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relationship
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+model PhoneNumber {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  phoneNumber String    @db.VarChar(20)
+  countryCode String?   @db.VarChar(5) @default("+94")
+  phoneType   PhoneType @default(PRIMARY)
+  isDefault   Boolean   @default(false)
+  isVerified  Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+
+  // Relationship
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([phoneNumber])
+  @@map("phone_numbers")
+}
+
+//ENUMS
+enum PhoneType {
+  PRIMARY
+  SECONDARY
+  HOME
+  WORK
+}
