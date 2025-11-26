@@ -11,12 +11,14 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { ArrowLeftIcon, Check, CircleUserRound, House } from "lucide-react"
 
-export function AddressForm({
-  className,
-  ...props
-}: React.ComponentProps<"form">) {
+interface Props {
+  onBack: () => void,
+  onConfirm: () => void
+}
+
+export const AddressForm = (props:Props) => {
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form className={cn("flex flex-col gap-6")}>
       <FieldGroup className="gap-4">
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Create your account</h1>
@@ -57,10 +59,10 @@ export function AddressForm({
         </div>
         <Field className="flex flex-row">
           <Field>
-            <Button type="submit" > <ArrowLeftIcon /> Back</Button>
+            <Button onClick={props.onBack} type="button" > <ArrowLeftIcon /> Back</Button>
           </Field>
           <Field>
-            <Button type="submit" > <Check /> Confirm</Button>
+            <Button onClick={props.onConfirm} type="submit" > <Check /> Confirm</Button>
           </Field>
         </Field>
         {/* <FieldSeparator>Or continue with</FieldSeparator> */}

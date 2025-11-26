@@ -11,12 +11,13 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { ArrowRightIcon, ArrowRightSquare, CircleUserRound, User } from "lucide-react"
 
-export function SignupForm({
-  className,
-  ...props
-}: React.ComponentProps<"form">) {
+interface Props {
+  onNext: () => void
+}
+
+export const SignupForm = (props:Props) => {
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form className={cn("flex flex-col gap-6")}>
       <FieldGroup className="gap-3">
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Create your account</h1>
@@ -55,16 +56,22 @@ export function SignupForm({
         <div className="flex flex-row gap-3">
           <Field>
             <FieldLabel htmlFor="mobile">Contact(Mobile)</FieldLabel>
-            <Input id="mobile" type="text" required />
+            <div className="flex flex-row">
+              <Input className="w-15 p-2 text-center font-semibold" disabled value={"+94"}/>
+              <Input id="mobile" type="text" required size={50} />
+            </div> 
           </Field>
           <Field>
             <FieldLabel htmlFor="work">Contact(Work)</FieldLabel>
-            <Input id="work" type="text" required />
+             <div className="flex flex-row">
+              <Input className="w-15 p-2 text-center font-semibold" disabled value={"+94"}/>
+              <Input id="work" type="text" required />
+            </div>
           </Field>
         </div>
         
         <Field>
-          <Button type="submit">Next <ArrowRightIcon/> </Button>
+          <Button onClick={props.onNext} type="button">Next <ArrowRightIcon/> </Button>
         </Field>
         {/* <FieldSeparator>Or continue with</FieldSeparator> */}
         <Field>
