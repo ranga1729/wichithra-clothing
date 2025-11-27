@@ -1,3 +1,5 @@
+"use client"
+
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -5,43 +7,78 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
+import { CircleUserRound, Eye, EyeOff } from "lucide-react"
+import { useState } from "react"
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"form">) {
+export const LoginForm = () => {
+  const [passwordVisibility, setPasswordVisibility] = useState<boolean>(false)
+  const [email, setemail] = useState<string>("")
+  const [password, setPassword] = useState<string>("")
+
+  const handleLogin = () => {
+    console.log(email)
+    console.log(password)
+  }
+
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
-      <FieldGroup>
-        <div className="flex flex-col items-center gap-1 text-center">
+    <form className={cn("flex flex-col gap-6")}>
+      <FieldGroup className="gap-3">
+        <div className="flex flex-col items-center gap-0 mb-3 text-center">
+          <CircleUserRound size={80} strokeWidth={1} />
           <h1 className="text-2xl font-bold">Login to your account</h1>
-          <p className="text-muted-foreground text-sm text-balance">
+          {/* <p className="text-muted-foreground text-sm text-balance">
             Enter your email below to login to your account
-          </p>
+          </p> */}
         </div>
+
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <Input 
+            id="email" type="email" 
+            placeholder="johndoe@example.com" 
+            required value={email} 
+            onChange={(e) => setemail(e.target.value)}/>
         </Field>
+
         <Field>
           <div className="flex items-center">
             <FieldLabel htmlFor="password">Password</FieldLabel>
           </div>
-          <Input id="password" type="password" required />
-           <a
-              href="#"
-              className="text-sm underline-offset-4 hover:underline text-center"
-            >
-              Forgot your password?
-            </a>
+          <div className="relative">
+            <Input 
+              id="password" 
+              type={passwordVisibility ? "text":"password"}
+              className="pr-10"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button
+              type="button"
+              variant={"ghost"} size={"icon-sm"}
+              onClick={() => setPasswordVisibility(!passwordVisibility)}
+              className="absolute right-0.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              aria-label={passwordVisibility ? "Hide password" : "Show password"}
+            > 
+              {passwordVisibility ? (
+                <Eye className="h-5 w-5" />
+              ) : (
+                <EyeOff className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
+          <Link className="text-sm underline-offset-4 hover:underline text-center" href={"#"}>
+            Forgot your password?
+          </Link>
         </Field>
+
         <Field>
-          <Button type="submit">Login</Button>
+          <Button type="button" onClick={handleLogin}>Login</Button>
         </Field>
+
         {/* <FieldSeparator>Or continue with</FieldSeparator> */}
         <Field>
           {/* <Button variant="outline" type="button">
