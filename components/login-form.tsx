@@ -23,9 +23,16 @@ export const LoginForm = () => {
     console.log(password)
   }
 
+  const LoginButtonVisibility = () => {
+    if(!email || !password) {
+      return true;
+    }
+    return false;
+  }
+
   return (
     <form className={cn("flex flex-col gap-6")}>
-      <FieldGroup className="gap-3">
+      <FieldGroup className="gap-3 p-1">
         <div className="flex flex-col items-center gap-0 mb-3 text-center">
           <CircleUserRound size={80} strokeWidth={1} />
           <h1 className="text-2xl font-bold">Login to your account</h1>
@@ -76,7 +83,7 @@ export const LoginForm = () => {
         </Field>
 
         <Field>
-          <Button type="button" onClick={handleLogin}>Login</Button>
+          <Button disabled={LoginButtonVisibility()} type="button" onClick={handleLogin}>Login</Button>
         </Field>
 
         {/* <FieldSeparator>Or continue with</FieldSeparator> */}

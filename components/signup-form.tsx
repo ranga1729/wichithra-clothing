@@ -5,73 +5,104 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { ArrowRightIcon, ArrowRightSquare, CircleUserRound, User } from "lucide-react"
+import { ArrowRightIcon } from "lucide-react"
+import { Item } from "./ui/item"
+import { PersonalData } from "@/lib/types"
+import { useState } from "react"
 
 interface Props {
-  onNext: () => void
+  formData: PersonalData
+  onNext: () => void,
+  onChange: (e:any) => void
 }
 
 export const SignupForm = (props:Props) => {
+  const [retypePass, setRetypePass] = useState<string>("")
+
+  const NextButtonVisibility = () => {
+    if(!props.formData.firstName || !props.formData.lastName || !props.formData.email || !props.formData.password || !props.formData.mobile || (props.formData.password != retypePass)) {
+      return true;
+    }
+    return false;
+  }
+
   return (
     <form className={cn("flex flex-col gap-6")}>
-      <FieldGroup className="gap-3">
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Create your account</h1>
-        </div>
-
-        <div className="flex flex-row gap-1 justify-center items-center bg-gray-100 p-2 rounded-xl"> 
-          <CircleUserRound size={20} strokeWidth={1.5}/>
-          <p className="text-lg text-center">Personal Information</p>
-        </div>
-
+      <FieldGroup className="gap-2 p-1">
         <div className="flex flex-row gap-3">
           <Field>
-            <FieldLabel htmlFor="name">First Name</FieldLabel>
-            <Input id="name" type="text" placeholder="John" required />
+            <FieldLabel htmlFor="name">First Name *</FieldLabel>
+            <Input 
+              value={props.formData.firstName} 
+              onChange={props.onChange} name="firstName"
+              id="firstName" type="text" placeholder="John" required 
+            />
           </Field>
           <Field>
-            <FieldLabel htmlFor="name">Last Name</FieldLabel>
-            <Input id="name" type="text" placeholder="Doe" required />
+            <FieldLabel htmlFor="name">Last Name *</FieldLabel>
+            <Input 
+              value={props.formData.lastName} 
+              onChange={props.onChange} name="lastName"
+              id="lastName" type="text" placeholder="Doe" required 
+            />
           </Field>
         </div>
         <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="johndoe@example.com" required />
+          <FieldLabel htmlFor="email">Email *</FieldLabel>
+          <Input 
+            value={props.formData.email} 
+            onChange={props.onChange} name="email"
+            id="email" type="email" placeholder="johndoe@example.com" required 
+          />
         </Field>
         
         <div className="flex flex-row gap-3">
           <Field>
             <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Input id="password" type="password" required />
+            <Input 
+              value={props.formData.password} 
+              onChange={props.onChange} name="password"
+              id="password" type="password" required 
+            />
           </Field>
           <Field>
             <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-            <Input id="confirm-password" type="password" required />
+            <Input 
+              value={retypePass}
+              onChange={(e)=>setRetypePass(e.target.value)}
+              id="confirm-password" type="password" required />
           </Field>
         </div>
         <div className="flex flex-row gap-3">
           <Field>
-            <FieldLabel htmlFor="mobile">Contact(Mobile)</FieldLabel>
-            <div className="flex flex-row">
-              <Input className="w-15 p-2 text-center font-semibold" disabled value={"+94"}/>
-              <Input id="mobile" type="text" required size={50} />
+            <FieldLabel htmlFor="mobile">Contact(Mobile) *</FieldLabel>
+            <div className="flex flex-row items-center">
+              <Item className="w-15 p-2 text-center font-semibold h-9" variant={"outline"} >+94</Item>
+              <Input 
+                value={props.formData.mobile} 
+                onChange={props.onChange} name="mobile"
+                id="mobile" type="text" required size={50} 
+              />
             </div> 
           </Field>
           <Field>
             <FieldLabel htmlFor="work">Contact(Work)</FieldLabel>
-             <div className="flex flex-row">
-              <Input className="w-15 p-2 text-center font-semibold" disabled value={"+94"}/>
-              <Input id="work" type="text" required />
+             <div className="flex flex-row items-center">
+              <Item className="w-15 p-2 text-center font-semibold h-9" variant={"outline"}>+94</Item>
+              <Input 
+                value={props.formData.work} 
+                onChange={props.onChange} name="work"
+                id="work" type="text" required 
+              />
             </div>
           </Field>
         </div>
         
-        <Field>
-          <Button onClick={props.onNext} type="button">Next <ArrowRightIcon/> </Button>
+        <Field className="mt-3">
+          <Button disabled={NextButtonVisibility()} onClick={props.onNext} type="button">Next <ArrowRightIcon/> </Button>
         </Field>
         {/* <FieldSeparator>Or continue with</FieldSeparator> */}
         <Field>

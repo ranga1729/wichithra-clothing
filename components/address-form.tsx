@@ -5,64 +5,88 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { ArrowLeftIcon, Check, CircleUserRound, House } from "lucide-react"
+import { ArrowLeftIcon, Check } from "lucide-react"
+import { AddressData } from "@/lib/types"
 
 interface Props {
+  formData: AddressData,
   onBack: () => void,
-  onConfirm: () => void
+  onConfirm: () => void,
+  onChange: (e:any) => void,
 }
 
 export const AddressForm = (props:Props) => {
+  const ConfirmButtonVisibility = () => {
+    if(!props.formData.houseNo || !props.formData.addressLine1 || !props.formData.addressLine2 || !props.formData.city || !props.formData.province || !props.formData.zipCode) {
+      return true;
+    }
+    return false;
+  }
+
   return (
     <form className={cn("flex flex-col gap-6")}>
-      <FieldGroup className="gap-4">
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Create your account</h1>
-        </div>
-
-        <div className="flex flex-row gap-1 justify-center items-center bg-gray-100 p-2 rounded-xl"> 
-          <House size={20} strokeWidth={1.5}/>
-          <p className="text-lg text-center">Primary Address</p>
-        </div>
-
+      <FieldGroup className="gap-2">
         <div className="flex flex-row gap-3">
           <Field>
-            <FieldLabel htmlFor="name">House No.</FieldLabel>
-            <Input id="name" type="text" placeholder="John" required />
+            <FieldLabel htmlFor="houseNo">House No. *</FieldLabel>
+            <Input 
+              value={props.formData.houseNo} 
+              onChange={props.onChange} name="houseNo"
+              id="houseNo" type="text" placeholder="123/4" required 
+            />
           </Field>
           <Field>
-            <FieldLabel htmlFor="name">Zip code</FieldLabel>
-            <Input id="name" type="text" placeholder="Doe" required />
+            <FieldLabel htmlFor="zipCode">Zip Code *</FieldLabel>
+            <Input 
+              value={props.formData.zipCode} 
+              onChange={props.onChange} name="zipCode"
+              id="zipCode" type="text" required 
+            />
           </Field>
         </div>
         <Field>
-          <FieldLabel htmlFor="email">Addresss Line 1</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <FieldLabel htmlFor="addressLine1">Addresss Line - 1 *</FieldLabel>
+          <Input 
+            value={props.formData.addressLine1} 
+            onChange={props.onChange} name="addressLine1"
+            id="addressLine1" type="text" required 
+          />
         </Field>
         <Field>
-          <FieldLabel htmlFor="email">Address Line 2</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <FieldLabel htmlFor="addressLine2">Address Line - 2 *</FieldLabel>
+          <Input 
+            value={props.formData.addressLine2} 
+            onChange={props.onChange} name="addressLine2"
+            id="addressLine2" type="text" required 
+          />
         </Field>
         <div className="flex flex-row gap-3">
           <Field>
-            <FieldLabel htmlFor="name">Nearest City</FieldLabel>
-            <Input id="name" type="text" placeholder="John" required />
+            <FieldLabel htmlFor="city">Nearest City *</FieldLabel>
+            <Input
+              value={props.formData.city} 
+              onChange={props.onChange} name="city" 
+              id="city" type="text" placeholder="Colombo" required 
+            />
           </Field>
           <Field>
-            <FieldLabel htmlFor="name">Province</FieldLabel>
-            <Input id="name" type="text" placeholder="Doe" required />
+            <FieldLabel htmlFor="province">Province *</FieldLabel>
+            <Input 
+              value={props.formData.province} 
+              onChange={props.onChange} name="province"
+              id="province" type="text" placeholder="Western" required 
+            />
           </Field>
         </div>
-        <Field className="flex flex-row">
+        <Field className="flex flex-row mt-3">
           <Field>
             <Button onClick={props.onBack} type="button" > <ArrowLeftIcon /> Back</Button>
           </Field>
           <Field>
-            <Button onClick={props.onConfirm} type="submit" > <Check /> Confirm</Button>
+            <Button disabled={ConfirmButtonVisibility()} onClick={props.onConfirm} type="button" > <Check /> Confirm</Button>
           </Field>
         </Field>
         {/* <FieldSeparator>Or continue with</FieldSeparator> */}
