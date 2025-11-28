@@ -12,70 +12,94 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { CircleUserRound, Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { loginSchema } from "@/schemas/authSchemas"
+import * as z from "zod"
+
+type LoginFormData = z.infer<typeof loginSchema>
 
 export const LoginForm = () => {
   const [passwordVisibility, setPasswordVisibility] = useState<boolean>(false)
-  const [email, setemail] = useState<string>("")
-  const [password, setPassword] = useState<string>("")
+ 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting, isValid }
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+  })
 
-  const handleLogin = () => {
-    console.log(email)
-    console.log(password)
-  }
-
-  const LoginButtonVisibility = () => {
-    if(!email || !password) {
-      return true;
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      console.log("Form data:", data)
+      //make your API call here
+      //await loginUser(data.email, data.password)
+    } catch(error) {
+      console.error("Login error:", error)
     }
-    return false;
   }
 
   return (
-    <form className={cn("flex flex-col gap-6")}>
+    <form className={cn("flex flex-col gap-6")}
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <FieldGroup className="gap-3 p-1">
         <div className="flex flex-col items-center gap-0 mb-3 text-center">
           <CircleUserRound size={80} strokeWidth={1} />
           <h1 className="text-2xl font-bold">Login to your account</h1>
-          {/* <p className="text-muted-foreground text-sm text-balance">
-            Enter your email below to login to your account
-          </p> */}
         </div>
 
-        <Field>
+        <Field className="gap-1">
           <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input 
-            id="email" type="email" 
-            placeholder="johndoe@example.com" 
-            required value={email} 
-            onChange={(e) => setemail(e.target.value)}/>
+          <div className="flex flex-col gap-0">
+            <Input 
+              id="email" type="email" 
+              placeholder="johndoe@example.com" 
+              {...register("email")}
+              aria-invalid={errors.email ? "true" : "false"}
+            />
+            {errors.email && (
+              <p className="text-sm text-red-600 mt-1 text-center">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
         </Field>
 
-        <Field>
+        <Field className="gap-1">
           <div className="flex items-center">
             <FieldLabel htmlFor="password">Password</FieldLabel>
           </div>
-          <div className="relative">
-            <Input 
-              id="password" 
-              type={passwordVisibility ? "text":"password"}
-              className="pr-10"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <Button
-              type="button"
-              variant={"ghost"} size={"icon-sm"}
-              onClick={() => setPasswordVisibility(!passwordVisibility)}
-              className="absolute right-0.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-              aria-label={passwordVisibility ? "Hide password" : "Show password"}
-            > 
-              {passwordVisibility ? (
-                <Eye className="h-5 w-5" />
-              ) : (
-                <EyeOff className="h-5 w-5" />
-              )}
-            </Button>
+          <div className="flex flex-col gap-1">
+            <div className="relative">
+              <Input 
+                id="password" 
+                type={passwordVisibility ? "text":"password"}
+                className="pr-10"
+                {...register("password")}
+                aria-invalid={errors.password ? "true" : "false"}
+              />
+              <Button
+                type="button"
+                variant={"ghost"} size={"icon-sm"}
+                onClick={() => setPasswordVisibility(!passwordVisibility)}
+                className="absolute right-0.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                aria-label={passwordVisibility ? "Hide password" : "Show password"}
+              > 
+                {passwordVisibility ? (
+                  <Eye className="h-5 w-5" />
+                ) : (
+                  <EyeOff className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
+            {errors.password && (
+              <p className="text-sm text-red-600 mt-1 text-center">
+                {errors.password.message}
+              </p>
+            )}
           </div>
           <Link className="text-sm underline-offset-4 hover:underline text-center" href={"#"}>
             Forgot your password?
@@ -83,7 +107,9 @@ export const LoginForm = () => {
         </Field>
 
         <Field>
-          <Button disabled={LoginButtonVisibility()} type="button" onClick={handleLogin}>Login</Button>
+          <Button disabled={!isValid || isSubmitting} type="submit">
+            {isSubmitting ? "Logging in..." : "Login"}
+          </Button>
         </Field>
 
         {/* <FieldSeparator>Or continue with</FieldSeparator> */}
