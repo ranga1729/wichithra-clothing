@@ -10,14 +10,11 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { CircleUserRound, Eye, EyeOff } from "lucide-react"
+import { CircleUserRound, Eye, EyeOff, LoaderCircle } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { loginSchema } from "@/schemas/authSchemas"
-import * as z from "zod"
-
-type LoginFormData = z.infer<typeof loginSchema>
+import { LoginFormData, loginSchema } from "@/schemas/authSchemas"
 
 export const LoginForm = () => {
   const [passwordVisibility, setPasswordVisibility] = useState<boolean>(false)
@@ -108,7 +105,7 @@ export const LoginForm = () => {
 
         <Field>
           <Button disabled={!isValid || isSubmitting} type="submit">
-            {isSubmitting ? "Logging in..." : "Login"}
+            {isSubmitting ? <><LoaderCircle className="animate-spin w-12 h-12"/>Loggin in...</> : "Login"}
           </Button>
         </Field>
 

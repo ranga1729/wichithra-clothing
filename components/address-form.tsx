@@ -8,85 +8,133 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { ArrowLeftIcon, Check } from "lucide-react"
-import { AddressData } from "@/lib/types"
+import { ArrowLeftIcon, Check, Loader2Icon } from "lucide-react"
+import { UseFormReturn } from "react-hook-form"
+import { RegistrationForm } from "@/schemas/authSchemas"
 
 interface Props {
-  formData: AddressData,
+  form: UseFormReturn<RegistrationForm>,
   onBack: () => void,
-  onConfirm: () => void,
-  onChange: (e:any) => void,
+  onSubmit: () => void,
 }
 
 export const AddressForm = (props:Props) => {
-  const ConfirmButtonVisibility = () => {
-    if(!props.formData.houseNo || !props.formData.addressLine1 || !props.formData.addressLine2 || !props.formData.city || !props.formData.province || !props.formData.zipCode) {
-      return true;
-    }
-    return false;
-  }
+  const { register, formState: {errors, isSubmitting, isValid} } = props.form
 
   return (
     <form className={cn("flex flex-col gap-6")}>
       <FieldGroup className="gap-2">
         <div className="flex flex-row gap-3">
-          <Field>
+          <Field className="gap-1">
             <FieldLabel htmlFor="houseNo">House No. *</FieldLabel>
-            <Input 
-              value={props.formData.houseNo} 
-              onChange={props.onChange} name="houseNo"
-              id="houseNo" type="text" placeholder="123/4" required 
-            />
+            <div className="flex flex-col gap-0">
+              <Input 
+                id="houseNo" type="text" placeholder="123/4"
+                {...register("houseNo")}
+                aria-invalid={errors.houseNo ? "true" : "false"}
+              />
+              {errors.houseNo && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.houseNo.message}
+                </p>
+              )}
+            </div>
           </Field>
-          <Field>
+          <Field className="gap-1">
             <FieldLabel htmlFor="zipCode">Zip Code *</FieldLabel>
-            <Input 
-              value={props.formData.zipCode} 
-              onChange={props.onChange} name="zipCode"
-              id="zipCode" type="text" required 
-            />
+            <div className="flex flex-col gap-0">
+              <Input 
+                id="zipCode" type="text" 
+                placeholder="10100"
+                {...register("zipCode")}
+                aria-invalid={errors.zipCode ? "true" : "false"}
+              />
+              {errors.zipCode && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.zipCode.message}
+                </p>
+              )}
+            </div>
           </Field>
         </div>
-        <Field>
+
+        <Field className="gap-1">
           <FieldLabel htmlFor="addressLine1">Addresss Line - 1 *</FieldLabel>
-          <Input 
-            value={props.formData.addressLine1} 
-            onChange={props.onChange} name="addressLine1"
-            id="addressLine1" type="text" required 
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="addressLine2">Address Line - 2 *</FieldLabel>
-          <Input 
-            value={props.formData.addressLine2} 
-            onChange={props.onChange} name="addressLine2"
-            id="addressLine2" type="text" required 
-          />
-        </Field>
-        <div className="flex flex-row gap-3">
-          <Field>
-            <FieldLabel htmlFor="city">Nearest City *</FieldLabel>
-            <Input
-              value={props.formData.city} 
-              onChange={props.onChange} name="city" 
-              id="city" type="text" placeholder="Colombo" required 
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="province">Province *</FieldLabel>
+          <div className="flex flex-col gap-0">
             <Input 
-              value={props.formData.province} 
-              onChange={props.onChange} name="province"
-              id="province" type="text" placeholder="Western" required 
+              id="addressLine1" type="text" 
+              placeholder="Main Street"
+              {...register("addressLine1")}
+              aria-invalid={errors.addressLine1 ? "true" : "false"}
             />
+            {errors.addressLine1 && (
+              <p className="text-sm text-red-600 mt-1">
+                {errors.addressLine1.message}
+              </p>
+            )}
+          </div>
+        </Field>
+        <Field className="gap-1">
+          <FieldLabel htmlFor="addressLine2">Address Line - 2 *</FieldLabel>
+          <div className="flex flex-col gap-0">
+            <Input 
+              id="addressLine2" type="text" 
+              {...register("addressLine2")}
+              aria-invalid={errors.addressLine2 ? "true" : "false"}
+            />
+            {errors.addressLine2 && (
+              <p className="text-sm text-red-600 mt-1">
+                {errors.addressLine2.message}
+              </p>
+            )}
+          </div>
+        </Field>
+
+        <div className="flex flex-row gap-3">
+          <Field className="gap-1">
+            <FieldLabel htmlFor="city">Nearest City *</FieldLabel>
+            <div className="flex flex-col gap-0">
+              <Input
+                id="city" type="text" placeholder="Colombo"
+                {...register("city")}
+                aria-invalid={errors.city ? "true" : "false"} 
+              />
+              {errors.city && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.city.message}
+                </p>
+              )}
+            </div>
+          </Field>
+
+          <Field className="gap-1">
+            <FieldLabel htmlFor="province">Province *</FieldLabel>
+            <div className="flex flex-col gap-0">
+              <Input 
+                id="province" type="text" placeholder="Western" 
+                {...register("province")}
+                aria-invalid={errors.province ? "true" : "false"}
+              />
+              {errors.province && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.province.message}
+                </p>
+              )}
+            </div>
           </Field>
         </div>
         <Field className="flex flex-row mt-3">
           <Field>
-            <Button onClick={props.onBack} type="button" > <ArrowLeftIcon /> Back</Button>
+            <Button onClick={props.onBack} type="button" variant={"outline"} > <ArrowLeftIcon /> Back</Button>
           </Field>
           <Field>
-            <Button disabled={ConfirmButtonVisibility()} onClick={props.onConfirm} type="button" > <Check /> Confirm</Button>
+            <Button onClick={props.onSubmit} type="button" 
+            > 
+              {!isSubmitting ? 
+                <><Loader2Icon className="animate-spin w-12 h-12"/>Registering...</> : <><Check /> Register</>
+              }
+              
+            </Button>
           </Field>
         </Field>
         {/* <FieldSeparator>Or continue with</FieldSeparator> */}

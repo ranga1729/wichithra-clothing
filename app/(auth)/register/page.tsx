@@ -6,51 +6,72 @@ import Image from "next/image";
 import { AddressForm } from "@/components/address-form";
 import { useState } from "react";
 import { Field, FieldDescription } from "@/components/ui/field";
-import { AddressData, PersonalData } from "@/lib/types";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  registrationSchema,
+  type RegistrationForm
+} from "@/schemas/authSchemas"
+
 
 export default function Register() {
   const [step, setStep] = useState(1);
-  const [personalData, setPersonalData] = useState<PersonalData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    mobile: "",
-    work: ""
-  });
-  const [addressData, setAddressData] = useState<AddressData>({
-    houseNo: "",
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    province: "",
-    zipCode: ""
-  });
+  
+  const form = useForm<RegistrationForm>({
+    resolver: zodResolver(registrationSchema),
+    mode: "onChange",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      mobile: "",
+      work: "",
+      houseNo: "",
+      addressLine1: "",
+      addressLine2: "",
+      city: "",
+      province: "",
+      zipCode: "",
+    }
+  })
 
-  const handlePersonalDataChange = (e:any) => {
-    setPersonalData({
-      ...personalData, [e.target.name]:e.target.value
-    });
-  };
-
-  const handleAddressDataChange = (e:any) => {
-    setAddressData({
-      ...addressData, [e.target.name]:e.target.value
-    });
-  };
-
-  const handleNext = () => {
-    setStep(2);
+  const handleNext = async () => {
+    const fieldsToValidate: (keyof RegistrationForm)[] = [
+      "firstName",
+      "lastName", 
+      "email",
+      "password",
+      "confirmPassword",
+      "mobile",
+      "work"
+    ]
+    const isValid = await form.trigger(fieldsToValidate)
+    if (isValid) {
+      setStep(2)
+    }
   }
 
   const handleBack = () => {
     setStep(1);
   }
 
-  const handleConfirm = () => {
-    console.log(personalData)
-    console.log(addressData)
-    //setStep(1)
+  const onSubmit = async () => {
+    const addressToValidate: (keyof RegistrationForm)[] = [
+      "houseNo",
+      "addressLine1",
+      "addressLine2",
+      "city",
+      "province",
+      "zipCode"
+    ]
+    const isValid = await form.trigger(addressToValidate)
+    if(isValid) {
+      const data = form.getValues()
+      console.log("Reg data: ", data)
+      //make your API call here
+    }
   }
 
   return (
@@ -69,10 +90,10 @@ export default function Register() {
             style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
           >
             <div className="w-full max-w-md shrink-0">
-              <SignupForm onNext={handleNext} formData={personalData} onChange={handlePersonalDataChange}/>
+              <SignupForm form={form} onNext={handleNext} />
             </div>
             <div className="w-full max-w-md shrink-0">
-              <AddressForm formData={addressData} onChange={handleAddressDataChange} onBack={handleBack} onConfirm={handleConfirm}/>
+              <AddressForm form={form} onBack={handleBack} onSubmit={onSubmit}/>
             </div>
           </div>
         </div>

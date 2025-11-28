@@ -10,99 +10,147 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { ArrowRightIcon } from "lucide-react"
 import { Item } from "./ui/item"
-import { PersonalData } from "@/lib/types"
-import { useState } from "react"
+import { RegistrationForm } from "@/schemas/authSchemas"
+import { UseFormReturn } from "react-hook-form"
 
 interface Props {
-  formData: PersonalData
+  form: UseFormReturn<RegistrationForm>
   onNext: () => void,
-  onChange: (e:any) => void
 }
 
 export const SignupForm = (props:Props) => {
-  const [retypePass, setRetypePass] = useState<string>("")
-
-  const NextButtonVisibility = () => {
-    if(!props.formData.firstName || !props.formData.lastName || !props.formData.email || !props.formData.password || !props.formData.mobile || (props.formData.password != retypePass)) {
-      return true;
-    }
-    return false;
-  }
+  const {register, formState: {errors} } = props.form;
 
   return (
     <form className={cn("flex flex-col gap-6")}>
       <FieldGroup className="gap-2 p-1">
         <div className="flex flex-row gap-3">
-          <Field>
+          <Field className="gap-1">
             <FieldLabel htmlFor="name">First Name *</FieldLabel>
-            <Input 
-              value={props.formData.firstName} 
-              onChange={props.onChange} name="firstName"
-              id="firstName" type="text" placeholder="John" required 
-            />
+            <div className="flex flex-col gap-0">
+              <Input 
+                id="firstName" type="text" placeholder="John" 
+                {...register("firstName")}
+                aria-invalid = {errors.firstName ? "true" : "false"}
+              />
+              {errors.firstName && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.firstName.message}
+                </p>
+              )}
+            </div>
           </Field>
-          <Field>
+
+          <Field className="gap-1">
             <FieldLabel htmlFor="name">Last Name *</FieldLabel>
-            <Input 
-              value={props.formData.lastName} 
-              onChange={props.onChange} name="lastName"
-              id="lastName" type="text" placeholder="Doe" required 
-            />
+            <div className="flex flex-col gap-0">
+              <Input 
+                id="lastName" type="text" placeholder="Doe"
+                {...register("lastName")}
+                aria-invalid = {errors.lastName ? "true" : "false"}
+              />
+              {errors.lastName && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.lastName.message}
+                </p>
+              )}
+            </div>
           </Field>
         </div>
-        <Field>
+
+        <Field className="gap-1">
           <FieldLabel htmlFor="email">Email *</FieldLabel>
-          <Input 
-            value={props.formData.email} 
-            onChange={props.onChange} name="email"
-            id="email" type="email" placeholder="johndoe@example.com" required 
-          />
+          <div className="flex flex-col gap-0">
+            <Input 
+              id="email" type="email" placeholder="johndoe@example.com"
+              {...register("email")}
+              aria-invalid={errors.email ? "true" : "false"}
+            />
+            {errors.email && (
+              <p className="text-sm text-red-600 mt-1">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
         </Field>
         
         <div className="flex flex-row gap-3">
-          <Field>
+          <Field className="gap-1">
             <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Input 
-              value={props.formData.password} 
-              onChange={props.onChange} name="password"
-              id="password" type="password" required 
-            />
+            <div className="flex flex-col gap-0">
+              <Input 
+                id="password" type="password"
+                {...register("password")}
+                aria-invalid={errors.password ? "true" : "false"}
+              />
+              {errors.password && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
           </Field>
-          <Field>
+
+          <Field className="gap-1">
             <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-            <Input 
-              value={retypePass}
-              onChange={(e)=>setRetypePass(e.target.value)}
-              id="confirm-password" type="password" required />
+            <div className="flex flex-col gap-0">
+              <Input 
+                id="confirm-password" type="password"
+                {...register("confirmPassword")}
+                aria-invalid={errors.confirmPassword ? "true" : "false"}
+              />
+              {errors.confirmPassword && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
           </Field>
         </div>
+
         <div className="flex flex-row gap-3">
-          <Field>
+          <Field className="gap-1">
             <FieldLabel htmlFor="mobile">Contact(Mobile) *</FieldLabel>
-            <div className="flex flex-row items-center">
-              <Item className="w-15 p-2 text-center font-semibold h-9" variant={"outline"} >+94</Item>
-              <Input 
-                value={props.formData.mobile} 
-                onChange={props.onChange} name="mobile"
-                id="mobile" type="text" required size={50} 
-              />
-            </div> 
+            <div className="flex flex-col gap-0">
+              <div className="flex flex-row items-center">
+                <Item className="w-15 p-2 text-center font-semibold h-9" variant={"outline"} >+94</Item>
+                <Input 
+                  id="mobile" type="text" size={50} 
+                  placeholder="771234567"
+                  {...register("mobile")}
+                  aria-invalid={errors.mobile ? "true" : "false"}
+                />
+              </div>
+              {errors.mobile && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.mobile.message}
+                </p>
+              )} 
+            </div>
           </Field>
-          <Field>
+          <Field className="gap-1">
             <FieldLabel htmlFor="work">Contact(Work)</FieldLabel>
-             <div className="flex flex-row items-center">
-              <Item className="w-15 p-2 text-center font-semibold h-9" variant={"outline"}>+94</Item>
-              <Input 
-                value={props.formData.work} 
-                onChange={props.onChange} name="work"
-                id="work" type="text" required 
-              />
+            <div className="flex flex-col gap-0">
+              <div className="flex flex-row items-center">
+                <Item className="w-15 p-2 text-center font-semibold h-9" variant={"outline"}>+94</Item>
+                <Input 
+                  id="work" type="text"
+                  placeholder="112345678"
+                  {...register("work")}
+                  aria-invalid={errors.work ? "true" : "false"}
+                />
+              </div>
+              {errors.work && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.work.message}
+                </p>
+              )}
             </div>
           </Field>
         </div>
         
         <Field className="mt-3">
-          <Button disabled={NextButtonVisibility()} onClick={props.onNext} type="button">Next <ArrowRightIcon/> </Button>
+          <Button onClick={props.onNext} type="button"> Next<ArrowRightIcon/> </Button>
         </Field>
         {/* <FieldSeparator>Or continue with</FieldSeparator> */}
         <Field>
