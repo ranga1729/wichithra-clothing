@@ -12,10 +12,14 @@ import {
   registrationSchema,
   type RegistrationForm
 } from "@/schemas/authSchemas"
+import toast from "react-hot-toast";
+import { registerUser } from "./actions";
+import { useRouter } from "next/navigation";
 
 
 export default function Register() {
   const [step, setStep] = useState(1);
+  const router = useRouter();
   
   const form = useForm<RegistrationForm>({
     resolver: zodResolver(registrationSchema),
@@ -50,6 +54,8 @@ export default function Register() {
     const isValid = await form.trigger(fieldsToValidate)
     if (isValid) {
       setStep(2)
+    } else {
+      toast.error("Fill all required fields");
     }
   }
 
@@ -66,11 +72,31 @@ export default function Register() {
       "province",
       "zipCode"
     ]
+
     const isValid = await form.trigger(addressToValidate)
+
     if(isValid) {
       const data = form.getValues()
-      console.log("Reg data: ", data)
-      //make your API call here
+
+      const loadingToast = toast.loading("Creating your account...");
+
+      try {
+        const result = await registerUser(data);
+        toast.dismiss(loadingToast);
+
+        if(result.success) {
+          toast.success(result.message)
+          router.push("/");
+        } else {
+          toast.error(result.message || "Registration failed");
+        }
+      } catch(error:any) {
+        toast.dismiss(loadingToast);
+        toast.error(error.message);
+        console.error("Registration error:", error);
+      }
+    } else {
+      toast.error("Please fill all required fields");
     }
   }
 

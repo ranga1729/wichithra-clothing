@@ -19,7 +19,7 @@ interface Props {
 }
 
 export const AddressForm = (props:Props) => {
-  const { register, formState: {errors, isSubmitting, isValid} } = props.form
+  const { register, formState: {errors, isSubmitting} } = props.form
 
   return (
     <form className={cn("flex flex-col gap-6")}>
@@ -128,10 +128,10 @@ export const AddressForm = (props:Props) => {
             <Button onClick={props.onBack} type="button" variant={"outline"} > <ArrowLeftIcon /> Back</Button>
           </Field>
           <Field>
-            <Button onClick={props.onSubmit} type="button" 
+            <Button disabled={isSubmitting} onClick={props.onSubmit} type="button" 
             > 
-              {!isSubmitting ? 
-                <><Loader2Icon className="animate-spin w-12 h-12"/>Registering...</> : <><Check /> Register</>
+              {isSubmitting ? 
+                <>Registering...</> : <><Check /> Register</>
               }
               
             </Button>
