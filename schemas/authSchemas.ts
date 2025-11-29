@@ -1,6 +1,6 @@
 import * as z from "zod"
 
-//schemas
+//schemas : front-end validations
 export const loginSchema = z.object({
   email: z
     .email("Enter a valid email address"),
@@ -55,8 +55,8 @@ export const addressDataSchema = z.object({
     .string()
     .min(2, "Required"),
   city: z
-  .string()
-  .min(2, "Required"),
+    .string()
+    .min(2, "Required"),
   province: z
     .string()
     .min(2, "Required"),
@@ -68,9 +68,79 @@ export const addressDataSchema = z.object({
 
 export const registrationSchema = personalDataSchema.safeExtend(addressDataSchema.shape)
 
-
 // types
 export type LoginFormData = z.infer<typeof loginSchema>
 export type PersonalDataForm = z.infer<typeof personalDataSchema>
 export type AddressDataForm = z.infer<typeof addressDataSchema>
 export type RegistrationForm = z.infer<typeof registrationSchema>
+
+//schemas : server-side validations
+export const serverRegistrationSchema = z.object({
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .max(50, "First name must not exceed 50 characters")
+    .regex(/^[a-zA-Z\s]+$/, "First name can only contain letters")
+    .transform((val) => val.trim()),
+  
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .max(50, "Last name must not exceed 50 characters")
+    .regex(/^[a-zA-Z\s]+$/, "Last name can only contain letters")
+    .transform((val) => val.trim()),
+  
+  email: z
+    .email("Invalid email address")
+    .toLowerCase()
+    .transform((val) => val.trim()),
+  
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      "Password must contain uppercase, lowercase, and number"
+    ),
+  
+  mobile: z
+    .string()
+    .regex(/^[0-9]{9}$/, "Mobile number must be 9 digits"),
+  
+  work: z
+    .string()
+    .regex(/^[0-9]{9}$/, "Work number must be 9 digits")
+    .optional()
+    .or(z.literal("")),
+  
+  houseNo: z
+    .string()
+    .min(1, "House number is required")
+    .transform((val) => val.trim()),
+  
+  addressLine1: z
+    .string()
+    .min(2, "Address Line 1 is required")
+    .transform((val) => val.trim()),
+  
+  addressLine2: z
+    .string()
+    .min(2, "Address Line 2 is required").transform((val) => val.trim()),
+  
+  city: z
+    .string()
+    .min(2, "City is required")
+    .transform((val) => val.trim()),
+  
+  province: z
+    .string()
+    .min(2, "Province is required")    
+    .transform((val) => val.trim()),
+  
+  zipCode: z
+    .string()
+    .regex(/^[0-9]{5}$/, "Zip code must be 5 digits"),
+})
+
+// types
+export type ServerRegistrationInput = z.infer<typeof serverRegistrationSchema>

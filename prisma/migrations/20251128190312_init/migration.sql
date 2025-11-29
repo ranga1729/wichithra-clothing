@@ -1,5 +1,8 @@
 -- CreateEnum
-CREATE TYPE "PhoneType" AS ENUM ('PRIMARY', 'SECONDARY', 'HOME', 'WORK');
+CREATE TYPE "PhoneType" AS ENUM ('MOBILE', 'WORK');
+
+-- CreateEnum
+CREATE TYPE "AddressType" AS ENUM ('DELIVERY', 'BILLING');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -33,13 +36,14 @@ CREATE TABLE "roles" (
 CREATE TABLE "addresses" (
     "id" UUID NOT NULL,
     "userId" UUID NOT NULL,
-    "houseNumber" VARCHAR(20),
+    "houseNo" VARCHAR(20) NOT NULL,
     "addressLine1" VARCHAR(255) NOT NULL,
-    "addressLine2" VARCHAR(255),
+    "addressLine2" VARCHAR(255) NOT NULL,
     "city" VARCHAR(100) NOT NULL,
     "province" VARCHAR(100) NOT NULL,
     "zipcode" VARCHAR(20) NOT NULL,
     "country" VARCHAR(100) NOT NULL DEFAULT 'Sri Lanka',
+    "type" "AddressType" NOT NULL DEFAULT 'DELIVERY',
     "isDefault" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
@@ -53,7 +57,7 @@ CREATE TABLE "phone_numbers" (
     "userId" UUID NOT NULL,
     "phoneNumber" VARCHAR(20) NOT NULL,
     "countryCode" VARCHAR(5) DEFAULT '+94',
-    "phoneType" "PhoneType" NOT NULL DEFAULT 'PRIMARY',
+    "type" "PhoneType" NOT NULL DEFAULT 'MOBILE',
     "isDefault" BOOLEAN NOT NULL DEFAULT false,
     "isVerified" BOOLEAN NOT NULL DEFAULT false,
     "isActive" BOOLEAN NOT NULL DEFAULT true,

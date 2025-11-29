@@ -45,13 +45,14 @@ model Role {
 model Address {
   id           String   @id @default(uuid()) @db.Uuid
   userId       String   @db.Uuid
-  houseNumber  String?  @db.VarChar(20)
+  houseNo      String  @db.VarChar(20)
   addressLine1 String   @db.VarChar(255)
-  addressLine2 String?  @db.VarChar(255)
+  addressLine2 String  @db.VarChar(255)
   city         String   @db.VarChar(100)
   province     String   @db.VarChar(100)
   zipcode      String   @db.VarChar(20)
   country      String   @db.VarChar(100) @default("Sri Lanka")
+  type         AddressType  @default(DELIVERY)
   isDefault    Boolean  @default(false)
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
@@ -68,7 +69,7 @@ model PhoneNumber {
   userId      String    @db.Uuid
   phoneNumber String    @db.VarChar(20)
   countryCode String?   @db.VarChar(5) @default("+94")
-  phoneType   PhoneType @default(PRIMARY)
+  type   PhoneType @default(MOBILE)
   isDefault   Boolean   @default(false)
   isVerified  Boolean   @default(false)
   isActive    Boolean   @default(true)
@@ -85,8 +86,11 @@ model PhoneNumber {
 
 //ENUMS
 enum PhoneType {
-  PRIMARY
-  SECONDARY
-  HOME
+  MOBILE
   WORK
+}
+
+enum AddressType {
+  DELIVERY
+  BILLING
 }
