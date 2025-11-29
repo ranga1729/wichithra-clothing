@@ -15,6 +15,20 @@ export interface AuthResponse {
   token: string
 }
 
+export interface JwtPayload {
+  userId: string,
+  email: string,
+  firstName: string,
+  lastName: string,
+  role: string,
+}
+
+export const ROLES = {
+  CUSTOMER : "550e8400-e29b-41d4-a716-446655440001",
+  ADMIN : "550e8400-e29b-41d4-a716-446655440002",
+  SUPERADMIN : "550e8400-e29b-41d4-a716-446655440003"
+}
+
 export interface UserData {
   id: string
   email: string

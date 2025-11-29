@@ -1,24 +1,24 @@
-import { generateToken } from "@/lib/auth/jwt";
-import { hashPassword } from "@/lib/auth/password";
+import { generateToken } from "@/utils/auth/jwt";
+import { hashPassword } from "@/utils/auth/password";
 import { prisma } from "@/lib/prisma";
-import { ApiResponse, AuthResponse } from "@/lib/types/auth";
+import { ApiResponse, AuthResponse, ROLES } from "@/types/auth";
 import { registrationSchema } from "@/schemas/authSchemas";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { PhoneType } from "@/generated/prisma/enums";
 
 export async function POST(req:NextRequest) {
   try {
     const body = await req.json()
     
     const validatedData = registrationSchema.parse(body);
-    console.log("Data: ", validatedData);
 
     const existingUser = await prisma.user.findUnique({
       where: {email: validatedData.email} 
     })
 
     if(existingUser) {
-       return NextResponse.json<ApiResponse>(
+      return NextResponse.json<ApiResponse>(
         {
           success: false,
           message: "User with this email already exists",
@@ -30,6 +30,20 @@ export async function POST(req:NextRequest) {
 
     const hashedPassword = await hashPassword(validatedData.password)
 
+    const phoneNumbersToCreate = [
+      {
+        phoneNumber: validatedData.mobilePhoneNumber,
+        type: PhoneType.MOBILE
+      }
+    ];
+
+    if(validatedData.homePhoneNumber) {
+      phoneNumbersToCreate.push({
+        phoneNumber: validatedData.homePhoneNumber,
+        type: PhoneType.HOME
+      })
+    }
+
     const user = await prisma.user.create({
       data: {
         email: validatedData.email,
@@ -37,10 +51,7 @@ export async function POST(req:NextRequest) {
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
         phoneNumbers: {
-          create: {
-            phoneNumber: validatedData.mobilePhoneNumber,
-            type: "MOBILE"
-          }
+          create: phoneNumbersToCreate,
         },
         addresses: {
           create: {
@@ -52,25 +63,25 @@ export async function POST(req:NextRequest) {
             zipcode: validatedData.zipCode
           },
         },
-        roleId: "550e8400-e29b-41d4-a716-446655440001",
+        roleId: ROLES.CUSTOMER,
       },
       select: {
         id: true,
         email: true,
         firstName: true,
         lastName: true,
-        passwordHash: true,
-        phoneNumbers: true,
-        addresses: true,
-        createdAt: true,
+        role: true,
       }
     })
 
     const token = generateToken({
       userId: user.id,
-      email: user.email
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role.name
     })
-
+    
     const response = NextResponse.json<ApiResponse<AuthResponse>>(
       {
         success: true,
@@ -80,7 +91,7 @@ export async function POST(req:NextRequest) {
             id: user.id,
             email: user.email,
             firstName: user.firstName,
-            lastName: user.lastName
+            lastName: user.lastName,
           },
           token
         }
@@ -88,7 +99,7 @@ export async function POST(req:NextRequest) {
       {status: 201}
     )
 
-    response.cookies.set("auth-token", token, {
+    response.cookies.set("wichithra-token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -99,16 +110,18 @@ export async function POST(req:NextRequest) {
     return response;
 
   } catch(error) {
+
     if(error instanceof ZodError) {
+    console.log("Zod Error:", error.issues[0].message);
       return NextResponse.json<ApiResponse>(
         {
           success: false,
           message: "Validation Failed",
-          error: error.message.toString() || "Invalid input data"
+          error: error.issues[0].message || "Invalid input data"
         },
         {status: 400}
       )
-    }
+    }  
 
     return NextResponse.json<ApiResponse>(
       {
