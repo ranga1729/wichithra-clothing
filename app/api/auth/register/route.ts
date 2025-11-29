@@ -2,15 +2,15 @@ import { generateToken } from "@/lib/auth/jwt";
 import { hashPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/prisma";
 import { ApiResponse, AuthResponse } from "@/lib/types/auth";
-import { serverRegistrationSchema } from "@/schemas/authSchemas";
+import { registrationSchema } from "@/schemas/authSchemas";
 import { NextRequest, NextResponse } from "next/server";
-import { success, ZodError } from "zod";
+import { ZodError } from "zod";
 
 export async function POST(req:NextRequest) {
   try {
     const body = await req.json()
     
-    const validatedData = serverRegistrationSchema.parse(body);
+    const validatedData = registrationSchema.parse(body);
     console.log("Data: ", validatedData);
 
     const existingUser = await prisma.user.findUnique({
@@ -104,7 +104,7 @@ export async function POST(req:NextRequest) {
         {
           success: false,
           message: "Validation Failed",
-          error: error.message || "Invalid input data"
+          error: error.message.toString() || "Invalid input data"
         },
         {status: 400}
       )
