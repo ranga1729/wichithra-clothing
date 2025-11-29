@@ -1,5 +1,5 @@
-import { generateToken } from "@/utils/auth/jwt";
-import { hashPassword } from "@/utils/auth/password";
+import { generateToken } from "@/utils/jwt";
+import { hashPassword } from "@/utils/passwordHashing";
 import { prisma } from "@/lib/prisma";
 import { ApiResponse, AuthResponse, ROLES } from "@/types/auth";
 import { registrationSchema } from "@/schemas/authSchemas";

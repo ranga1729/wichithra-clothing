@@ -4,8 +4,8 @@ import { PhoneType } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { RegistrationForm, registrationSchema } from "@/schemas/authSchemas";
 import { ApiResponse, AuthResponse, ROLES } from "@/types/auth";
-import { generateToken } from "@/utils/auth/jwt";
-import { hashPassword } from "@/utils/auth/password";
+import { generateToken } from "@/utils/jwt";
+import { hashPassword } from "@/utils/passwordHashing";
 import { cookies } from "next/headers";
 import { ZodError } from "zod";
 
