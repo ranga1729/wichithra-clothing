@@ -30,11 +30,11 @@ export const personalDataSchema = z.object({
   confirmPassword: z
     .string()
     .min(1, "Retype your password"),
-  mobile: z
+  mobilePhoneNumber: z
     .string()
     .min(1, "Required")
     .regex(/^[0-9]{9}$/, "Must be 9 digits"),
-  work: z
+  homePhoneNumber: z
     .string()
     .regex(/^[0-9]{9}$/, "Must be 9 digits")
     .optional()
@@ -103,13 +103,13 @@ export const serverRegistrationSchema = z.object({
       "Password must contain uppercase, lowercase, and number"
     ),
   
-  mobile: z
+  mobilePhoneNumber: z
     .string()
-    .regex(/^[0-9]{9}$/, "Mobile number must be 9 digits"),
+    .regex(/^[0-9]{9}$/, "Contact number must be 9 digits"),
   
-  work: z
+  homePhoneNumber: z
     .string()
-    .regex(/^[0-9]{9}$/, "Work number must be 9 digits")
+    .regex(/^[0-9]{9}$/, "Contact number must be 9 digits")
     .optional()
     .or(z.literal("")),
   

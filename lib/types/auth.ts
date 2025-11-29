@@ -20,8 +20,8 @@ export interface UserData {
   email: string
   firstName: string
   lastName: string
-  mobile: string
-  work?: string
+  mobilePhoneNumber: string
+  homePhoneNumber?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -32,8 +32,8 @@ export interface RegisterRequest {
   email: string
   password: string
   confirmPassword: string
-  mobile: string
-  work?: string
+  mobilePhoneNumber: string
+  homePhoneNumber?: string
   houseNo: string
   addressLine1: string
   addressLine2: string

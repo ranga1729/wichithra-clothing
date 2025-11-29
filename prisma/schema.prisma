@@ -87,7 +87,7 @@ model PhoneNumber {
 //ENUMS
 enum PhoneType {
   MOBILE
-  WORK
+  HOME
 }
 
 enum AddressType {

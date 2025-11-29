@@ -38,7 +38,7 @@ export async function POST(req:NextRequest) {
         lastName: validatedData.lastName,
         phoneNumbers: {
           create: {
-            phoneNumber: validatedData.mobile,
+            phoneNumber: validatedData.mobilePhoneNumber,
             type: "MOBILE"
           }
         },

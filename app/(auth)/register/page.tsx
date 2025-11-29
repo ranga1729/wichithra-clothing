@@ -26,8 +26,8 @@ export default function Register() {
       email: "",
       password: "",
       confirmPassword: "",
-      mobile: "",
-      work: "",
+      mobilePhoneNumber: "",
+      homePhoneNumber: "",
       houseNo: "",
       addressLine1: "",
       addressLine2: "",
@@ -44,8 +44,8 @@ export default function Register() {
       "email",
       "password",
       "confirmPassword",
-      "mobile",
-      "work"
+      "mobilePhoneNumber",
+      "homePhoneNumber"
     ]
     const isValid = await form.trigger(fieldsToValidate)
     if (isValid) {

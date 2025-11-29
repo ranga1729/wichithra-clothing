@@ -110,39 +110,39 @@ export const SignupForm = (props:Props) => {
 
         <div className="flex flex-row gap-3">
           <Field className="gap-1">
-            <FieldLabel htmlFor="mobile">Contact(Mobile) *</FieldLabel>
+            <FieldLabel htmlFor="mobilePhoneNumber">Contact(Mobile) *</FieldLabel>
             <div className="flex flex-col gap-0">
               <div className="flex flex-row items-center">
                 <Item className="w-15 p-2 text-center font-semibold h-9" variant={"outline"} >+94</Item>
                 <Input 
-                  id="mobile" type="text" size={50} 
+                  id="mobilePhoneNumber" type="text" size={50} 
                   placeholder="771234567"
-                  {...register("mobile")}
-                  aria-invalid={errors.mobile ? "true" : "false"}
+                  {...register("mobilePhoneNumber")}
+                  aria-invalid={errors.mobilePhoneNumber ? "true" : "false"}
                 />
               </div>
-              {errors.mobile && (
+              {errors.mobilePhoneNumber && (
                 <p className="text-sm text-red-600 mt-1">
-                  {errors.mobile.message}
+                  {errors.mobilePhoneNumber.message}
                 </p>
               )} 
             </div>
           </Field>
           <Field className="gap-1">
-            <FieldLabel htmlFor="work">Contact(Work)</FieldLabel>
+            <FieldLabel htmlFor="homePhoneNumber">Contact(Home)</FieldLabel>
             <div className="flex flex-col gap-0">
               <div className="flex flex-row items-center">
                 <Item className="w-15 p-2 text-center font-semibold h-9" variant={"outline"}>+94</Item>
                 <Input 
-                  id="work" type="text"
+                  id="homePhoneNumber" type="text"
                   placeholder="112345678"
-                  {...register("work")}
-                  aria-invalid={errors.work ? "true" : "false"}
+                  {...register("homePhoneNumber")}
+                  aria-invalid={errors.homePhoneNumber ? "true" : "false"}
                 />
               </div>
-              {errors.work && (
+              {errors.homePhoneNumber && (
                 <p className="text-sm text-red-600 mt-1">
-                  {errors.work.message}
+                  {errors.homePhoneNumber.message}
                 </p>
               )}
             </div>
