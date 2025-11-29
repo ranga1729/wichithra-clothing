@@ -28,30 +28,3 @@ export const ROLES = {
   ADMIN : "550e8400-e29b-41d4-a716-446655440002",
   SUPERADMIN : "550e8400-e29b-41d4-a716-446655440003"
 }
-
-export interface UserData {
-  id: string
-  email: string
-  firstName: string
-  lastName: string
-  mobilePhoneNumber: string
-  homePhoneNumber?: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface RegisterRequest {
-  firstName: string
-  lastName: string
-  email: string
-  password: string
-  confirmPassword: string
-  mobilePhoneNumber: string
-  homePhoneNumber?: string
-  houseNo: string
-  addressLine1: string
-  addressLine2: string
-  city: string
-  province: string
-  zipCode: string
-}

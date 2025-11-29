@@ -2,16 +2,14 @@ export const metadata = {
   title: 'Wichithra',
 };
 
-export default function ShopFrontLayout({
+export default function AuthLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <div>
-      <main>
-        {children}
-      </main>
-    </div>
+    <main>
+      {children}
+    </main>
   );
 }
