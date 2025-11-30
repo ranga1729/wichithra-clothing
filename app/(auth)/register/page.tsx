@@ -51,7 +51,9 @@ export default function Register() {
       "mobilePhoneNumber",
       "homePhoneNumber"
     ]
+
     const isValid = await form.trigger(fieldsToValidate)
+    
     if (isValid) {
       setStep(2)
     } else {

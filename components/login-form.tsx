@@ -12,36 +12,21 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { CircleUserRound, Eye, EyeOff, LoaderCircle } from "lucide-react"
 import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { LoginFormData, loginSchema } from "@/schemas/authSchemas"
+import { UseFormReturn } from "react-hook-form"
+import { LoginForm as Login_Form, loginSchema } from "@/schemas/authSchemas"
 
-export const LoginForm = () => {
+interface Props {
+  form: UseFormReturn<Login_Form>,
+  onSubmit: () => void,
+}
+
+export const LoginForm = (props: Props) => {
   const [passwordVisibility, setPasswordVisibility] = useState<boolean>(false)
- 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting, isValid }
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    mode: "onChange",
-  })
 
-  const onSubmit = async (data: LoginFormData) => {
-    try {
-      console.log("Form data:", data)
-      //make your API call here
-      //await loginUser(data.email, data.password)
-    } catch(error) {
-      console.error("Login error:", error)
-    }
-  }
+  const { register, formState: {errors, isSubmitting} } = props.form
 
   return (
-    <form className={cn("flex flex-col gap-6")}
-      onSubmit={handleSubmit(onSubmit)}
-    >
+    <form className={cn("flex flex-col gap-6")}>
       <FieldGroup className="gap-3 p-1">
         <div className="flex flex-col items-center gap-0 mb-3 text-center">
           <CircleUserRound size={80} strokeWidth={1} />
@@ -58,7 +43,7 @@ export const LoginForm = () => {
               aria-invalid={errors.email ? "true" : "false"}
             />
             {errors.email && (
-              <p className="text-sm text-red-600 mt-1 text-center">
+              <p className="text-sm text-red-600 mt-1 text-left">
                 {errors.email.message}
               </p>
             )}
@@ -69,7 +54,7 @@ export const LoginForm = () => {
           <div className="flex items-center">
             <FieldLabel htmlFor="password">Password</FieldLabel>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-0">
             <div className="relative">
               <Input 
                 id="password" 
@@ -93,7 +78,7 @@ export const LoginForm = () => {
               </Button>
             </div>
             {errors.password && (
-              <p className="text-sm text-red-600 mt-1 text-center">
+              <p className="text-sm text-red-600 mt-1 text-left">
                 {errors.password.message}
               </p>
             )}
@@ -104,7 +89,7 @@ export const LoginForm = () => {
         </Field>
 
         <Field>
-          <Button disabled={!isValid || isSubmitting} type="submit">
+          <Button type="button" onClick={props.onSubmit}>
             {isSubmitting ? <><LoaderCircle className="animate-spin w-12 h-12"/>Loggin in...</> : "Login"}
           </Button>
         </Field>

@@ -76,7 +76,7 @@ export const addressDataSchema = z.object({
 export const registrationSchema = personalDataSchema.safeExtend(addressDataSchema.shape)
 
 // types
-export type LoginFormData = z.infer<typeof loginSchema>
+export type LoginForm = z.infer<typeof loginSchema>
 export type PersonalDataForm = z.infer<typeof personalDataSchema>
 export type AddressDataForm = z.infer<typeof addressDataSchema>
 export type RegistrationForm = z.infer<typeof registrationSchema>
