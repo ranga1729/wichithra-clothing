@@ -38,7 +38,7 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
         phoneNumber: validatedData.homePhoneNumber,
         type: PhoneType.HOME
       })
-    }
+    } 
 
     const user = await prisma.user.create({
       data: {

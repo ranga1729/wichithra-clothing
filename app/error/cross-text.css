@@ -1,0 +1,13 @@
+.glitch-text {
+  animation: glitch-main 2s infinite;
+}
+
+.glitch-text-shadow {
+  animation: glitch-shadow-1 2s infinite;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+}
+
+.glitch-text-shadow-2 {
+  animation: glitch-shadow-2 2s infinite;
+  clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+}
