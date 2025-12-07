@@ -1,3 +1,6 @@
+import AdminHeader from '@/components/admin/admin-header';
+import { AppSidebar } from '@/components/admin/admin-sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import React from 'react';
 
 export const metadata = {
@@ -10,21 +13,16 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <header>
-        <h1>Header</h1>
-      </header>
+    <SidebarProvider>
+      <AppSidebar />
+      <div className='flex flex-col w-full'>
+        <AdminHeader/>
 
-      <main>
-        <div className='flex flex-row'>
-          <h1>sidebar</h1>
+        <main className='border h-full'>
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
 
-      <footer>
-        <h1>footer</h1>
-      </footer>
-    </div>
+    </SidebarProvider>
   );
 }
