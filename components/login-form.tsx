@@ -15,6 +15,7 @@ import { useState } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { LoginForm as Login_Form } from "@/schemas/authSchemas"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
+import { ThemeToggler } from "./theme/theme-toggler"
 
 interface Props {
   form: UseFormReturn<Login_Form>,
@@ -28,7 +29,8 @@ export const LoginForm = (props: Props) => {
 
   return (
     <Card className="w-full">
-      <CardHeader className="flex flex-col items-center justify-center">
+      <CardHeader className="flex flex-col items-center justify-start">
+        <ThemeToggler />
         <CardTitle className="text-center">Login to your account</CardTitle>
         <CardDescription>
           Enter your email below to login to your account

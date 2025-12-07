@@ -108,7 +108,7 @@ export const CustomerForm = (props:Props) => {
             <FieldLabel htmlFor="mobilePhoneNumber">Contact(Mobile) *</FieldLabel>
             <div className="flex flex-col gap-0">
               <div className="flex flex-row items-center">
-                <Item className="w-15 p-2 text-center font-semibold h-9" variant={"outline"} >+94</Item>
+                <Item className="p-1 text-center font-semibold h-9" variant={"default"} >+94</Item>
                 <Input 
                   id="mobilePhoneNumber" type="text" size={50} 
                   placeholder="771234567"
@@ -127,7 +127,7 @@ export const CustomerForm = (props:Props) => {
             <FieldLabel htmlFor="homePhoneNumber">Contact(Home)</FieldLabel>
             <div className="flex flex-col gap-0">
               <div className="flex flex-row items-center">
-                <Item className="w-15 p-2 text-center font-semibold h-9" variant={"outline"}>+94</Item>
+                <Item className="p-1 text-center font-semibold h-9" variant={"default"}>+94</Item>
                 <Input 
                   id="homePhoneNumber" type="text"
                   placeholder="112345678"

@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Loader, LoaderCircle } from "lucide-react";
+import { ThemeToggler } from "@/components/theme/theme-toggler";
 
 
 export default function Register() {
@@ -74,10 +75,11 @@ export default function Register() {
   }
 
   return (
-    <div className="flex flex-col gap-5 min-h-svh items-center justify-center px-15 py-10 md:px-30 md:py-10">
+    <div className="flex flex-col gap-5 min-h-svh items-center justify-center px-15 py-10 md:px-30 md:py-5">
       <Image src={logo} alt={"Logo"} height={80} width={80} />
       <Card className="w-full">
-        <CardHeader>
+        <CardHeader className="flex flex-col items-center justify-start" >
+          <ThemeToggler />
           <CardTitle className="text-center">Create an account</CardTitle>
           <CardDescription className="text-center">
             Enter your information below to create your account
@@ -86,9 +88,11 @@ export default function Register() {
         <CardContent className="flex flex-col flex-wrap gap-7">
           <FieldGroup className="w-full flex flex-col md:flex-row gap-10 md:gap-7">
             <Field className="border p-3 rounded-md flex-1">
+              <p className="text-center font-semibold">User Information</p>
               <CustomerForm form={form} />
             </Field>
             <Field className="border p-3 rounded-md flex-1">
+              <p className="text-center font-semibold">Address Information</p>
               <AddressForm form={form} />
             </Field>
           </FieldGroup>
