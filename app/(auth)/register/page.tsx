@@ -18,9 +18,8 @@ import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Loader, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { ThemeToggler } from "@/components/theme/theme-toggler";
-
 
 export default function Register() {
   const router = useRouter();

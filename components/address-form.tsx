@@ -1,25 +1,32 @@
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import Link from "next/link"
-import { ArrowLeftIcon, Check, Loader2Icon } from "lucide-react"
-import { UseFormReturn } from "react-hook-form"
+import { Controller, UseFormReturn } from "react-hook-form"
 import { RegistrationForm } from "@/schemas/authSchemas"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
-
+import CustomSelect from "./Custom/CustomSelect"
 
 interface Props {
   form: UseFormReturn<RegistrationForm>,
 }
 
 export const AddressForm = (props:Props) => {
-  const { register, formState: {errors} } = props.form
+  const { register, formState: {errors}, control } = props.form
+
+  const provinces = [
+    { value: "central", name: "Central Province" },
+    { value: "eastern", name: "Eastern Province" },
+    { value: "north-central", name: "North Central Province" },
+    { value: "northern", name: "Northern Province" },
+    { value: "north-western", name: "North Western Province" },
+    { value: "sabaragamuwa", name: "Sabaragamuwa Province" },
+    { value: "southern", name: "Southern Province" },
+    { value: "uva", name: "Uva Province" },
+    { value: "western", name: "Western Province" },
+  ];
 
   return (
     <form className={cn("flex flex-col gap-6")}>
@@ -110,16 +117,33 @@ export const AddressForm = (props:Props) => {
           <Field className="gap-1">
             <FieldLabel htmlFor="province">Province *</FieldLabel>
             <div className="flex flex-col gap-0">
-              <Input 
+              <Controller
+                name="province"
+                control={control}
+                render={({field}) => (
+                  <div>
+                    <CustomSelect 
+                      placeholder={"Select your Province"} 
+                      options={provinces} 
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      ariaInvalid={errors.province ? "true" : "false"}
+                    />
+
+                    {errors.province && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {errors.province.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              />
+              
+              {/* <Input 
                 id="province" type="text" placeholder="Western" 
                 {...register("province")}
                 aria-invalid={errors.province ? "true" : "false"}
-              />
-              {errors.province && (
-                <p className="text-sm text-red-600 mt-1">
-                  {errors.province.message}
-                </p>
-              )}
+              /> */}
             </div>
           </Field>
         </div>
