@@ -14,7 +14,7 @@ import { Eye, EyeOff, LoaderCircle } from "lucide-react"
 import { useState } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { LoginForm as Login_Form } from "@/schemas/authSchemas"
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
 
 interface Props {
   form: UseFormReturn<Login_Form>,
@@ -30,6 +30,9 @@ export const LoginForm = (props: Props) => {
     <Card className="w-full">
       <CardHeader className="flex flex-col items-center justify-center">
         <CardTitle className="text-center">Login to your account</CardTitle>
+        <CardDescription>
+          Enter your email below to login to your account
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form className={cn("flex flex-col gap-6")}>
@@ -51,7 +54,7 @@ export const LoginForm = (props: Props) => {
               </div>
             </Field>
 
-            <Field className="gap-1">
+            <Field className="gap-2">
               <div className="flex items-center">
                 <FieldLabel htmlFor="password">Password</FieldLabel>
               </div>
@@ -84,13 +87,15 @@ export const LoginForm = (props: Props) => {
                   </p>
                 )}
               </div>
-              <Link className="text-sm underline-offset-4 hover:underline text-center" href={"#"}>
-                Forgot your password?
-              </Link>
+              <FieldDescription className="text-center">
+                <Link className="text-sm underline-offset-4 hover:underline text-center" href={"/#"}>
+                  Forgot your password?
+                </Link>
+              </FieldDescription>
             </Field>
 
             <Field>
-              <Button type="button" onClick={props.onSubmit}>
+              <Button type="button" size={"lg"} onClick={props.onSubmit}>
                 {isSubmitting ? <><LoaderCircle className="animate-spin w-12 h-12"/>Loggin in...</> : "Login"}
               </Button>
             </Field>
