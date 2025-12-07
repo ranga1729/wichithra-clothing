@@ -1,11 +1,9 @@
 "use client"
 
 import { SignupForm } from "@/components/signup-form";
-import reg from "../../../public/images/reg.jpg"
-import Image from "next/image";
 import { AddressForm } from "@/components/address-form";
 import { useState } from "react";
-import { Field, FieldDescription } from "@/components/ui/field";
+import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -15,6 +13,13 @@ import {
 import toast from "react-hot-toast";
 import { registerUser } from "./actions";
 import { useRouter } from "next/navigation";
+import logo from "@/public/images/logo.png"
+import Image from "next/image";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
+import { isValid } from "zod/v3";
+import Link from "next/link";
 
 
 export default function Register() {
@@ -103,33 +108,39 @@ export default function Register() {
   }
 
   return (
-  <div className="grid min-h-svh lg:grid-cols-2">
-    <div className="flex flex-col gap-4 p-6 md:p-10">
-      <div className="flex flex-1 items-center justify-center">
-        <div className="w-full max-w-md overflow-hidden flex flex-col gap-4">
-
-          <Field className="flex flex-col items-center gap-1 text-center">
-            <h1 className="text-2xl font-bold">Create your account</h1>
-            <FieldDescription>* marks required fields</FieldDescription>
-          </Field>
-
-          <div 
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{ transform: `translateX(-${(step - 1) * 100}%)` }}
-          >
-            <div className="w-full max-w-md shrink-0">
-              <SignupForm form={form} onNext={handleNext} />
-            </div>
-            <div className="w-full max-w-md shrink-0">
-              <AddressForm form={form} onBack={handleBack} onSubmit={onSubmit}/>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div className="bg-muted relative hidden lg:block">
-      <Image src={reg} alt={"Registration side cover"} fill style={{ objectFit: 'cover' }} />
-    </div>
+    <div className="flex flex-col gap-5 min-h-svh items-center justify-center p-6 md:p-10">
+      <Image src={logo} alt={"Logo"} height={80} width={80} />
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-center">Create an account</CardTitle>
+          <CardDescription className="text-center">
+            Enter your information below to create your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="w-full flex flex-col flex-wrap gap-7">
+          <FieldGroup className="w-full flex flex-row">
+            <Field className="border p-3 rounded-md">
+              <SignupForm form={form} />
+            </Field>
+            <Field className="border p-3 rounded-md">
+              <AddressForm form={form} />
+            </Field>
+          </FieldGroup>
+          <FieldGroup className="flex items-center">
+            <Field className="w-1/2">
+              <Button type="button"> 
+                {form ? 
+                  <>Registering...</> : <><Check /> Register</>
+                }
+              </Button>
+              <FieldDescription className="text-center">
+                Already have an account? <Link href="login">Sign in</Link>
+              </FieldDescription>
+            </Field>
+            
+          </FieldGroup>
+      </CardContent>
+    </Card>
   </div>
-)
+  )
 }
