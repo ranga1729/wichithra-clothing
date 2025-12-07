@@ -1,5 +1,5 @@
-import { AdminSidebar } from '@/components/admin-sidebar'; 
-import { AdminHeader } from '@/components/admin-header';
+import { AdminSidebar } from '@/components/custom/admin/admin-sidebar'; 
+import { AdminHeader } from '@/components/custom/admin/admin-header';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import React from 'react';

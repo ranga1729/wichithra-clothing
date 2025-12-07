@@ -16,11 +16,9 @@ import {
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -31,8 +29,8 @@ import logo from "@/public/images/logo.png"
 
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "admin-name",
+    email: "admin@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
   navMain: [
@@ -169,21 +167,23 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Wichithra-Clothing</span>
-                  <span className="truncate text-xs">Enterprise</span>
+                  <span className="truncate text-xs">Admin-Dashboard</span>
                 </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
+      {/* <SidebarFooter>
         <NavUser user={data.user} />
-      </SidebarFooter>
+      </SidebarFooter> */}
+      
     </Sidebar>
   )
 }
