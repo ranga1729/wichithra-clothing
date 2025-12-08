@@ -3,16 +3,19 @@ import { AdminHeader } from '@/components/custom/admin/admin-header';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import React from 'react';
+import { getUserFromCookie } from '@/lib/get-cookie';
 
 export const metadata = {
   title: 'Admin Dashboard',
 };
 
-export default function DashboardLayout({
+export default async function AdminDashboardLayout({
   children
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getUserFromCookie();
+  
   return (
     <ThemeProvider
       attribute="class"
@@ -22,7 +25,7 @@ export default function DashboardLayout({
     >
       <div className="[--header-height:calc(--spacing(14))]">
         <SidebarProvider className='flex flex-col'>
-          <AdminHeader />
+          <AdminHeader user={user} />
           <div className="flex flex-1">
             <AdminSidebar />
             <SidebarInset>

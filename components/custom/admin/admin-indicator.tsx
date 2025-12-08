@@ -1,7 +1,12 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { JwtPayload } from "@/types/auth";
 import { Shield } from "lucide-react";
 
-export default function() {
+interface Props {
+  user : JwtPayload | null;
+}
+
+export default function AdminIndicator(props: Props) {
 
   const user = {
     name: "admin-name",
@@ -15,8 +20,8 @@ export default function() {
         <Shield color="green" size={25}/>
       </Avatar>
       <div className="grid flex-1 text-left text-sm leading-tight">
-        <span className="truncate font-medium">{user.name}</span>
-        <span className="truncate text-xs">{user.email}</span>
+        <span className="truncate font-medium">{props.user?.firstName}</span>
+        <span className="truncate text-xs">{props.user?.email}</span>
       </div>
     </div>
   )

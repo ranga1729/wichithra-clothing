@@ -21,6 +21,10 @@ export interface JwtPayload {
   firstName: string,
   lastName: string,
   role: string,
+
+  exp?: number;
+  iat?: number;
+  sub?: string;  
 }
 
 export const ROLES = {
