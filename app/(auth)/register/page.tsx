@@ -1,7 +1,7 @@
 "use client"
 
-import { CustomerForm } from "@/components/customer-form";
-import { AddressForm } from "@/components/address-form";
+import { CustomerForm } from "@/components/custom/auth/customer-form";
+import { AddressForm } from "@/components/custom/auth/address-form";
 import { useState } from "react";
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
 import { useForm } from "react-hook-form";

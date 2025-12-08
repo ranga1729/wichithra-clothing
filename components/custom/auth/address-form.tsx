@@ -7,7 +7,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Controller, UseFormReturn } from "react-hook-form"
 import { RegistrationForm } from "@/schemas/authSchemas"
-import CustomSelect from "./Custom/CustomSelect"
+import CustomSelect from "../general/CustomSelect"
 
 interface Props {
   form: UseFormReturn<RegistrationForm>,

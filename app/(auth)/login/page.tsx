@@ -1,6 +1,6 @@
 "use client"
 
-import { LoginForm as LoginUI } from "@/components/login-form";
+import { LoginForm as LoginUI } from "@/components/custom/auth/login-form";
 import { LoginForm, loginSchema } from "@/schemas/authSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -27,21 +27,17 @@ export default function Login() {
     
     if(isValid) {
       const data = form.getValues();
-      const loadingToast = toast.loading("Logging in...");
 
       try {
         const result = await loginUser(data);
-        toast.dismiss(loadingToast);
 
         if(result.success) {
           toast.success(result.message)
-          console.log("ttttt")
           router.push("/")
         } else {
           toast.error(result.message || "Registration failed");
         }
       } catch(error:any) {
-        toast.dismiss(loadingToast);
         toast.error(error.message);
         console.error("Registration error:", error);
       }

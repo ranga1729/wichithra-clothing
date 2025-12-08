@@ -14,8 +14,8 @@ import { Eye, EyeOff, LoaderCircle } from "lucide-react"
 import { useState } from "react"
 import { UseFormReturn } from "react-hook-form"
 import { LoginForm as Login_Form } from "@/schemas/authSchemas"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
-import { ThemeToggler } from "./theme/theme-toggler"
+import { ThemeToggler } from "@/components/theme/theme-toggler"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface Props {
   form: UseFormReturn<Login_Form>,
