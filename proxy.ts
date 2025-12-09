@@ -46,7 +46,7 @@ export function proxy(request: NextRequest) {
 
     // Check if user has required role for admin routes
     if (!requiredRoles.includes(decoded.role as UserRole)) {
-      const accessDeniedUrl = new URL('/error', request.url);
+      const accessDeniedUrl = new URL('/oops?error=noaccess', request.url);
       return NextResponse.redirect(accessDeniedUrl);
     }
 
