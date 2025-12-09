@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/sidebar"
 import { ThemeToggler } from "../../theme/theme-toggler"
-import Logout from "@/components/custom/general/logout-button"
+import Logout from "@/components/custom/general/logout-button/logout-button"
 import AdminIndicator from "./admin-indicator"
 import { JwtPayload } from "@/types/auth"
 

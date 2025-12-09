@@ -12,7 +12,7 @@ function getRequiredRoles(pathname: string): ReadonlyArray<UserRole> {
   return PROTECTED_ROUTES[pathname] || [];
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(TOKEN_NAME)?.value;
 
