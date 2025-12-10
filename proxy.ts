@@ -5,7 +5,7 @@ import { JwtPayload, UserRole } from "./types/auth";
 const TOKEN_NAME = process.env.TOKEN_NAME!;
 
 const PROTECTED_ROUTES : Record<string, ReadonlyArray<UserRole>> = {
-  '/admin': ['admin', 'superAdmin'],
+  '/admin': ['admin', 'super-admin'],
 } as const;
 
 function getRequiredRoles(pathname: string): ReadonlyArray<UserRole> {
