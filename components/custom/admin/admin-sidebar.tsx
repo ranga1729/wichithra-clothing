@@ -2,15 +2,12 @@
 
 import * as React from "react"
 import {
-  BookOpen,
-  Bot,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
-  SquareTerminal,
+  ChartNoAxesCombined,
+  ListCollapse,
+  ListOrdered,
+  Shirt,
+  SquaresExclude,
+  UserRound,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -30,38 +27,87 @@ import logo from "@/public/images/logo.png"
 const data = {
   navMain: [
     {
-      title: "Macro",
+      title: "Analytics",
       url: "#",
-      icon: SquareTerminal,
+      icon: ChartNoAxesCombined,
+      isActive: true,
+    },
+    {
+      title: "Orders",
+      url: "new-orders",
+      icon: ListOrdered,
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "New orders",
+          url: "new-orders",
         },
         {
-          title: "Starred",
-          url: "#",
+          title: "Ongoing",
+          url: "ongoing-orders",
         },
         {
-          title: "Settings",
-          url: "#",
+          title: "Completed",
+          url: "completed-orders",
+        },
+      ]
+    },
+    {
+      title: "Products",
+      url: "#",
+      icon: Shirt,
+      isActive: true,
+    },
+    {
+      title: "Inventory",
+      url: "#",
+      icon: SquaresExclude,
+      isActive: true,
+    },
+    {
+      title: "Facets",
+      url: "categories",
+      icon: ListCollapse,
+      isActive: true,
+      items: [
+        {
+          title: "Categories",
+          url: "categories",
+        },
+        {
+          title: "Designs",
+          url: "designs",
+        },
+        {
+          title: "Colors",
+          url: "colors",
+        },
+        {
+          title: "Sizes",
+          url: "sizes",
         },
       ],
     },
-  ],
-  navSecondary: [
     {
-      title: "Support",
+      title: "Customers",
       url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
+      icon: UserRound,
+      isActive: true,
     },
   ],
+
+  // navSecondary: [
+  //   {
+  //     title: "Support",
+  //     url: "#",
+  //     icon: LifeBuoy,
+  //   },
+  //   {
+  //     title: "Feedback",
+  //     url: "#",
+  //     icon: Send,
+  //   },
+  // ],
 
   // projects: [
   //   {
@@ -109,7 +155,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       <SidebarContent>
         <NavMain items={data.navMain} />
         {/* <NavProjects projects={data.projects} /> */}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
     </Sidebar>
   )
