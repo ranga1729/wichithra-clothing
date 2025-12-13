@@ -1,7 +1,7 @@
 import { generateToken } from "@/utils/jwt";
 import { hashPassword } from "@/utils/passwordHashing";
 import { prisma } from "@/lib/prisma";
-import { ApiResponse, AuthResponse, ROLES } from "@/types/auth";
+import { ApiResponse, AuthResponse, ROLES } from "@/types/auth-types";
 import { registrationSchema } from "@/schemas/authSchemas";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";

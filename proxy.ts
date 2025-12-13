@@ -1,6 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import { NextRequest, NextResponse } from "next/server";
-import { JwtPayload, UserRole } from "./types/auth";
+import { JwtPayload, UserRole } from "./types/auth-types";
 
 const TOKEN_NAME = process.env.TOKEN_NAME!;
 

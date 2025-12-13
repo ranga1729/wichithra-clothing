@@ -3,7 +3,7 @@
 import { PhoneType } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { RegistrationForm, registrationSchema } from "@/schemas/authSchemas";
-import { ApiResponse, AuthResponse, ROLES } from "@/types/auth";
+import { ApiResponse, AuthResponse, ROLES } from "@/types/auth-types";
 import { generateToken } from "@/utils/jwt";
 import { hashPassword } from "@/utils/passwordHashing";
 import { cookies } from "next/headers";

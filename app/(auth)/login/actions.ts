@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { LoginForm, loginSchema } from "@/schemas/authSchemas";
-import { ApiResponse, AuthResponse } from "@/types/auth";
+import { ApiResponse, AuthResponse } from "@/types/auth-types";
 import { generateToken } from "@/utils/jwt";
 import { comparePassword } from "@/utils/passwordHashing";
 import { cookies } from "next/headers";

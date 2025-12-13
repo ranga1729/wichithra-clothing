@@ -1,5 +1,5 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { JwtPayload } from "@/types/auth";
+import { JwtPayload } from "@/types/auth-types";
 import { Shield } from "lucide-react";
 
 interface Props {

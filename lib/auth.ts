@@ -1,4 +1,4 @@
-import { JwtPayload, UserRole } from "@/types/auth";
+import { JwtPayload, UserRole } from "@/types/auth-types";
 import { jwtDecode } from "jwt-decode";
 import jwt from "jsonwebtoken"
 import { prisma } from "./prisma";

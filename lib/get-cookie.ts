@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { jwtDecode } from 'jwt-decode';
-import { JwtPayload } from '@/types/auth';
+import { JwtPayload } from '@/types/auth-types';
 
 export async function getUserFromCookie(): Promise<JwtPayload | null> {
   try {
