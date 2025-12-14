@@ -9,7 +9,10 @@ export const categoryFilterSchema = z.object({
     .optional(),
   sortColumn: z
     .string()
-    .optional()
+    .optional(),
+  sortOrder: z  
+    .enum(["asc", "desc"])
+    .optional(),
 })
 
 export type CategoryFilter = z.infer<typeof categoryFilterSchema>

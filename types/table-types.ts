@@ -3,3 +3,8 @@ export interface Paginator {
   pageIndex: number,         // current page number (0-based)
   totalRecords: number,      // total items from server
 }
+
+export interface Sorter {
+  sortColumn : string | undefined,
+  sortOrder : string | undefined,
+}

@@ -1,16 +1,35 @@
 'use server'
 
 import { prisma } from "@/lib/prisma";
+import { CategoryFilter } from "@/schemas/filters";
 import { ApiResponse } from "@/types/auth-types";
-import { Paginator } from "@/types/table-types";
+import { Paginator, Sorter } from "@/types/table-types";
 
-export async function getCategories(paginator: Paginator):Promise<ApiResponse> {
+export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter):Promise<ApiResponse> {
   try {
     const pageSize = Math.max(1, paginator.pageSize);
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
 
-    //add a where clause 
+    const whereClause: any = {
+      ...(filter.name && {
+        name: {
+          contains: filter.name as string,
+          mode: 'insensitive'
+        }
+      }),
+      ...(filter.slug && {
+        slug: {
+          contains: filter.slug as string,
+          mode: 'insensitive'
+        }
+      })
+    }
+
+    const validSortOrder = ['asc', 'desc'].includes(sorter.sortOrder as string) ? sorter.sortOrder as string : 'asc';
+    const sortableColumns = ["name", "slug", "sortOrder"];
+    const orderBy = sortableColumns.includes(sorter.sortColumn as string) ? {[sorter.sortColumn as string]: validSortOrder} : undefined;
+
     const categories = await prisma.category.findMany({
       select: {
         id: true,
@@ -20,13 +39,15 @@ export async function getCategories(paginator: Paginator):Promise<ApiResponse> {
         sizeGuide: true,
         sortOrder: true,
       },
-      orderBy: {slug:"asc"},
+      where: whereClause,
+      orderBy: orderBy,
       skip: skip,
       take: pageSize
     })
 
-    //use the same where clause here
-    const totalRecords = await prisma.category.count({})
+    const totalRecords = await prisma.category.count({
+      where: whereClause
+    })
 
     if(!categories) {
       return {
@@ -46,7 +67,7 @@ export async function getCategories(paginator: Paginator):Promise<ApiResponse> {
   } catch(error:any) {
     return { 
       success: false,
-      error: error.message || 'Failed to delete category' 
+      error: error.message || 'Failed to get categories' 
     };
   }
 }

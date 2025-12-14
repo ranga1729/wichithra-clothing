@@ -3,17 +3,17 @@
 import TableWithPagination, { TableWithPaginationRef } from "@/components/custom/table/Table";
 import { useEffect, useRef, useState } from "react";
 import { getColumns } from "./columns";
-import { Paginator } from "@/types/table-types";
+import { Paginator, Sorter } from "@/types/table-types";
 import { Category } from "@/types/common-types";
 import toast from "react-hot-toast";
 import { getCategories } from "./action";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import CustomSelect, { CustomSelectOptions } from "@/components/custom/general/CustomSelect";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { CirclePlus, RotateCcw, Search } from "lucide-react";
 import { CategoryFilter } from "@/schemas/filters";
+import SortDropDown, { SortDropDownOptions } from "@/components/custom/general/SortDropDown";
 
 export default function CategoryPage() {
   const tableRef = useRef<TableWithPaginationRef>(null);
@@ -23,14 +23,15 @@ export default function CategoryPage() {
   const [paginator, setPaginator] = useState<Paginator>({
     pageSize: 10,
     pageIndex: 0,
-    totalRecords: 0
+    totalRecords: 0,
   })
 
   const { register, control, getValues, reset } = useForm<CategoryFilter>({
     defaultValues: {
       name: "",
       slug: "",
-      sortColumn: ""
+      sortColumn: "name",
+      sortOrder: "asc",
     }
   })
 
@@ -44,7 +45,18 @@ export default function CategoryPage() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response = await getCategories(paginator);
+      const { name, slug, sortColumn, sortOrder } = getValues();
+      const filter : CategoryFilter = {
+        name : name,
+        slug : slug
+      }
+
+      const sorter : Sorter = {
+        sortColumn : sortColumn,
+        sortOrder : sortOrder
+      }
+
+      const response = await getCategories(paginator, filter, sorter);
       console.log(response.data)
 
       if(!response.success && response.error) {
@@ -72,15 +84,14 @@ export default function CategoryPage() {
     fetchData();
   }, [paginator.pageIndex, paginator.pageSize]);
 
-  const SortColumns: CustomSelectOptions[] = [
+  const SortColumns: SortDropDownOptions[] = [
     { name: "Name", value: "name"},
     { name: "Slug", value: "slug"},
     { name: "Sort Order", value: "sortOrder"}
   ]
 
   const handleSearch = async () => {
-    const vals = await getValues()
-    console.log(vals)
+    fetchData();
   }
 
   const handleReset = () => {
@@ -101,24 +112,31 @@ export default function CategoryPage() {
                 <Label htmlFor="Slug">Slug</Label>
                 <Input type="text" id="Slug" placeholder="Slug" {...register("slug")} />
               </div>
-            
-            
+
               <Controller
                 name="sortColumn"
                 control={control}
-                render={({field}) => (
-                  <div className="grid w-60 max-w-sm items-center gap-2">
-                    <Label htmlFor="sortColumn">Sort Column</Label>
-                    <CustomSelect 
-                      id="sortColumn"
-                      placeholder={"Sort Column"} 
-                      options={SortColumns} 
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    />
-                  </div>
+                render={({ field: columnField }) => (
+                  <Controller
+                    name="sortOrder"
+                    control={control}
+                    render={({ field: orderField }) => (
+                      <div className="flex flex-col gap-2 w-60">
+                        <Label htmlFor="sort">Sort</Label>
+                        <SortDropDown
+                          id="sort"
+                          sortColumnOptions={SortColumns}
+                          columnValue={columnField.value}
+                          orderValue={orderField.value}
+                          onColumnChange={columnField.onChange}
+                          onOrderChange={orderField.onChange}
+                        />
+                      </div>
+                    )}
+                  />
                 )}
               />
+
             </div>
             
             <div className="flex flex-row gap-2">
