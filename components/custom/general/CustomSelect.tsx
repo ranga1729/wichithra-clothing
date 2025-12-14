@@ -12,13 +12,14 @@ import {
 
 interface Props {
   placeholder: string;
-  options: Options[];
+  options: CustomSelectOptions[];
   value?: string;
   ariaInvalid?: string;
   onValueChange: (value: string) => void;
+  id?:string;
 }
 
-interface Options {
+export interface CustomSelectOptions {
   name: string, value: string
 }
 
@@ -28,7 +29,7 @@ export default function CustomSelect(props: Props) {
       onValueChange={props.onValueChange}
       value={props.value}
     >
-      <SelectTrigger className={props.ariaInvalid === "true" ? "border-red-500 w-full" : "w-full"} >
+      <SelectTrigger id={props.id} className={props.ariaInvalid === "true" ? "border-red-500 w-full" : "w-full"} >
         <SelectValue placeholder={props.placeholder} />
       </SelectTrigger>
       <SelectContent>

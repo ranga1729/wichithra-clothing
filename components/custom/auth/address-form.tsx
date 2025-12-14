@@ -7,7 +7,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Controller, UseFormReturn } from "react-hook-form"
 import { RegistrationForm } from "@/schemas/authSchemas"
-import CustomSelect from "../general/CustomSelect"
+import CustomSelect, { CustomSelectOptions } from "../general/CustomSelect"
 
 interface Props {
   form: UseFormReturn<RegistrationForm>,
@@ -16,7 +16,7 @@ interface Props {
 export const AddressForm = (props:Props) => {
   const { register, formState: {errors}, control } = props.form
 
-  const provinces = [
+  const provinces:CustomSelectOptions[] = [
     { value: "central", name: "Central Province" },
     { value: "eastern", name: "Eastern Province" },
     { value: "north-central", name: "North Central Province" },

@@ -56,7 +56,7 @@ export default function Register() {
       try {
         const result = await registerUser(data);
 
-        if(result.success) {
+        if(result.success && result.message) {
           toast.success(result.message)
           router.push("/");
         } else {
