@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
-import { CategoryFilter } from "@/types/filters";
+import { CategoryFilter } from "@/types/filter-types";
 import { Paginator, Sorter } from "@/types/table-types";
 
 export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter):Promise<ApiResponse> {

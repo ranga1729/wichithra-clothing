@@ -1,19 +1,18 @@
 'use client'
 
-import TableWithPagination, { TableWithPaginationRef } from "@/components/custom/table/Table";
+import TableWithPagination, { TableWithPaginationRef } from "@/components/custom/table/TableWithPagination";
 import { useEffect, useRef, useState } from "react";
 import { getColumns } from "./columns";
-import { Paginator, Sorter } from "@/types/table-types";
+import { DropDownOptions, Paginator, Sorter } from "@/types/table-types";
 import { Category } from "@/types/common-types";
 import toast from "react-hot-toast";
 import { getCategories } from "./action";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { CirclePlus, RotateCcw, Search } from "lucide-react";
-import SortDropDown, { SortOrderDropDownOptions } from "@/components/custom/general/SortDropDown";
-import { CategoryFilter } from "@/types/filters";
+import SortDropDown from "@/components/custom/general/SortDropDown";
+import { CategoryFilter } from "@/types/filter-types";
 
 const InitialSorter:Sorter = {
   sortColumn: "name",
@@ -70,7 +69,7 @@ export default function CategoryPage() {
     fetchData();
   }, [paginator.pageIndex, paginator.pageSize]);
 
-  const SortColumns: SortOrderDropDownOptions[] = [
+  const SortColumns: DropDownOptions[] = [
     { name: "Name", value: "name"},
     { name: "Slug", value: "slug"},
     { name: "Sort Order", value: "sortOrder"}

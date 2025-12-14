@@ -7,22 +7,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { DropDownOptions } from "@/types/table-types";
 
 interface Props {
   id?:string;
   columnValue?:string
   orderValue?: string
-  sortColumnOptions: SortOrderDropDownOptions[];
+  sortColumnOptions: DropDownOptions[];
   onSorterChange: (value: string, name: string) => void;
-}
-
-export interface SortOrderDropDownOptions {
-  name: string, value: string
 }
 
 export default function SortDropDown(props: Props) {
 
-  const SortOrder: SortOrderDropDownOptions[] = [
+  const SortOrder: DropDownOptions[] = [
     { name: "ASC", value: "asc"},
     { name: "DESC", value: "desc"}
   ]

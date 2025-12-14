@@ -8,3 +8,7 @@ export interface Sorter {
   sortColumn: string,
   sortOrder: string,
 }
+
+export interface DropDownOptions {
+  name: string, value: string
+}

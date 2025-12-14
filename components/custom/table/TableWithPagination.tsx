@@ -4,6 +4,7 @@ import { useEffect, useCallback, useImperativeHandle, forwardRef, useState } fro
 import type { Paginator } from "@/types/table-types";
 import { DataTable } from "./data-table";
 import TablePaginator from "./paginator";
+import { Loader2 } from "lucide-react";
 
 interface TableWithPaginationProps {
   columns: any[];
@@ -112,9 +113,14 @@ const TableWithPagination = forwardRef<TableWithPaginationRef, TableWithPaginati
 
   // Default loading component
   const DefaultLoadingComponent = () => (
-    <div className="flex items-center justify-center p-8">
-      <div className="animate-spin rounded-b-full h-8 w-8 border-b-2 border-gray-900"></div>
-      <span className="ml-2">Loading...</span>
+    <div className="flex items-center justify-center p-8 border">
+      <Loader2
+        size={25}
+        className={`animate-spin`}
+        role="status"
+        aria-label="Loading..."
+      />
+      <span className="ml-2 font-semibold">Loading...</span>
     </div>
   );
 
