@@ -9,21 +9,20 @@ import {
 } from "@/components/ui/select"
 
 interface Props {
+  id?:string;
   columnValue?:string
   orderValue?: string
-  onColumnChange: (value: string) => void;
-  onOrderChange: (value: string) => void;
-  sortColumnOptions: SortDropDownOptions[];
-  id?:string;
+  sortColumnOptions: SortOrderDropDownOptions[];
+  onSorterChange: (value: string, name: string) => void;
 }
 
-export interface SortDropDownOptions {
+export interface SortOrderDropDownOptions {
   name: string, value: string
 }
 
 export default function SortDropDown(props: Props) {
 
-  const SortOrder: SortDropDownOptions[] = [
+  const SortOrder: SortOrderDropDownOptions[] = [
     { name: "ASC", value: "asc"},
     { name: "DESC", value: "desc"}
   ]
@@ -34,7 +33,7 @@ export default function SortDropDown(props: Props) {
       className="flex flex-row items-center justify-center w-full">
 
       <Select
-        onValueChange={props.onColumnChange}
+        onValueChange={(value) => props.onSorterChange(value, "sortColumn")}
         value={props.columnValue}
       >
         <SelectTrigger className="w-full flex-2">
@@ -50,7 +49,7 @@ export default function SortDropDown(props: Props) {
       </Select>
 
       <Select
-        onValueChange={props.onOrderChange}
+        onValueChange={(value) => props.onSorterChange(value, "sortOrder")}
         value={props.orderValue}
       >
         <SelectTrigger className="w-full flex-1">

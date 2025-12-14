@@ -12,28 +12,30 @@ import { Input } from "@/components/ui/input";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { CirclePlus, RotateCcw, Search } from "lucide-react";
-import { CategoryFilter } from "@/schemas/filters";
-import SortDropDown, { SortDropDownOptions } from "@/components/custom/general/SortDropDown";
+import SortDropDown, { SortOrderDropDownOptions } from "@/components/custom/general/SortDropDown";
+import { CategoryFilter } from "@/types/filters";
+
+const InitialSorter:Sorter = {
+  sortColumn: "name",
+  sortOrder: "asc",
+}
+const InitiaFilter:CategoryFilter = {
+ name : "",
+ slug : "",
+}
 
 export default function CategoryPage() {
   const tableRef = useRef<TableWithPaginationRef>(null);
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [totalRecords, setTotalRecords] = useState(0)
+  const [totalRecords, setTotalRecords] = useState(0);
   const [paginator, setPaginator] = useState<Paginator>({
     pageSize: 10,
     pageIndex: 0,
     totalRecords: 0,
   })
-
-  const { register, control, getValues, reset } = useForm<CategoryFilter>({
-    defaultValues: {
-      name: "",
-      slug: "",
-      sortColumn: "name",
-      sortOrder: "asc",
-    }
-  })
+  const [sorter, setSorter] = useState<Sorter>(InitialSorter);
+  const [filter, setFilter] = useState<CategoryFilter>(InitiaFilter);
 
   const onEdit = (category:Category) => {
     console.log("Edit: ", category.id)
@@ -45,19 +47,8 @@ export default function CategoryPage() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const { name, slug, sortColumn, sortOrder } = getValues();
-      const filter : CategoryFilter = {
-        name : name,
-        slug : slug
-      }
-
-      const sorter : Sorter = {
-        sortColumn : sortColumn,
-        sortOrder : sortOrder
-      }
 
       const response = await getCategories(paginator, filter, sorter);
-      console.log(response.data)
 
       if(!response.success && response.error) {
         toast.error(response.error);
@@ -75,16 +66,11 @@ export default function CategoryPage() {
     }
   }
 
-  // I guess this is unnecessary cuz the below useEffect execute at the beginning
-  // useEffect(() => {
-  //   fetchData()
-  // }, [])
-
   useEffect(() => {
     fetchData();
   }, [paginator.pageIndex, paginator.pageSize]);
 
-  const SortColumns: SortDropDownOptions[] = [
+  const SortColumns: SortOrderDropDownOptions[] = [
     { name: "Name", value: "name"},
     { name: "Slug", value: "slug"},
     { name: "Sort Order", value: "sortOrder"}
@@ -95,7 +81,23 @@ export default function CategoryPage() {
   }
 
   const handleReset = () => {
-    reset();
+    setFilter(InitiaFilter);
+    setSorter(InitialSorter);
+  }
+
+  const handleSorterChange = (value: string, name: string) => {
+    setSorter(prevSorter => ({
+      ...prevSorter,
+      [name]:value
+    }))
+  }
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFilter(prevFilter => ({
+        ...prevFilter,
+        [name]: value
+    }));
   }
   
   return (
@@ -106,36 +108,23 @@ export default function CategoryPage() {
             <div className="flex flex-row justify-start items-center gap-3 w-full border py-3 px-2 rounded-md">
               <div className="grid w-60 max-w-sm items-center gap-2">
                 <Label htmlFor="name">Name</Label>
-                <Input type="text" id="name" placeholder="Name" {...register("name")} />
+                <Input type="text" id="name" placeholder="Name" value={filter.name} name="name" onChange={handleFilterChange} />
               </div>
               <div className="grid w-60 max-w-sm items-center gap-2">
                 <Label htmlFor="Slug">Slug</Label>
-                <Input type="text" id="Slug" placeholder="Slug" {...register("slug")} />
+                <Input type="text" id="Slug" placeholder="Slug" value={filter.slug} name="slug" onChange={handleFilterChange} />
               </div>
 
-              <Controller
-                name="sortColumn"
-                control={control}
-                render={({ field: columnField }) => (
-                  <Controller
-                    name="sortOrder"
-                    control={control}
-                    render={({ field: orderField }) => (
-                      <div className="flex flex-col gap-2 w-60">
-                        <Label htmlFor="sort">Sort</Label>
-                        <SortDropDown
-                          id="sort"
-                          sortColumnOptions={SortColumns}
-                          columnValue={columnField.value}
-                          orderValue={orderField.value}
-                          onColumnChange={columnField.onChange}
-                          onOrderChange={orderField.onChange}
-                        />
-                      </div>
-                    )}
-                  />
-                )}
-              />
+              <div className="flex flex-col gap-2 w-60">
+                <Label htmlFor="sort">Sort</Label>
+                <SortDropDown
+                  id="sort"
+                  sortColumnOptions={SortColumns}
+                  columnValue={sorter.sortColumn}
+                  orderValue={sorter.sortOrder}
+                  onSorterChange ={handleSorterChange}
+                />
+              </div>
 
             </div>
             

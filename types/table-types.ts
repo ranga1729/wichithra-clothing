@@ -1,10 +1,10 @@
 export interface Paginator {
-  pageSize: number,         // number of records per page
-  pageIndex: number,         // current page number (0-based)
-  totalRecords: number,      // total items from server
+  pageSize: number, // number of records per page
+  pageIndex: number, // current page number (0-based)
+  totalRecords: number, // total items from server
 }
 
 export interface Sorter {
-  sortColumn : string | undefined,
-  sortOrder : string | undefined,
+  sortColumn: string,
+  sortOrder: string,
 }

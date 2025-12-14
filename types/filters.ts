@@ -1,4 +1,4 @@
 export interface CategoryFilter {
-  name: string | undefined,
-  slug: string | undefined
+  name?: string,
+  slug?: string,
 }
