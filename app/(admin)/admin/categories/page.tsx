@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { CirclePlus, RotateCcw, Search } from "lucide-react";
 import SortDropDown from "@/components/custom/general/SortDropDown";
 import { CategoryFilter } from "@/types/filter-types";
+import AddNewModal from "./AddNewModal";
 
 const InitialSorter:Sorter = {
   sortColumn: "name",
@@ -22,6 +23,12 @@ const InitiaFilter:CategoryFilter = {
  name : "",
  slug : "",
 }
+
+const SortColumns: DropDownOptions[] = [
+  { name: "Name", value: "name"},
+  { name: "Slug", value: "slug"},
+  { name: "Sort Order", value: "sortOrder"}
+]
 
 export default function CategoryPage() {
   const tableRef = useRef<TableWithPaginationRef>(null);
@@ -35,13 +42,7 @@ export default function CategoryPage() {
   })
   const [sorter, setSorter] = useState<Sorter>(InitialSorter);
   const [filter, setFilter] = useState<CategoryFilter>(InitiaFilter);
-
-  const onEdit = (category:Category) => {
-    console.log("Edit: ", category.id)
-  }
-  const onDelete = (category:Category) => {
-    console.log("Delete: ", category.id)
-  }
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -65,16 +66,6 @@ export default function CategoryPage() {
     }
   }
 
-  useEffect(() => {
-    fetchData();
-  }, [paginator.pageIndex, paginator.pageSize]);
-
-  const SortColumns: DropDownOptions[] = [
-    { name: "Name", value: "name"},
-    { name: "Slug", value: "slug"},
-    { name: "Sort Order", value: "sortOrder"}
-  ]
-
   const handleSearch = async () => {
     fetchData();
   }
@@ -82,6 +73,14 @@ export default function CategoryPage() {
   const handleReset = () => {
     setFilter(InitiaFilter);
     setSorter(InitialSorter);
+  }
+
+  const onEdit = (category:Category) => {
+    console.log("Edit: ", category.id)
+  }
+
+  const onDelete = (category:Category) => {
+    console.log("Delete: ", category.id)
   }
 
   const handleSorterChange = (value: string, name: string) => {
@@ -98,6 +97,10 @@ export default function CategoryPage() {
         [name]: value
     }));
   }
+
+  useEffect(() => {
+    fetchData();
+  }, [paginator.pageIndex, paginator.pageSize]);
   
   return (
     <div className="w-full h-full dark:bg-neutral-800 bg-neutral-100">
@@ -130,7 +133,7 @@ export default function CategoryPage() {
             <div className="flex flex-row gap-2">
               <Button size={"default"} type="button" onClick={handleSearch}> <Search /> Apply Filter</Button>
               <Button size={"default"} type="button" onClick={handleReset}> <RotateCcw /> Reset Filter</Button>
-              <Button size={"default"} type="button" onClick={() => console.log("show the modal")}> <CirclePlus /> Create New</Button>
+              <Button size={"default"} type="button" onClick={() => setIsModalOpen(true)}> <CirclePlus /> Create New</Button>
             </div>
           </form>
         </div>
@@ -149,6 +152,8 @@ export default function CategoryPage() {
           onPaginationChange={setPaginator}
         />
       </div>
+
+      <AddNewModal isModalOpen={isModalOpen} onOpenChange={setIsModalOpen} />
     </div>
   );
 }

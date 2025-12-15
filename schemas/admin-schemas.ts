@@ -1,0 +1,54 @@
+import * as z from "zod"
+
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+
+export const categorySchema = z.object({
+  name: z
+    .string("Enter a valid name")
+    .min(1, "Name is required")
+    .max(100, "Name can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  slug: z
+    .string("Enter a valid slug")
+    .min(1, "Slug is required")
+    .max(100, "Slug can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  description: z
+    .string()
+    .optional(),
+  sortOrder: z  
+    .number()
+    .default(0),
+  sizeGuide: z  
+    .instanceof(File)
+    .refine((file) => file.size <= 5000000, "Max file size if 5MB")
+    .refine(
+      (file) => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type),
+      "Only .jpg, .png, and .webp formats are supported"
+    )
+    .optional()
+    .or(z.literal(''))
+})
+
+export const categoryServerSchema = z.object({
+  name: z
+    .string()
+    .min(1)
+    .max(100),
+  slug: z
+    .string()
+    .min(1)
+    .max(100),
+  description: z
+    .string()
+    .optional(),
+  sortOrder: z
+    .number()
+    .default(0),
+  sizeGuide: z
+    .string()
+    .max(500)
+    .optional() //file path
+});
+
+export type CategorySchema = z.infer<typeof categorySchema>
