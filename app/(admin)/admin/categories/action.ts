@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
 import { CategoryFilter } from "@/types/filter-types";
 import { Paginator, Sorter } from "@/types/table-types";
+import { promises as fs } from 'fs';
 
 export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter):Promise<ApiResponse> {
   try {
@@ -73,9 +74,10 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
 }
 
 import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import path, { join } from "path";
 import { categorySchema, CategorySchema, categoryServerSchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
+import { error } from "console";
 
 export async function createCategory(newCategory: CategorySchema):Promise<ApiResponse> {
   try {
@@ -119,7 +121,6 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
     return {
       success: true,
       message: "New category created successfully",
-      data: category,
     };
   } catch (error) {
     console.error("Error creating category:", error);
@@ -134,6 +135,81 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
     return {
       success: false,
       error: "Failed to create category",
+    };
+  }
+}
+
+export async function deleteCategory(id: string):Promise<ApiResponse> {
+  try {
+    console.log("idelete: ", id)
+
+    const category = await prisma.category.findUnique({
+      where: {id : id},
+      select: {
+        id: true,
+        sizeGuide: true,
+      }
+    })
+
+    if(!category) {
+      return {
+        success: false,
+        error: "Category doesn't exist"
+      }
+    }
+
+    const deletedCategory = await prisma.category.delete({
+      where: {
+        id: category.id
+      }
+    });
+
+    if(!deletedCategory) {
+      return {
+        success: false,
+        error: "Category deletion failed"
+      }
+    }
+
+    if(deletedCategory.sizeGuide) {
+      const imagePath = path.join(
+        process.cwd(),
+        "public",
+        deletedCategory.sizeGuide
+      )
+
+      console.log("image path: ", imagePath)
+      
+      try {
+        await fs.unlink(imagePath);
+      } catch(error) {
+        return { 
+            success: true, 
+            message: 'Category deleted. Image file was not found on disk.' 
+        };
+      }
+      
+    }
+    
+    revalidatePath('/admin/categories');
+
+    return {
+      success: true,
+      message: "Category deleted successfully"
+    }
+  } catch(error) {
+    console.error("Error deleting category:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: "Failed to delete category",
     };
   }
 }

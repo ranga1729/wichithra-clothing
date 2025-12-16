@@ -6,7 +6,7 @@ import { getColumns } from "./columns";
 import { DropDownOptions, Paginator, Sorter } from "@/types/table-types";
 import { Category } from "@/types/common-types";
 import toast from "react-hot-toast";
-import { getCategories } from "./action";
+import { deleteCategory, getCategories } from "./action";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -79,8 +79,21 @@ export default function CategoryPage() {
     console.log("Edit: ", category.id)
   }
 
-  const onDelete = (category:Category) => {
-    console.log("Delete: ", category.id)
+  const onDelete = async (category:Category) => {
+    try {
+      const response = await deleteCategory(category.id);
+
+      if(!response.success && response.error) {
+        toast.error(response.error);
+      }
+      
+      if(response.success) {
+        fetchData();
+        toast.success(response.message || "Category deleted successfully")
+      }
+    } catch(error:any) {
+      toast.error(error.message);
+    }
   }
 
   const handleSorterChange = (value: string, name: string) => {
