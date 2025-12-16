@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { CirclePlus, RotateCcw, Search } from "lucide-react";
 import SortDropDown from "@/components/custom/general/SortDropDown";
 import { CategoryFilter } from "@/types/filter-types";
-import AddNewModal from "./AddNewModal";
+import AddNewModal from "./addNewModal";
 
 const InitialSorter:Sorter = {
   sortColumn: "name",

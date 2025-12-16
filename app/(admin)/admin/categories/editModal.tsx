@@ -21,7 +21,7 @@ interface Props {
 // refactor/optimize the code
 // remove comments
 
-export default function AddNewModal(props: Props) {
+export default function EditModal(props: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filePreview, setFilePreview] = useState<string | null>(null);
 
