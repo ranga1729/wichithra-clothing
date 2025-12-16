@@ -18,7 +18,8 @@ export const categorySchema = z.object({
     .optional(),
   sortOrder: z  
     .number()
-    .default(0),
+    .int("Must be an integer")
+    .min(0, "Must be zero or greater"),
   sizeGuide: z  
     .instanceof(File)
     .refine((file) => file.size <= 5000000, "Max file size if 5MB")
@@ -27,7 +28,6 @@ export const categorySchema = z.object({
       "Only .jpg, .png, and .webp formats are supported"
     )
     .optional()
-    .or(z.literal(''))
 })
 
 export const categoryServerSchema = z.object({

@@ -46,7 +46,7 @@ export const getColumns = ({
     header: () => { return <div className="text-center">Size Guide</div> },
     cell: ({row}) => {
       return row.original.sizeGuide ? <div>
-        test
+        {row.original.sizeGuide.toString()}
       </div> : (<p className="text-center"> - </p>)
     }
   },

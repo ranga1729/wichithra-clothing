@@ -71,3 +71,69 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
     };
   }
 }
+
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
+import { categorySchema, CategorySchema, categoryServerSchema } from "@/schemas/admin-schemas";
+import { revalidatePath } from "next/cache";
+
+export async function createCategory(newCategory: CategorySchema):Promise<ApiResponse> {
+  try {
+    const validatedData = categorySchema.parse(newCategory);
+    let sizeGuidePath: string | undefined = undefined;
+
+    if (validatedData.sizeGuide && validatedData.sizeGuide.size > 0) {
+      const timestamp = Date.now();
+      const fileExtension = validatedData.sizeGuide.name.split(".").pop();
+      const fileName = `${validatedData.slug}-${timestamp}.${fileExtension}`;
+
+      const uploadDir = join(process.cwd(), "public", "uploads", "size-guides");
+
+      try {
+        await mkdir(uploadDir, { recursive: true });
+      } catch (error) {
+        console.error("Error creating directory:", error);
+      }
+
+      const bytes = await validatedData.sizeGuide.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const filePath = join(uploadDir, fileName);
+      await writeFile(filePath, buffer);
+
+      sizeGuidePath = `/uploads/size-guides/${fileName}`;
+    }
+
+    const category = await prisma.category.create({
+      data: {
+        name: validatedData.name,
+        slug: validatedData.slug,
+        description: validatedData.description,
+        sortOrder: validatedData.sortOrder,
+        sizeGuide: sizeGuidePath,
+      }
+    });
+
+    revalidatePath("/admin/categories");
+
+    return {
+      success: true,
+      message: "New category created successfully",
+      data: category,
+    };
+  } catch (error) {
+    console.error("Error creating category:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: "Failed to create category",
+    };
+  }
+}
