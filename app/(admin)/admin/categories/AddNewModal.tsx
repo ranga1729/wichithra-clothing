@@ -17,10 +17,6 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-// check the flow of creating a new cat again
-// refactor/optimize the code
-// remove comments
-
 export default function AddNewModal(props: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filePreview, setFilePreview] = useState<string | null>(null);

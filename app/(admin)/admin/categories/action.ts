@@ -5,6 +5,10 @@ import { ApiResponse } from "@/types/auth-types";
 import { CategoryFilter } from "@/types/filter-types";
 import { Paginator, Sorter } from "@/types/table-types";
 import { promises as fs } from 'fs';
+import { writeFile, mkdir } from "fs/promises";
+import path, { join } from "path";
+import { categorySchema, CategorySchema, categoryServerSchema } from "@/schemas/admin-schemas";
+import { revalidatePath } from "next/cache";
 
 export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter):Promise<ApiResponse> {
   try {
@@ -73,29 +77,34 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
   }
 }
 
-import { writeFile, mkdir } from "fs/promises";
-import path, { join } from "path";
-import { categorySchema, CategorySchema, categoryServerSchema } from "@/schemas/admin-schemas";
-import { revalidatePath } from "next/cache";
-import { error } from "console";
-
 export async function createCategory(newCategory: CategorySchema):Promise<ApiResponse> {
   try {
     const validatedData = categorySchema.parse(newCategory);
     let sizeGuidePath: string | undefined = undefined;
 
+    const category = await prisma.category.create({
+      data: {
+        name: validatedData.name,
+        slug: validatedData.slug,
+        description: validatedData.description,
+        sortOrder: validatedData.sortOrder,
+      }
+    });
+
+    if(!category) {
+      return {
+        success: false,
+        error: "Failed to create category",
+      };
+    }
+
     if (validatedData.sizeGuide && validatedData.sizeGuide.size > 0) {
-      const timestamp = Date.now();
       const fileExtension = validatedData.sizeGuide.name.split(".").pop();
-      const fileName = `${validatedData.slug}-${timestamp}.${fileExtension}`;
+      const fileName = `${category.id}.${fileExtension}`;
 
       const uploadDir = join(process.cwd(), "public", "uploads", "size-guides");
 
-      try {
-        await mkdir(uploadDir, { recursive: true });
-      } catch (error) {
-        console.error("Error creating directory:", error);
-      }
+      await mkdir(uploadDir, { recursive: true });
 
       const bytes = await validatedData.sizeGuide.arrayBuffer();
       const buffer = Buffer.from(bytes);
@@ -104,17 +113,23 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
       await writeFile(filePath, buffer);
 
       sizeGuidePath = `/uploads/size-guides/${fileName}`;
-    }
 
-    const category = await prisma.category.create({
-      data: {
-        name: validatedData.name,
-        slug: validatedData.slug,
-        description: validatedData.description,
-        sortOrder: validatedData.sortOrder,
-        sizeGuide: sizeGuidePath,
+      const updatedCategory = await prisma.category.update({
+        where: {
+          id: category.id
+        },
+        data : {
+          sizeGuide: sizeGuidePath,
+        }
+      })
+
+      if(!updatedCategory) {
+        return {
+          success: false,
+          error: "Category created but failed to add the size link",
+        };
       }
-    });
+    }
 
     revalidatePath("/admin/categories");
 
@@ -141,8 +156,6 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
 
 export async function deleteCategory(id: string):Promise<ApiResponse> {
   try {
-    console.log("idelete: ", id)
-
     const category = await prisma.category.findUnique({
       where: {id : id},
       select: {
@@ -177,8 +190,6 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
         "public",
         deletedCategory.sizeGuide
       )
-
-      console.log("image path: ", imagePath)
       
       try {
         await fs.unlink(imagePath);
@@ -212,4 +223,185 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
       error: "Failed to delete category",
     };
   }
+}
+
+export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
+  try {
+    const category = await prisma.category.findUnique({
+      where: {id : id},
+      select: {
+        sizeGuide: true,
+      }
+    })
+
+    if(!category) {
+      return {
+        success: false,
+        error: "Category doesn't exist"
+      }
+    }
+
+    if(!category.sizeGuide) {
+      return {
+        success: false,
+        error: "No size guide for this category"
+      }
+    }
+
+    const url = new URL(category.sizeGuide, 'http://localhost');
+    const relativePath = url.pathname;
+    
+    const filePath = path.join(process.cwd(), 'public', relativePath);
+
+    const sizeGuide = await fs.readFile(filePath);
+    
+    const base64Image = sizeGuide.toString('base64');
+    const mimeType = getMimeType(filePath);
+
+    if(!sizeGuide) {
+      return {
+        success: false,
+        error: "File doesn't exist or unable to fetch"
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        sizeGuide: `data:${mimeType};base64,${base64Image}`
+      }
+    }
+  } catch(error) {
+    console.error("Error deleting category:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: "Failed to fetch size guide image",
+    };
+  }
+}
+
+export async function updateCategory(id: string, updatedCategory: CategorySchema): Promise<ApiResponse> {
+  try {
+    const validatedData = categorySchema.parse(updatedCategory);
+
+    const existingCategory = await prisma.category.findUnique({
+      where: { id: id },
+      select: {
+        id: true,
+        sizeGuide: true,
+      }
+    });
+
+    if (!existingCategory) {
+      return {
+        success: false,
+        error: "Category doesn't exist"
+      };
+    }
+
+    let sizeGuidePath: string | undefined = existingCategory.sizeGuide || undefined;
+    let shouldDeleteOldImage = false;
+
+    if (validatedData.sizeGuide && validatedData.sizeGuide.size > 0) {
+      if (existingCategory.sizeGuide) {
+        shouldDeleteOldImage = true;
+      }
+
+      const fileExtension = validatedData.sizeGuide.name.split(".").pop();
+      const fileName = `${existingCategory.id}.${fileExtension}`;
+
+      const uploadDir = join(process.cwd(), "public", "uploads", "size-guides");
+
+      await mkdir(uploadDir, { recursive: true });
+
+      const bytes = await validatedData.sizeGuide.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const filePath = join(uploadDir, fileName);
+      await writeFile(filePath, buffer);
+
+      sizeGuidePath = `/uploads/size-guides/${fileName}`;
+
+      // Delete old image if it exists and has a different extension
+      if (shouldDeleteOldImage && existingCategory.sizeGuide) {
+        const oldImagePath = path.join(
+          process.cwd(),
+          "public",
+          existingCategory.sizeGuide
+        );
+
+        try {
+          // Only delete if the old file path is different from the new one
+          const newImagePath = join(process.cwd(), "public", sizeGuidePath);
+          if (oldImagePath !== newImagePath) {
+            await fs.unlink(oldImagePath);
+          }
+        } catch (error) {
+          console.warn('Old image file was not found on disk, continuing with update');
+        }
+      }
+    }
+
+    // Update category in database
+    const category = await prisma.category.update({
+      where: { id: existingCategory.id },
+      data: {
+        name: validatedData.name,
+        slug: validatedData.slug,
+        description: validatedData.description,
+        sortOrder: validatedData.sortOrder,
+        sizeGuide: sizeGuidePath,
+      }
+    });
+
+    if (!category) {
+      return {
+        success: false,
+        error: "Failed to update category",
+      };
+    }
+
+    revalidatePath("/admin/categories");
+
+    return {
+      success: true,
+      message: "Category updated successfully",
+      data: { category }
+    };
+  } catch (error) {
+    console.error("Error updating category:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: "Failed to update category",
+    };
+  }
+}
+
+function getMimeType(filePath: string): string {
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeTypes: { [key: string]: string } = {
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.svg': 'image/svg+xml',
+  };
+  return mimeTypes[ext] || 'image/jpeg';
 }

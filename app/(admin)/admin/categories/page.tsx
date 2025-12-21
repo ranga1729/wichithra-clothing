@@ -14,6 +14,7 @@ import { CirclePlus, RotateCcw, Search } from "lucide-react";
 import SortDropDown from "@/components/custom/general/SortDropDown";
 import { CategoryFilter } from "@/types/filter-types";
 import AddNewModal from "./addNewModal";
+import EditModal from "./editModal";
 
 const InitialSorter:Sorter = {
   sortColumn: "name",
@@ -42,7 +43,9 @@ export default function CategoryPage() {
   })
   const [sorter, setSorter] = useState<Sorter>(InitialSorter);
   const [filter, setFilter] = useState<CategoryFilter>(InitiaFilter);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddNewModalOpen, setIsAddNewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category>();
 
   const fetchData = async () => {
     try {
@@ -76,7 +79,8 @@ export default function CategoryPage() {
   }
 
   const onEdit = (category:Category) => {
-    console.log("Edit: ", category.id)
+    setSelectedCategory(category)
+    setIsEditModalOpen(true);
   }
 
   const onDelete = async (category:Category) => {
@@ -146,7 +150,7 @@ export default function CategoryPage() {
             <div className="flex flex-row gap-2">
               <Button size={"default"} type="button" onClick={handleSearch}> <Search /> Apply Filter</Button>
               <Button size={"default"} type="button" onClick={handleReset}> <RotateCcw /> Reset Filter</Button>
-              <Button size={"default"} type="button" onClick={() => setIsModalOpen(true)}> <CirclePlus /> Create New</Button>
+              <Button size={"default"} type="button" onClick={() => setIsAddNewModalOpen(true)}> <CirclePlus /> Create New</Button>
             </div>
           </form>
         </div>
@@ -166,7 +170,8 @@ export default function CategoryPage() {
         />
       </div>
 
-      <AddNewModal isModalOpen={isModalOpen} onOpenChange={setIsModalOpen} />
+      <AddNewModal isModalOpen={isAddNewModalOpen} onOpenChange={setIsAddNewModalOpen} />
+      <EditModal isModalOpen={isEditModalOpen} onOpenChange={setIsEditModalOpen} selectedCategory={selectedCategory} />
     </div>
   );
 }
