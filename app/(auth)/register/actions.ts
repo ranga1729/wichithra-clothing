@@ -69,6 +69,8 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
         role: true,
       }
     })
+
+    console.log("test:", user)
     
     const token = generateToken({
       userId: user.id,
@@ -81,7 +83,7 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
     (await cookies()).set("wichithra-token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       maxAge: 60 * 60 * 24 * 7,
       path: "/"
     });
@@ -108,6 +110,7 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
       };
     }
     
+    console.log(error.message)
     return {
       success: false,
       message: "An error occurred during registration",

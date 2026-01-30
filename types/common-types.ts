@@ -6,3 +6,10 @@ export interface Category {
   sizeGuide?: string,
   sortOrder?: number
 }
+
+export interface Design {
+  id: string,
+  name: string,
+  slug: string,
+  description?: string,
+}

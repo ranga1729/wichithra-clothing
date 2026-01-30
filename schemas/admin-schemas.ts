@@ -51,4 +51,35 @@ export const categoryServerSchema = z.object({
     .optional() //file path
 });
 
+export const designSchema = z.object({
+  name: z
+    .string("Enter a valid name")
+    .min(1, "Name is required")
+    .max(100, "Name can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  slug: z
+    .string("Enter a valid slug")
+    .min(1, "Slug is required")
+    .max(100, "Slug can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  description: z
+    .string()
+    .optional(),
+})
+
+export const designServerSchema = z.object({
+  name: z
+    .string()
+    .min(1)
+    .max(100),
+  slug: z
+    .string()
+    .min(1)
+    .max(100),
+  description: z
+    .string()
+    .optional(),
+});
+
 export type CategorySchema = z.infer<typeof categorySchema>
+export type DesignSchema = z.infer<typeof designSchema>
