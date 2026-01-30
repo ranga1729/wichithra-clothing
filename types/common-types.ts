@@ -4,7 +4,8 @@ export interface Category {
   slug: string,
   description?: string,
   sizeGuide?: string,
-  sortOrder?: number
+  sortOrder?: number,
+  isActive: boolean,
 }
 
 export interface Design {

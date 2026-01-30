@@ -43,6 +43,7 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
         description: true,
         sizeGuide: true,
         sortOrder: true,
+        isActive: true,
       },
       where: whereClause,
       orderBy: orderBy,

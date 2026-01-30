@@ -16,6 +16,7 @@ model User {
   roleId       String   @db.Uuid
   isActive     Boolean  @default(true)
   isVerified   Boolean  @default(false)
+  deletedAt    DateTime? @db.Timestamptz(6)
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
 
@@ -25,6 +26,7 @@ model User {
   phoneNumbers PhoneNumber[]
 
   @@index([roleId])
+  @@index([deletedAt])
   @@map("users")
 }
 
@@ -33,12 +35,14 @@ model Role {
   name        String   @unique @db.VarChar(50)
   description String?  @db.VarChar(255)
   permissions Json?
+  deletedAt   DateTime? @db.Timestamptz(6)
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
   // Relationships
   users User[]
 
+  @@index([deletedAt])
   @@map("roles")
 }
 
@@ -92,6 +96,7 @@ model Category {
   sizeGuide   String?  @db.VarChar(500)
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
+  deletedAt   DateTime? @db.Timestamptz(6)
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
@@ -99,6 +104,7 @@ model Category {
   products        Product[]
   categoryDesigns CategoryDesign[]
 
+  @@index([deletedAt])
   @@map("categories")
 }
 
@@ -108,6 +114,7 @@ model Design {
   slug        String   @unique @db.VarChar(100)
   description String?  @db.Text
   isActive    Boolean  @default(true)
+  deletedAt   DateTime? @db.Timestamptz(6)
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
@@ -115,6 +122,7 @@ model Design {
   categoryDesigns CategoryDesign[]
   productDesigns  ProductDesign[]
 
+  @@index([deletedAt])
   @@map("designs")
 }
 
@@ -137,6 +145,7 @@ model Color {
   name      String   @unique @db.VarChar(50)
   hexCode   String?  @db.VarChar(7)
   isActive  Boolean  @default(true)
+  deletedAt DateTime? @db.Timestamptz(6)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   // Relationships
@@ -145,6 +154,7 @@ model Color {
   inventory     Inventory[]
   productImages ProductImage[]
 
+  @@index([deletedAt])
   @@map("colors")
 }
 
@@ -154,12 +164,14 @@ model Size {
   description  String?  @db.VarChar(50) // 'Extra Small', 'Small', 'Medium', etc.
   sortOrder    Int      @default(0)
   isActive     Boolean  @default(true)
+  deletedAt    DateTime? @db.Timestamptz(6)
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
 
   // Relationships
   productSizes ProductSize[]
   inventory Inventory[]
 
+  @@index([deletedAt])
   @@map("sizes")
 }
 
@@ -180,6 +192,7 @@ model Product {
   status             ProductStatus   @default(DRAFT)
   metaTitle          String?         @db.VarChar(200)
   metaDescription    String?         @db.Text
+  deletedAt          DateTime?       @db.Timestamptz(6)
   createdAt          DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime        @updatedAt @db.Timestamptz(6)
 
@@ -195,6 +208,7 @@ model Product {
   @@index([categoryId])
   @@index([isActive])
   @@index([isFeatured])
+  @@index([deletedAt])
   @@map("products")
 }
 
@@ -273,6 +287,7 @@ model Inventory {
   reservedQuantity   Int?     @default(0)
   lowStockThreshold  Int?     @default(5)
   costPrice          Decimal? @db.Decimal(10, 2)
+  deletedAt          DateTime? @db.Timestamptz(6)
   createdAt          DateTime @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime @updatedAt @db.Timestamptz(6)
 
@@ -286,6 +301,7 @@ model Inventory {
   @@index([productId])
   @@index([sku])
   @@index([quantity, lowStockThreshold])
+  @@index([deletedAt])
   @@map("inventory")
 }
 

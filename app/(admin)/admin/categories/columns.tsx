@@ -36,11 +36,6 @@ export const getColumns = ({
     header: () => { return <div className="text-center">Description</div> },
   },
   {
-    accessorKey: "sortOrder",
-    id: "sortOrder",
-    header: () => { return <div className="text-center">Sort Order</div> },
-  },
-  {
     accessorKey: "sizeGuide",
     id: "sizeGuide",
     header: () => { return <div className="text-center">Size Guide</div> },
@@ -48,6 +43,39 @@ export const getColumns = ({
       return row.original.sizeGuide ? <div>
         {row.original.sizeGuide.toString()}
       </div> : (<p className="text-center"> - </p>)
+    }
+  },
+  {
+    accessorKey: "isActive",
+    id: "isActive",
+    header: () => { return <div className="text-center">Is Active</div> },
+    cell: ({ row }) => {
+      const value = row.original.isActive
+      const text = value.toString()
+      return (
+        <div className="flex flex-row items-center justify-center">
+        <p className={`border border-neutral-400 flex w-fit items-center justify-center rounded-full px-3 py-1 text-xs font-medium ${
+            value
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}>
+          {text.charAt(0).toUpperCase() + text.slice(1)}
+        </p>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: "sortOrder",
+    id: "sortOrder",
+    header: () => { return <div className="text-center">Sort Order</div> },
+    cell: ({ row }) => {
+      const value = row.original.sortOrder;
+      return (
+        <p className="flex items-center justify-center">
+          {value}
+        </p>
+      )
     }
   },
   {
