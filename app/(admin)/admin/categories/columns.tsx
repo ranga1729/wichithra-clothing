@@ -1,18 +1,21 @@
 import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Category } from "@/types/common-types"
 import { Paginator } from "@/types/table-types"
 import { ColumnDef } from "@tanstack/react-table"
-import { Pencil, Trash } from "lucide-react"
+import { Ellipsis, Pencil, ToggleLeft, ToggleRight, Trash } from "lucide-react"
 
 type ColumnProps = {
   onEdit?: (category: Category) => void
   onDelete?: (category: Category) => void
+  toggleActiveStatus?: (category: Category) => void
   paginator?: Paginator
 }
 
 export const getColumns = ({
   onEdit,
   onDelete,
+  toggleActiveStatus,
   paginator
 }: ColumnProps): ColumnDef<Category>[] => [
   {
@@ -85,20 +88,42 @@ export const getColumns = ({
     cell: ({ row }) => {
       return (
         <div className="flex flex-row gap-2 justify-center items-center">
-          <Button
-            variant="outline"
-            onClick={() => onEdit && onEdit(row.original)}
-            size={'sm'}
-          >
-            <Pencil />
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => onDelete && onDelete(row.original)}
-            size={'sm'}
-          >
-            <Trash />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size={'sm'}><Ellipsis /></Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent>
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={() => onEdit && onEdit(row.original)} >
+                  <Button variant="ghost" size={'sm'} >
+                    <Pencil />
+                  </Button> Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDelete && onDelete(row.original)} >
+                  <Button variant="ghost" size={'sm'} >
+                    <Trash color="red" />
+                  </Button> Delete
+                </DropdownMenuItem>
+                {
+                  row.original.isActive ? 
+                  <DropdownMenuItem onClick={() => toggleActiveStatus && toggleActiveStatus(row.original)} >
+                    <Button variant="ghost" size={'sm'} >
+                      <ToggleLeft color="red" size={'sm'} />
+                    </Button> Deactivate
+                  </DropdownMenuItem> :
+                  <DropdownMenuItem onClick={() => toggleActiveStatus && toggleActiveStatus(row.original)} >
+                    <Button variant="ghost" size={'sm'} >
+                      <ToggleRight color="green" size={'sm'} />
+                    </Button> Active
+                  </DropdownMenuItem>
+                }
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          
+          
         </div>
       )
     },

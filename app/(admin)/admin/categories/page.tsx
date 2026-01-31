@@ -6,7 +6,7 @@ import { getColumns } from "./columns";
 import { DropDownOptions, Paginator, Sorter } from "@/types/table-types";
 import { Category } from "@/types/common-types";
 import toast from "react-hot-toast";
-import { deleteCategory, getCategories } from "./action";
+import { deleteCategory, getCategories, toggleActiveStatusOfCategory } from "./action";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import SortDropDown from "@/components/custom/general/SortDropDown";
 import { CategoryFilter } from "@/types/filter-types";
 import AddNewModal from "./addNewModal";
 import EditModal from "./editModal";
+import { compareSync } from "bcryptjs";
 
 const InitialSorter:Sorter = {
   sortColumn: "name",
@@ -100,6 +101,22 @@ export default function CategoryPage() {
     }
   }
 
+  const toggleActiveStatus = async (category: Category) => {
+    try {
+      const response = await toggleActiveStatusOfCategory(category.id);
+      if(!response.success && response.error) {
+        toast.error(response.error);
+      }
+      
+      if(response.success) {
+        fetchData();
+        toast.success(response.message || "Category deleted successfully")
+      }
+    } catch(error:any) {
+      toast.error(error.message);
+    }
+  }
+
   const handleSorterChange = (value: string, name: string) => {
     setSorter(prevSorter => ({
       ...prevSorter,
@@ -160,6 +177,7 @@ export default function CategoryPage() {
           columns={getColumns({
             onEdit: onEdit,
             onDelete: onDelete,
+            toggleActiveStatus: toggleActiveStatus,
             paginator:paginator
           })}
           data={categories} 

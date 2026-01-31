@@ -172,9 +172,10 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
       }
     }
 
-    const deletedCategory = await prisma.category.delete({
-      where: {
-        id: category.id
+    const deletedCategory = await prisma.category.update({
+      where: { id: category.id },
+      data: {
+       deletedAt: new Date()
       }
     });
 
@@ -289,9 +290,9 @@ export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
   }
 }
 
-export async function updateCategory(id: string, updatedCategory: CategorySchema): Promise<ApiResponse> {
+export async function updateCategory(id: string, updatedData: CategorySchema): Promise<ApiResponse> {
   try {
-    const validatedData = categorySchema.parse(updatedCategory);
+    const validatedData = categorySchema.parse(updatedData);
 
     const existingCategory = await prisma.category.findUnique({
       where: { id: id },
@@ -339,20 +340,16 @@ export async function updateCategory(id: string, updatedCategory: CategorySchema
           existingCategory.sizeGuide
         );
 
-        try {
-          // Only delete if the old file path is different from the new one
-          const newImagePath = join(process.cwd(), "public", sizeGuidePath);
-          if (oldImagePath !== newImagePath) {
-            await fs.unlink(oldImagePath);
-          }
-        } catch (error) {
-          console.warn('Old image file was not found on disk, continuing with update');
+        // Only delete if the old file path is different from the new one
+        const newImagePath = join(process.cwd(), "public", sizeGuidePath);
+        if (oldImagePath !== newImagePath) {
+          await fs.unlink(oldImagePath);
         }
       }
     }
 
     // Update category in database
-    const category = await prisma.category.update({
+    const updatedCategory = await prisma.category.update({
       where: { id: existingCategory.id },
       data: {
         name: validatedData.name,
@@ -363,7 +360,7 @@ export async function updateCategory(id: string, updatedCategory: CategorySchema
       }
     });
 
-    if (!category) {
+    if (!updatedCategory) {
       return {
         success: false,
         error: "Failed to update category",
@@ -375,7 +372,7 @@ export async function updateCategory(id: string, updatedCategory: CategorySchema
     return {
       success: true,
       message: "Category updated successfully",
-      data: { category }
+      data: { updatedCategory }
     };
   } catch (error) {
     console.error("Error updating category:", error);
@@ -393,6 +390,58 @@ export async function updateCategory(id: string, updatedCategory: CategorySchema
     };
   }
 }
+
+export async function toggleActiveStatusOfCategory(id: string): Promise<ApiResponse> {
+  try {
+    const existingCategory = await prisma.category.findUnique({
+      where: { id: id },
+      select: {
+        id: true,
+        isActive: true,
+      }
+    });
+
+    if (!existingCategory) {
+      return {
+        success: false,
+        error: "Category doesn't exist"
+      };
+    }
+
+    const updatedCategory = await prisma.category.update({
+      where: { id: id},
+      data: {
+        isActive : !existingCategory.isActive
+      },
+      select: {
+        isActive: true
+      }
+    })
+
+    if (!updatedCategory) {
+      return {
+        success: false,
+        error: "Failed to update active status",
+      };
+    }
+
+    revalidatePath("/admin/categories");
+
+    return {
+      success: true,
+      message: "Category updated successfully",
+    };
+
+  } catch(error) {
+    console.error("Error toggling active status:", error);
+
+    return {
+      success: false,
+      error: "Failed to toggle the active status",
+    };
+  }
+}
+
 
 function getMimeType(filePath: string): string {
   const ext = path.extname(filePath).toLowerCase();

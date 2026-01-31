@@ -69,8 +69,6 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
         role: true,
       }
     })
-
-    console.log("test:", user)
     
     const token = generateToken({
       userId: user.id,
@@ -110,7 +108,6 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
       };
     }
     
-    console.log(error.message)
     return {
       success: false,
       message: "An error occurred during registration",
