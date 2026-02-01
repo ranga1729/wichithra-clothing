@@ -120,10 +120,7 @@ export const getColumns = ({
                 }
               </DropdownMenuGroup>
             </DropdownMenuContent>
-          </DropdownMenu>
-
-          
-          
+          </DropdownMenu>          
         </div>
       )
     },

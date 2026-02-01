@@ -67,6 +67,12 @@ export const en = {
       edit_category_subtitle : "Update the details for this product category",
       create_category_title: "Create category",
       create_category_subtitle : "Enter details for the new category",
+    },
+    design: {
+      edit_design_title: "Edit design",
+      edit_design_subtitle : "Update details of this design",
+      create_design_title: "Create design",
+      create_design_subtitle : "Enter details for the new design",
     }
   },
 
@@ -100,5 +106,16 @@ export const en = {
     active_status_toggled: "Active status toggled",
     no_changes_detected: "No changes detected",
     category_update_failed: "Category update failed",
+
+    design_deleted_successfully: "Design deleted successfully",
+    design_delete_failed: "Design delete failed",
+    design_update_failed: "Design update failed",
+    design_update_successfully: "Design update successfully",
+    design_created_successfully: "Design created successfully",
+    failed_to_create_design: "Failed to create design",
+    design_doesnt_exist: "Design doesn't exist",
+
+    error_updating: "Error updating",
+    error_creating: "Error creating",
   }
 }

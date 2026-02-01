@@ -6,6 +6,7 @@ import { DesignFilter } from "@/types/filter-types";
 import { Paginator, Sorter } from "@/types/table-types";
 import { designSchema, DesignSchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
+import { en } from "@/lib/i18n/en";
 
 export async function getDesign(paginator: Paginator, filter: DesignFilter, sorter: Sorter):Promise<ApiResponse> {
   try {
@@ -52,7 +53,7 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
     if(!designs) {
       return {
         success: false,
-        error: "Data retrieval failed"
+        error: en.messages.data_retrieval_failed
       }
     }
 
@@ -67,7 +68,7 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
   } catch(error:any) {
     return { 
       success: false,
-      error: error.message || 'Failed to get designs' 
+      error: error.message || en.messages.data_retrieval_failed 
     };
   }
 }
@@ -75,7 +76,6 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
 export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse> {
   try {
     const validatedData = designSchema.parse(newDesign);
-    let sizeGuidePath: string | undefined = undefined;
 
     const design = await prisma.design.create({
       data: {
@@ -88,7 +88,7 @@ export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse>
     if(!design) {
       return {
         success: false,
-        error: "Failed to create design",
+        error: en.messages.failed_to_create_design,
       };
     }
 
@@ -96,7 +96,7 @@ export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse>
 
     return {
       success: true,
-      message: "New design created successfully",
+      message: en.messages.design_created_successfully,
     };
   } catch (error) {
     console.error("Error creating design:", error);
@@ -110,7 +110,7 @@ export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse>
     
     return {
       success: false,
-      error: "Failed to create design",
+      error: en.messages.failed_to_create_design,
     };
   }
 }
@@ -127,20 +127,23 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
     if(!design) {
       return {
         success: false,
-        error: "Design doesn't exist"
+        error: en.messages.design_doesnt_exist
       }
     }
 
-    const deletedDesign = await prisma.design.delete({
+    const deletedDesign = await prisma.design.update({
       where: {
         id: design.id
+      },
+      data: {
+        deletedAt: new Date(),
       }
     });
 
     if(!deletedDesign) {
       return {
         success: false,
-        error: "Design deletion failed"
+        error: en.messages.design_delete_failed
       }
     }
     
@@ -148,7 +151,7 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
 
     return {
       success: true,
-      message: "Design deleted successfully"
+      message: en.messages.design_deleted_successfully
     }
   } catch(error) {
     console.error("Error deleting design:", error);
@@ -162,7 +165,7 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
     
     return {
       success: false,
-      error: "Failed to delete design",
+      error: en.messages.design_delete_failed,
     };
   }
 }
@@ -181,7 +184,7 @@ export async function updateDesign(id: string, updatedDesign: DesignSchema): Pro
     if (!existingDesign) {
       return {
         success: false,
-        error: "Design doesn't exist"
+        error: en.messages.design_doesnt_exist
       };
     }
 
@@ -197,7 +200,7 @@ export async function updateDesign(id: string, updatedDesign: DesignSchema): Pro
     if (!design) {
       return {
         success: false,
-        error: "Failed to update design",
+        error: en.messages.design_update_failed,
       };
     }
 
@@ -205,7 +208,7 @@ export async function updateDesign(id: string, updatedDesign: DesignSchema): Pro
 
     return {
       success: true,
-      message: "Design updated successfully",
+      message: en.messages.design_update_successfully,
       data: { design: design }
     };
   } catch (error) {
@@ -220,7 +223,7 @@ export async function updateDesign(id: string, updatedDesign: DesignSchema): Pro
     
     return {
       success: false,
-      error: "Failed to update design",
+      error: en.messages.design_update_failed,
     };
   }
 }

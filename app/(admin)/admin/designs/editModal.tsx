@@ -12,16 +12,13 @@ import { updateDesign } from "./action";
 import toast from "react-hot-toast";
 import { LoaderCircle } from "lucide-react";
 import { Design } from "@/types/common-types";
+import { en } from "@/lib/i18n/en";
 
 interface Props {
   isModalOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedDesign?: Design;
 }
-
-// even though the file preview is working,
-// if you remove the image b clicking on the "remove" button, it gets removed from the preview.
-// but it deosn't get removed from the server/files
 
 export default function EditModal(props: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,18 +68,18 @@ export default function EditModal(props: Props) {
       const result = await updateDesign(prevData!.id, data);
 
       if (!result.success) {
-        toast.error(result.error || "Design update faile");
+        toast.error(result.error || en.messages.design_update_failed);
         reset();
         props.onOpenChange(false);
       }
 
-      toast.success("Design updated successfully!");
+      toast.success(en.messages.design_update_successfully);
       props.onOpenChange(false);
       reset();
       setPrevData(undefined);
 
     } catch (error) {
-      toast.error("Error updating failed");
+      toast.error(en.messages.design_update_failed);
     } finally {
       setIsSubmitting(false);
     }
@@ -124,9 +121,9 @@ export default function EditModal(props: Props) {
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
       <DialogContent className="dark:bg-neutral-800 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Design</DialogTitle>
+          <DialogTitle> {en.texts.design.create_design_title} </DialogTitle>
           <DialogDescription>
-            Update the details for this product design.
+            {en.texts.design.create_design_subtitle}
           </DialogDescription>
         </DialogHeader>
 
@@ -134,7 +131,7 @@ export default function EditModal(props: Props) {
           <FieldGroup className="flex flex-col gap-4">
             <FieldGroup className="flex flex-row gap-4">
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-name">Name *</Label>
+                <Label htmlFor="edit-name"> {en.input_labels.name} </Label>
                 <div className="flex flex-col">
                   <Input
                     id="edit-name"
@@ -150,7 +147,7 @@ export default function EditModal(props: Props) {
                 </div>
               </Field>
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-slug">Slug *</Label>
+                <Label htmlFor="edit-slug"> {en.input_labels.slug} </Label>
                 <div className="flex flex-col">
                   <Input
                     id="edit-slug"
@@ -168,7 +165,7 @@ export default function EditModal(props: Props) {
             </FieldGroup>
 
             <Field className="flex flex-col gap-2">
-              <Label htmlFor="edit-description">Description</Label>
+              <Label htmlFor="edit-description"> {en.input_labels.description} </Label>
               <Textarea
                 id="edit-description"
                 placeholder="Type a description for this design"
@@ -186,8 +183,7 @@ export default function EditModal(props: Props) {
             > 
               {isSubmitting ? (
                 <>
-                  <LoaderCircle className="animate-spin w-4 h-4 mr-2" />
-                  Saving...
+                  <LoaderCircle className="animate-spin w-4 h-4 mr-2" /> {en.common.status.saving}
                 </>
               ) : (
                 "Save Design"
@@ -199,7 +195,7 @@ export default function EditModal(props: Props) {
               onClick={handleCancel}
               disabled={isSubmitting}
             >
-              Cancel
+              {en.common.buttons.cancel}
             </Button>
           </DialogFooter>
         </div>
