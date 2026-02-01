@@ -1,0 +1,104 @@
+export const en = {
+  common: {
+    buttons: {
+      save: "Save",
+      cancel: "Cancel",
+      delete: "Delete",
+      edit: "Edit",
+      update: "Update",
+      login: "Login",
+      signup: "Signup",
+      register: "Register",
+      signin: "Signin",
+      apply_filters: "Apply Filters",
+      reset_filters: "Reset Filters",
+      create_new: "Create New",
+      remove: "Remove"
+    },
+    status: {
+      loading: "Loading...",
+      unexpected_error: "An unexpected error occurred.",
+      saving: "Saving..."
+    },
+    token_name: "wichithra-token",
+    country_code: "+94",
+  },
+
+  input_labels: {
+    email: "Email",
+    password: "Password",
+    firstname_required: "Firstname *",
+    lastname_required: "Lastname *",
+    email_required: "Email *",
+    confirm_password: "Confirm Password",
+    contact_mobile_required: "Contact(Mobile) *",
+    contact_home: "Contact(Home)",
+    house_number_required: "House No. *",
+    zipcode_required: "Zip Code *",
+    address_line_1_required: "Addresss Line - 1 *",
+    address_line_2_required: "Addresss Line - 2 *",
+    nearest_city_required: "Nearest City *",
+    province_required: "Province *",
+    name: "Name",
+    slug: "Slug",
+    sort: "Sort",
+    description: "Description",
+    sort_order: "Sort order",
+    size_guide_image: "Size guide image",
+    
+  },
+
+  texts: {
+    login: {
+      title: "Login to your account",
+      subtitle: "Enter your email below to login to your account",
+      forgot_password: "Forgot your password?",
+      dont_have_an_account: "Don't have an account?"
+    },
+    register: {
+      title: "Create an account",
+      subtitle: "Enter your information below to create your account",
+      user_information: "User Information",
+      address_information: "Address Information",
+      already_have_an_account: "Already have an account?",
+    },
+    category: {
+      edit_category_title: "Edit category",
+      edit_category_subtitle : "Update the details for this product category",
+      create_category_title: "Create category",
+      create_category_subtitle : "Enter details for the new category",
+    }
+  },
+
+  messages: {
+    invalid_email_or_password: "Invalid email or password",
+    loggin_successful: "Logging successful",
+    validation_failed: "Validation Failed",
+    internal_server_error: "Internal server error",
+    something_went_wrong: "Something went wrong",
+    user_with_this_email_exists: "User with this email already exists",
+    registration_successful: "Registration successful",
+    data_retrieval_failed : "Data retrieval failed",
+    failed_to_create_category: "Failed to create category",
+    category_create_and_failed_adding_sizeguide: "Category created but failed to add the size link",
+    category_created_successfully: "Category created successfully",
+    category_doesnt_exist: "Category doesn't exist",
+    category_deletion_failed: "Category deletion failed",
+    category_deleted_image_not_exist: 'Category deleted. Image was not found on the server.',
+    category_deleted: "Category deleted successfully",
+    no_size_guide_for_this_category: "No size guide for this category",
+    file_doesnt_exist_or_unable_to_fetch: "File doesn't exist or unable to fetch",
+    error_fetching_sizeguide: "Error fetching size-guide",
+    failed_to_fetch_sizeguide: "Failed to fetch size guide image",
+    failed_to_update_category: "Failed to update category",
+    category_updated_successfully: "Category updated successfully",
+    failed_to_update_active_status: "Failed to update active status",
+    failed_to_toggle_active_status: "Failed to toggle the active status",
+    registration_failed : "Registration failed",
+    fill_all_required_fileds: "Please fill all required fields",
+    category_deleted_successfully: "Category deleted successfully",
+    active_status_toggled: "Active status toggled",
+    no_changes_detected: "No changes detected",
+    category_update_failed: "Category update failed",
+  }
+}

@@ -1,6 +1,7 @@
 'use server'
 
 import { PhoneType } from "@/generated/prisma/enums";
+import { en } from "@/lib/i18n/en";
 import { prisma } from "@/lib/prisma";
 import { RegistrationForm, registrationSchema } from "@/schemas/authSchemas";
 import { ApiResponse, AuthResponse, ROLES } from "@/types/auth-types";
@@ -19,8 +20,7 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
     if(existingUser) {
       return {
         success: false,
-        message: "User with this email already exists",
-        error: "EMAIL_EXISTS",
+        message: en.messages.user_with_this_email_exists,
       };
     }
 
@@ -78,7 +78,7 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
       role: user.role.name
     });
 
-    (await cookies()).set("wichithra-token", token, {
+    (await cookies()).set( en.common.token_name, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
@@ -88,7 +88,7 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
 
     return {
       success: true,
-      message: "Registration successful",
+      message: en.messages.registration_successful,
       data: {
         user: {
           id: user.id,
@@ -103,15 +103,14 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
     if (error instanceof ZodError) {
       return {
         success: false,
-        message: "Validation Failed",
-        error: error.issues[0].message || "Invalid input data"
+        message: en.messages.validation_failed,
+        error: error.issues[0].message || en.messages.validation_failed
       };
     }
     
     return {
       success: false,
-      message: "An error occurred during registration",
-      error: "INTERNAL_SERVER_ERROR"
+      message: en.messages.something_went_wrong,
     };
   }
 }

@@ -9,6 +9,7 @@ import { loginUser } from "./actions";
 import { useRouter } from "next/navigation";
 import logo from "@/public/images/logo.png"
 import Image from "next/image";
+import { en } from "@/lib/i18n/en";
 
 export default function Login() {
   const router = useRouter();
@@ -35,14 +36,13 @@ export default function Login() {
           toast.success(result.message)
           router.push("/")
         } else {
-          toast.error(result.message || "Registration failed");
+          toast.error(result.message || en.messages.registration_failed);
         }
       } catch(error:any) {
         toast.error(error.message);
-        console.error("Registration error:", error);
       }
     } else {
-      toast.error("Please fill all required fields");
+      toast.error(en.messages.fill_all_required_fileds);
     }
   }
 

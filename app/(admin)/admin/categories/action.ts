@@ -9,6 +9,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path, { join } from "path";
 import { categorySchema, CategorySchema, categoryServerSchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
+import { en } from "@/lib/i18n/en";
 
 export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter):Promise<ApiResponse> {
   try {
@@ -58,7 +59,8 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
     if(!categories) {
       return {
         success: false,
-        error: "Data retrieval failed"
+        message: en.messages.data_retrieval_failed,
+        error: en.messages.data_retrieval_failed
       }
     }
 
@@ -73,7 +75,7 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
   } catch(error:any) {
     return { 
       success: false,
-      error: error.message || 'Failed to get categories' 
+      error: error.message || en.messages.data_retrieval_failed 
     };
   }
 }
@@ -95,7 +97,7 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
     if(!category) {
       return {
         success: false,
-        error: "Failed to create category",
+        error: en.messages.failed_to_create_category,
       };
     }
 
@@ -127,7 +129,7 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
       if(!updatedCategory) {
         return {
           success: false,
-          error: "Category created but failed to add the size link",
+          error: en.messages.category_create_and_failed_adding_sizeguide,
         };
       }
     }
@@ -136,10 +138,10 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
 
     return {
       success: true,
-      message: "New category created successfully",
+      message: en.messages.category_created_successfully,
     };
   } catch (error) {
-    console.error("Error creating category:", error);
+    console.error(en.messages.failed_to_create_category + ": ", error);
     
     if (error instanceof Error) {
       return {
@@ -150,7 +152,7 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
     
     return {
       success: false,
-      error: "Failed to create category",
+      error: en.messages.failed_to_create_category,
     };
   }
 }
@@ -168,7 +170,7 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
     if(!category) {
       return {
         success: false,
-        error: "Category doesn't exist"
+        error: en.messages.category_doesnt_exist
       }
     }
 
@@ -182,7 +184,7 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
     if(!deletedCategory) {
       return {
         success: false,
-        error: "Category deletion failed"
+        error: en.messages.category_deletion_failed
       }
     }
 
@@ -198,7 +200,7 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
       } catch(error) {
         return { 
             success: true, 
-            message: 'Category deleted. Image file was not found on disk.' 
+            message: en.messages.category_deleted_image_not_exist 
         };
       }
       
@@ -208,10 +210,10 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
 
     return {
       success: true,
-      message: "Category deleted successfully"
+      message: en.messages.category_deleted
     }
   } catch(error) {
-    console.error("Error deleting category:", error);
+    console.error(en.messages.category_deletion_failed + ": ", error);
     
     if (error instanceof Error) {
       return {
@@ -222,7 +224,7 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
     
     return {
       success: false,
-      error: "Failed to delete category",
+      error: en.messages.category_deletion_failed,
     };
   }
 }
@@ -239,14 +241,14 @@ export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
     if(!category) {
       return {
         success: false,
-        error: "Category doesn't exist"
+        error: en.messages.category_doesnt_exist
       }
     }
 
     if(!category.sizeGuide) {
       return {
         success: false,
-        error: "No size guide for this category"
+        error: en.messages.no_size_guide_for_this_category
       }
     }
 
@@ -263,7 +265,7 @@ export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
     if(!sizeGuide) {
       return {
         success: false,
-        error: "File doesn't exist or unable to fetch"
+        error: en.messages.file_doesnt_exist_or_unable_to_fetch
       }
     }
 
@@ -274,7 +276,7 @@ export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
       }
     }
   } catch(error) {
-    console.error("Error deleting category:", error);
+    console.error(en.messages.error_fetching_sizeguide + ": ", error);
     
     if (error instanceof Error) {
       return {
@@ -285,7 +287,7 @@ export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
     
     return {
       success: false,
-      error: "Failed to fetch size guide image",
+      error: en.messages.failed_to_fetch_sizeguide,
     };
   }
 }
@@ -305,7 +307,7 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
     if (!existingCategory) {
       return {
         success: false,
-        error: "Category doesn't exist"
+        error: en.messages.category_doesnt_exist
       };
     }
 
@@ -363,7 +365,7 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
     if (!updatedCategory) {
       return {
         success: false,
-        error: "Failed to update category",
+        error: en.messages.failed_to_update_category,
       };
     }
 
@@ -371,11 +373,11 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
 
     return {
       success: true,
-      message: "Category updated successfully",
+      message: en.messages.category_updated_successfully,
       data: { updatedCategory }
     };
   } catch (error) {
-    console.error("Error updating category:", error);
+    console.error( en.messages.failed_to_update_category + ": ", error);
     
     if (error instanceof Error) {
       return {
@@ -386,7 +388,7 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
     
     return {
       success: false,
-      error: "Failed to update category",
+      error: en.messages.failed_to_update_category,
     };
   }
 }
@@ -404,7 +406,7 @@ export async function toggleActiveStatusOfCategory(id: string): Promise<ApiRespo
     if (!existingCategory) {
       return {
         success: false,
-        error: "Category doesn't exist"
+        error: en.messages.category_doesnt_exist
       };
     }
 
@@ -421,7 +423,7 @@ export async function toggleActiveStatusOfCategory(id: string): Promise<ApiRespo
     if (!updatedCategory) {
       return {
         success: false,
-        error: "Failed to update active status",
+        error: en.messages.failed_to_update_active_status,
       };
     }
 
@@ -429,15 +431,15 @@ export async function toggleActiveStatusOfCategory(id: string): Promise<ApiRespo
 
     return {
       success: true,
-      message: "Category updated successfully",
+      message: en.messages.category_updated_successfully,
     };
 
   } catch(error) {
-    console.error("Error toggling active status:", error);
+    console.error( en.messages.failed_to_update_category + ": ", error);
 
     return {
       success: false,
-      error: "Failed to toggle the active status",
+      error: en.messages.failed_to_toggle_active_status,
     };
   }
 }

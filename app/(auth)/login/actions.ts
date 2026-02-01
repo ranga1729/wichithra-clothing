@@ -1,5 +1,6 @@
 'use server'
 
+import { en } from "@/lib/i18n/en";
 import { prisma } from "@/lib/prisma";
 import { LoginForm, loginSchema } from "@/schemas/authSchemas";
 import { ApiResponse, AuthResponse } from "@/types/auth-types";
@@ -26,8 +27,7 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
     if(!user) {
       return {
         success: false,
-        message: "Invalid email or password",
-        error: "INVALID_CREDENTIALS"
+        message: en.messages.invalid_email_or_password,
       }
     }
 
@@ -36,8 +36,7 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
     if(!isPasswordValid) {
       return {
         success: false,
-        message: "Invalid email or password",
-        error: "INVALID_CREDENTIALS",
+        message: en.messages.invalid_email_or_password,
       }
     }
 
@@ -49,7 +48,7 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
       role: user.role.name,
     });
 
-    (await cookies()).set("wichithra-token", token, {
+    (await cookies()).set(en.common.token_name, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -59,7 +58,7 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
 
     return {
       success: true,
-      message: "Logging successful",
+      message: en.messages.loggin_successful,
       data: {
         user: {
           id: user.id,
@@ -75,15 +74,15 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
     if (error instanceof ZodError) {
       return {
         success: false,
-        message: "Validation Failed",
-        error: error.issues[0].message || "Invalid input data"
+        message: en.messages.validation_failed,
+        error: error.issues[0].message || en.messages.validation_failed
       };
     }
     
     return {
       success: false,
-      message: "An error occurred during registration",
-      error: "INTERNAL_SERVER_ERROR"
+      message: en.messages.something_went_wrong,
+      error: en.messages.internal_server_error
     };
   }
 }

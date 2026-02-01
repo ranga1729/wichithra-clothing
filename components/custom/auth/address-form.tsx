@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Controller, UseFormReturn } from "react-hook-form"
 import { RegistrationForm } from "@/schemas/authSchemas"
 import CustomSelect, { CustomSelectOptions } from "../general/CustomSelect"
+import { en } from "@/lib/i18n/en"
 
 interface Props {
   form: UseFormReturn<RegistrationForm>,
@@ -33,7 +34,7 @@ export const AddressForm = (props:Props) => {
       <FieldGroup className="gap-2 p-1">
         <div className="flex flex-row gap-3">
           <Field className="gap-1">
-            <FieldLabel htmlFor="houseNo">House No. *</FieldLabel>
+            <FieldLabel htmlFor="houseNo"> {en.input_labels.house_number_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Input 
                 id="houseNo" type="text" placeholder="123/4"
@@ -48,7 +49,7 @@ export const AddressForm = (props:Props) => {
             </div>
           </Field>
           <Field className="gap-1">
-            <FieldLabel htmlFor="zipCode">Zip Code *</FieldLabel>
+            <FieldLabel htmlFor="zipCode"> {en.input_labels.zipcode_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Input 
                 id="zipCode" type="text" 
@@ -66,7 +67,7 @@ export const AddressForm = (props:Props) => {
         </div>
 
         <Field className="gap-1">
-          <FieldLabel htmlFor="addressLine1">Addresss Line - 1 *</FieldLabel>
+          <FieldLabel htmlFor="addressLine1"> {en.input_labels.address_line_1_required} </FieldLabel>
           <div className="flex flex-col gap-0">
             <Input 
               id="addressLine1" type="text" 
@@ -82,7 +83,7 @@ export const AddressForm = (props:Props) => {
           </div>
         </Field>
         <Field className="gap-1">
-          <FieldLabel htmlFor="addressLine2">Address Line - 2 *</FieldLabel>
+          <FieldLabel htmlFor="addressLine2"> {en.input_labels.address_line_2_required} </FieldLabel>
           <div className="flex flex-col gap-0">
             <Input 
               id="addressLine2" type="text" 
@@ -99,7 +100,7 @@ export const AddressForm = (props:Props) => {
 
         <div className="flex flex-row gap-3">
           <Field className="gap-1">
-            <FieldLabel htmlFor="city">Nearest City *</FieldLabel>
+            <FieldLabel htmlFor="city"> {en.input_labels.nearest_city_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Input
                 id="city" type="text" placeholder="Colombo"
@@ -115,7 +116,7 @@ export const AddressForm = (props:Props) => {
           </Field>
 
           <Field className="gap-1">
-            <FieldLabel htmlFor="province">Province *</FieldLabel>
+            <FieldLabel htmlFor="province"> {en.input_labels.province_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Controller
                 name="province"

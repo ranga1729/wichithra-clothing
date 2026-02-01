@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
 import { ThemeToggler } from "@/components/theme/theme-toggler";
+import { en } from "@/lib/i18n/en";
 
 export default function Register() {
   const router = useRouter();
@@ -60,16 +61,15 @@ export default function Register() {
           toast.success(result.message)
           router.push("/");
         } else {
-          toast.error(result.message || "Registration failed");
+          toast.error(result.message || en.messages.registration_failed);
         }
       } catch(error:any) {
-        toast.error(error.message);
-        console.error("Registration error:", error);
+        toast.error(error.message || en.messages.registration_failed);
       } finally {
         setIsSubmitting(false);
       }
     } else {
-      toast.error("Please fill all required fields correcly.");
+      toast.error(en.messages.fill_all_required_fileds);
     }
   }
 
@@ -79,19 +79,17 @@ export default function Register() {
       <Card className="w-full">
         <CardHeader className="flex flex-col items-center justify-start" >
           <ThemeToggler />
-          <CardTitle className="text-center">Create an account</CardTitle>
-          <CardDescription className="text-center">
-            Enter your information below to create your account
-          </CardDescription>
+          <CardTitle className="text-center"> {en.texts.register.title} </CardTitle>
+          <CardDescription className="text-center"> {en.texts.register.subtitle} </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col flex-wrap gap-7">
           <FieldGroup className="w-full flex flex-col md:flex-row gap-10 md:gap-7">
             <Field className="border p-3 rounded-md flex-1">
-              <p className="text-center font-semibold">User Information</p>
+              <p className="text-center font-semibold"> {en.texts.register.user_information} </p>
               <CustomerForm form={form} />
             </Field>
             <Field className="border p-3 rounded-md flex-1">
-              <p className="text-center font-semibold">Address Information</p>
+              <p className="text-center font-semibold"> {en.texts.register.address_information} </p>
               <AddressForm form={form} />
             </Field>
           </FieldGroup>
@@ -100,14 +98,14 @@ export default function Register() {
               <Button disabled={isSubmitting} size={"lg"} type="button" onClick={onSubmit}> 
                 {isSubmitting ? 
                   <>
-                    <LoaderCircle className="animate-spin w-8 h-8" />  Registering...
+                    <LoaderCircle className="animate-spin w-8 h-8" /> {en.common.status.loading}
                   </> : <>
-                    Register
+                    {en.common.buttons.register}
                   </>
                 }
               </Button>
               <FieldDescription className="text-center">
-                Already have an account? <Link href="login">Sign in</Link>
+                {en.texts.register.already_have_an_account} <Link href="login"> {en.common.buttons.signin} </Link>
               </FieldDescription>
             </Field>
           </FieldGroup>
