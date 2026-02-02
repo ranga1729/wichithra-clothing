@@ -17,9 +17,6 @@ export default function DashboardPage() {
     pageIndex: 0,
     totalRecords: 0,
   })
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<Size>();
-
 
   const tableRef = useRef<TableWithPaginationRef>(null);
   

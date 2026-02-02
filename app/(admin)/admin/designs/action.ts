@@ -7,7 +7,6 @@ import { Paginator, Sorter } from "@/types/table-types";
 import { DesignSchema, designSchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
-import { Design } from "@/generated/prisma/client";
 
 export async function getDesign(paginator: Paginator, filter: DesignFilter, sorter: Sorter):Promise<ApiResponse> {
   try {
