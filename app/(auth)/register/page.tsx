@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   registrationSchema,
   type RegistrationForm
-} from "@/schemas/authSchemas"
+} from "@/schemas/auth-schemas"
 import toast from "react-hot-toast";
 import { registerUser } from "./actions";
 import { useRouter } from "next/navigation";

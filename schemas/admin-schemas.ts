@@ -30,27 +30,6 @@ export const categorySchema = z.object({
     .optional()
 })
 
-export const categoryServerSchema = z.object({
-  name: z
-    .string()
-    .min(1)
-    .max(100),
-  slug: z
-    .string()
-    .min(1)
-    .max(100),
-  description: z
-    .string()
-    .optional(),
-  sortOrder: z
-    .number()
-    .default(0),
-  sizeGuide: z
-    .string()
-    .max(500)
-    .optional() //file path
-});
-
 export const designSchema = z.object({
   name: z
     .string("Enter a valid name")
@@ -66,20 +45,3 @@ export const designSchema = z.object({
     .string()
     .optional(),
 })
-
-export const designServerSchema = z.object({
-  name: z
-    .string()
-    .min(1)
-    .max(100),
-  slug: z
-    .string()
-    .min(1)
-    .max(100),
-  description: z
-    .string()
-    .optional(),
-});
-
-export type CategorySchema = z.infer<typeof categorySchema>
-export type DesignSchema = z.infer<typeof designSchema>

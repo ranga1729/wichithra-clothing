@@ -7,9 +7,10 @@ import { Paginator, Sorter } from "@/types/table-types";
 import { promises as fs } from 'fs';
 import { writeFile, mkdir } from "fs/promises";
 import path, { join } from "path";
-import { categorySchema, CategorySchema, categoryServerSchema } from "@/schemas/admin-schemas";
+import { categorySchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
+import { Category } from "@/generated/prisma/client";
 
 export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter):Promise<ApiResponse> {
   try {
@@ -80,7 +81,7 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
   }
 }
 
-export async function createCategory(newCategory: CategorySchema):Promise<ApiResponse> {
+export async function createCategory(newCategory: Category):Promise<ApiResponse> {
   try {
     const validatedData = categorySchema.parse(newCategory);
     let sizeGuidePath: string | undefined = undefined;
@@ -292,7 +293,7 @@ export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
   }
 }
 
-export async function updateCategory(id: string, updatedData: CategorySchema): Promise<ApiResponse> {
+export async function updateCategory(id: string, updatedData: Category): Promise<ApiResponse> {
   try {
     const validatedData = categorySchema.parse(updatedData);
 

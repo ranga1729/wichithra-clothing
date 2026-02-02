@@ -4,7 +4,6 @@ import TableWithPagination, { TableWithPaginationRef } from "@/components/custom
 import { useEffect, useRef, useState } from "react";
 import { getColumns } from "./columns";
 import { DropDownOptions, Paginator, Sorter } from "@/types/table-types";
-import { Design } from "@/types/common-types";
 import toast from "react-hot-toast";
 import { deleteDesign, getDesign } from "./action";
 import { Label } from "@/components/ui/label";
@@ -16,6 +15,7 @@ import { DesignFilter } from "@/types/filter-types";
 import AddNewModal from "./addNewModal";
 import EditModal from "./editModal";
 import { en } from "@/lib/i18n/en";
+import { Design } from "@/generated/prisma/client";
 
 const InitialSorter:Sorter = {
   sortColumn: "name",

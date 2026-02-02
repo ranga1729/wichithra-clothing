@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Controller, UseFormReturn } from "react-hook-form"
-import { RegistrationForm } from "@/schemas/authSchemas"
+import { RegistrationForm } from "@/schemas/auth-schemas"
 import CustomSelect, { CustomSelectOptions } from "../general/CustomSelect"
 import { en } from "@/lib/i18n/en"
 

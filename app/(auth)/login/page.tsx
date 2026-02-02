@@ -1,7 +1,7 @@
 "use client"
 
 import { LoginForm as LoginUI } from "@/components/custom/auth/login-form";
-import { LoginForm, loginSchema } from "@/schemas/authSchemas";
+import { LoginForm, loginSchema } from "@/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";

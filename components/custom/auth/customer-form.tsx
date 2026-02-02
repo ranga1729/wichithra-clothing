@@ -5,7 +5,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { RegistrationForm } from "@/schemas/authSchemas"
+import { RegistrationForm } from "@/schemas/auth-schemas"
 import { UseFormReturn } from "react-hook-form"
 import { Item } from "@/components/ui/item"
 import { en } from "@/lib/i18n/en"
