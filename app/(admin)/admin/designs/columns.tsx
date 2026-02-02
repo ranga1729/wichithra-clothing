@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Design } from "@/types/common-types"
+import { Design } from "@/generated/prisma/client"
 import { Paginator } from "@/types/table-types"
 import { ColumnDef } from "@tanstack/react-table"
 import { Ellipsis, Pencil, Trash } from "lucide-react"

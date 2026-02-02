@@ -11,8 +11,8 @@ import { useForm } from "react-hook-form";
 import { updateDesign } from "./action";
 import toast from "react-hot-toast";
 import { LoaderCircle } from "lucide-react";
-import { Design } from "@/types/common-types";
 import { en } from "@/lib/i18n/en";
+import { Design } from "@/generated/prisma/client";
 
 interface Props {
   isModalOpen: boolean;

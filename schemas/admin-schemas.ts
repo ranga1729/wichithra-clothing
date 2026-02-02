@@ -45,3 +45,6 @@ export const designSchema = z.object({
     .string()
     .optional(),
 })
+
+export type CategorySchema = z.infer<typeof categorySchema>
+export type DesignSchema = z.infer<typeof designSchema>

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
 import { DesignFilter } from "@/types/filter-types";
 import { Paginator, Sorter } from "@/types/table-types";
-import { designSchema } from "@/schemas/admin-schemas";
+import { DesignSchema, designSchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
 import { Design } from "@/generated/prisma/client";
@@ -74,7 +74,7 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
   }
 }
 
-export async function createDesign(newDesign: Design):Promise<ApiResponse> {
+export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse> {
   try {
     const validatedData = designSchema.parse(newDesign);
 
@@ -171,7 +171,7 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
   }
 }
 
-export async function updateDesign(id: string, updatedDesign: Design): Promise<ApiResponse> {
+export async function updateDesign(id: string, updatedDesign: DesignSchema): Promise<ApiResponse> {
   try {
     const validatedData = designSchema.parse(updatedDesign);
 
