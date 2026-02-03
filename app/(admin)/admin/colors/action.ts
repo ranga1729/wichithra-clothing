@@ -51,7 +51,6 @@ export async function getColors(paginator: Paginator):Promise<ApiResponse> {
 export async function createColor(data: ColorSchema):Promise<ApiResponse> {
   try{ 
     const validatedData = colorSchema.parse(data);
-    console.log("test: ", validatedData)
 
     const newColor = await prisma.color.create({
       data: {
@@ -88,6 +87,63 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
     return {
       success: false,
       error: en.messages.failed_to_create_color,
+    };
+  }
+}
+
+export async function deleteColor(id: string):Promise<ApiResponse> {
+  try {
+    const color = await prisma.color.findUnique({
+      where: { id: id },
+      select: {
+        id: true,
+        name: true,
+        hexCode: true,
+      }
+    })
+
+    if(!color) {
+      return {
+        success: false,
+        error: en.messages.design_doesnt_exist
+      }
+    }
+
+    const deletedColor = await prisma.color.update({
+      where: {
+        id: color.id
+      },
+      data: {
+        deletedAt: new Date(),
+      }
+    });
+
+    if(!deletedColor) {
+        return {
+        success: false,
+        error: en.messages.failed_to_delete_color,
+      }
+    }
+
+    revalidatePath('/admin/colors');
+
+    return {
+      success: true,
+      message: en.messages.color_deleted_successfully
+    }
+  } catch(error:any) {
+    console.error("Error deleting color:", error.message);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: en.messages.failed_to_delete_color,
     };
   }
 }

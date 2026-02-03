@@ -5,7 +5,7 @@ import { Color } from "@/generated/prisma/client";
 import { Paginator } from "@/types/table-types";
 import { useEffect, useRef, useState } from "react";
 import { getColumns } from "./columns";
-import { getColors } from "./action";
+import { deleteColor, getColors } from "./action";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { CirclePlus } from "lucide-react";
@@ -47,6 +47,27 @@ export default function DashboardPage() {
     }
   }
 
+  const onDelete = async (color: Color) => {
+    try {
+      const response = await deleteColor(color.id);
+
+      if(!response.success && response.error) {
+        toast.error(response.error);
+      }
+      
+      if(response.success) {
+        fetchData();
+        toast.success(response.message || en.messages.design_deleted_successfully)
+      }
+    } catch(error:any) {
+      toast.error(error.message);
+    }
+  }
+
+  const onEdit = (color: Color) => {
+    console.log("test:", color)
+  }
+
   useEffect(() => {
     fetchData();
   }, [paginator.pageIndex, paginator.pageSize]);
@@ -60,8 +81,8 @@ export default function DashboardPage() {
         <TableWithPagination 
           ref={tableRef}
           columns={getColumns({
-            // onEdit: onEdit,
-            // onDelete: onDelete,
+            onEdit: onEdit,
+            onDelete: onDelete,
             paginator:paginator
           })}
           data={colors} 

@@ -153,8 +153,8 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
       success: true,
       message: en.messages.design_deleted_successfully
     }
-  } catch(error) {
-    console.error("Error deleting design:", error);
+  } catch(error:any) {
+    console.error("Error deleting design:", error.message);
     
     if (error instanceof Error) {
       return {

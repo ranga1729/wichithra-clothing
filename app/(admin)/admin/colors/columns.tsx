@@ -48,7 +48,7 @@ export const getColumns = ({
       const hex = row.original.hexCode?.toString();
       return (
         <div className="flex flex-row items-center justify-center">
-          <div className="border border-neutral-500 rounded-full w-5 h-5" style={{ backgroundColor: hex}}></div>
+          <div className="border border-neutral-500 rounded-full w-7 h-7" style={{ backgroundColor: hex}}></div>
         </div>
       )
     },

@@ -79,7 +79,6 @@ export default function DesignPage() {
   }
 
   const onEdit = (design:Design) => {
-    console.log(design);
     setSelectedDesign(design)
     setIsEditModalOpen(true);
   }
