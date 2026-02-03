@@ -127,6 +127,8 @@ export const en = {
     color_doesnt_exist: "Color doesn't exist",
     failed_to_delete_color: "Failed to delete color",
     color_deleted_successfully: "Color deleted successfully",
+    color_update_failed: "Color update failed",
+    color_updated_successfully: "Color updated successfully",
 
     error_updating: "Error updating",
     error_creating: "Error creating",

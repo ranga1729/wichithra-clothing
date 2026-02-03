@@ -1,5 +1,6 @@
 'use server'
 
+import { Color } from "@/generated/prisma/client";
 import { en } from "@/lib/i18n/en";
 import { prisma } from "@/lib/prisma";
 import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
@@ -145,5 +146,12 @@ export async function deleteColor(id: string):Promise<ApiResponse> {
       success: false,
       error: en.messages.failed_to_delete_color,
     };
+  }
+}
+
+export async function updateColor(id: string, color: ColorSchema):Promise<ApiResponse> {
+  console.log("test: ", color);
+  return {
+    success: false,
   }
 }

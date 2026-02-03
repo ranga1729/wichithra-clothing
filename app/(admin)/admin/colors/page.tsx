@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { CirclePlus } from "lucide-react";
 import { en } from "@/lib/i18n/en";
 import AddNewModal from "./addNewModal";
+import EditModal from "./editModal";
 
 export default function DashboardPage() {
   const [colors, setColors] = useState<Color[]>([]);
@@ -22,6 +23,8 @@ export default function DashboardPage() {
     totalRecords: 0,
   })
   const [isAddNewModalOpen, setIsAddNewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedColor, setSelectedColor] = useState<Color>();
 
   const tableRef = useRef<TableWithPaginationRef>(null);
 
@@ -65,7 +68,8 @@ export default function DashboardPage() {
   }
 
   const onEdit = (color: Color) => {
-    console.log("test:", color)
+    setSelectedColor(color)
+    setIsEditModalOpen(true);
   }
 
   useEffect(() => {
@@ -93,6 +97,7 @@ export default function DashboardPage() {
         />
 
         <AddNewModal isModalOpen={isAddNewModalOpen} onOpenChange={setIsAddNewModalOpen} fetchData={fetchData} />
+        <EditModal isModalOpen={isEditModalOpen} onOpenChange={setIsEditModalOpen} selectedColor={selectedColor} />
       </div>
     </div>
   );
