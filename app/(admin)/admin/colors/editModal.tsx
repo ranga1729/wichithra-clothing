@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Item } from "@/components/ui/item";
@@ -20,6 +20,7 @@ interface Props {
   isModalOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedColor?: Color;
+  fetchData: () => void;
 }
 
 export default function EditModal(props: Props) {
@@ -29,7 +30,7 @@ export default function EditModal(props: Props) {
   const {
     register, handleSubmit,
     setValue, reset, watch,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<ColorSchema>({
     resolver: zodResolver(colorSchema),
     mode: "onChange",
@@ -59,24 +60,20 @@ export default function EditModal(props: Props) {
 
     try {
       setIsSubmitting(true);
+      const response = await updateColor(prevData?.id!, data);
 
-      const formData = new FormData();
-      formData.append("id", prevData?.id || "");
-      formData.append("name", data.name);
-      formData.append("hexCode", "#" + data.hexCode?.toString());
-
-      const result = await updateColor(prevData?.id!, formData);
-
-      if (!result.success) {
-        toast.error(result.error || en.messages.color_update_failed);
+      if (!response.success) {
+        toast.error(response.error || en.messages.color_update_failed);
         reset();
         props.onOpenChange(false);
+        return;
       }
 
       toast.success(en.messages.color_updated_successfully);
       props.onOpenChange(false);
       reset();
       setPrevData(undefined);
+      props.fetchData()
 
     } catch (error) {
       toast.error(en.messages.color_update_failed);
@@ -92,16 +89,9 @@ export default function EditModal(props: Props) {
   }
 
   useEffect(() => {
-    const tst = props.selectedColor && props.selectedColor.hexCode!.slice(1)
-    setPrevData({
-      ...props.selectedColor,
-      hexCode: tst
-    })
+    setPrevData(props.selectedColor)
     setValue("name", props.selectedColor?.name!)
     setValue("hexCode", props.selectedColor?.hexCode!)
-
-    console.log("selected: ", props.selectedColor)
-    console.log("prev: ", prevData)
   }, [props.selectedColor])
 
   return (
@@ -163,7 +153,7 @@ export default function EditModal(props: Props) {
           </FieldGroup>
 
           <DialogFooter className="mt-6">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || !hasChanges || !isValid}>
               {isSubmitting ? <>
                   <LoaderCircle className="animate-spin w-8 h-8" /> {en.common.status.saving}
                 </> : <>{en.common.buttons.save}</>}

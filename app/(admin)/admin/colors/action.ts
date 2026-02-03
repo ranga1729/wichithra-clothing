@@ -1,6 +1,5 @@
 'use server'
 
-import { Color } from "@/generated/prisma/client";
 import { en } from "@/lib/i18n/en";
 import { prisma } from "@/lib/prisma";
 import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
@@ -56,7 +55,7 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
     const newColor = await prisma.color.create({
       data: {
         name: validatedData.name,
-        hexCode: "#" + validatedData.hexCode,
+        hexCode: validatedData.hexCode,
         createdAt: new Date(),
         isActive: true,
       }
@@ -149,9 +148,65 @@ export async function deleteColor(id: string):Promise<ApiResponse> {
   }
 }
 
-export async function updateColor(id: string, color: ColorSchema):Promise<ApiResponse> {
-  console.log("test: ", color);
-  return {
-    success: false,
+export async function updateColor(id: string, data: ColorSchema):Promise<ApiResponse> {
+ try {
+  const validatedData = colorSchema.parse(data);
+
+  const color = await prisma.color.findUnique({
+    where: { 
+      id: id,
+    },
+    select: {
+      id: true,
+      name: true,
+      hexCode: true,
+    }
+  })
+
+  if(!color) {
+    return {
+      success: false,
+      error: en.messages.color_doesnt_exist
+    }
   }
+
+  const updatedColor = await prisma.color.update({
+    where: {
+      id: color.id
+    },
+    data: {
+      name: validatedData.name,
+      hexCode: validatedData.hexCode
+    }
+  })
+
+  if(!updatedColor) {
+    return {
+      success: false,
+      error: en.messages.color_update_failed
+    }
+  }
+
+  revalidatePath('/admin/colors');
+
+  return {
+    success: true,
+    message: en.messages.color_updated_successfully
+  }
+
+ } catch(error: any) {
+  console.error("Error updating color:", error.message);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: en.messages.color_update_failed,
+    };
+ }
 }

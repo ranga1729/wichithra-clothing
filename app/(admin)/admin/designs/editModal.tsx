@@ -71,6 +71,7 @@ export default function EditModal(props: Props) {
         toast.error(result.error || en.messages.design_update_failed);
         reset();
         props.onOpenChange(false);
+        return;
       }
 
       toast.success(en.messages.design_update_successfully);

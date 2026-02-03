@@ -31,11 +31,11 @@ export const getColumns = ({
     id: "hexCode",
     header: () => { return <div className="text-center">HexCode</div> },
     cell: ({ row }) => {
-      const text = row.original.hexCode;
+      const hex = row.original.hexCode;
       return (
         <div className="flex flex-row items-center justify-center">
           <p className={"border border-neutral-300 flex w-fit items-center justify-center rounded-md px-1 py-1 text-xs font-medium bg-neutral-200 text-neutral-800"}>
-            {text}
+            { "#" + hex }
           </p>
         </div>
       )
@@ -48,7 +48,7 @@ export const getColumns = ({
       const hex = row.original.hexCode?.toString();
       return (
         <div className="flex flex-row items-center justify-center">
-          <div className="border border-neutral-500 rounded-full w-7 h-7" style={{ backgroundColor: hex}}></div>
+          <div className="border border-neutral-500 rounded-full w-7 h-7" style={{ backgroundColor: "#" + hex }}></div>
         </div>
       )
     },

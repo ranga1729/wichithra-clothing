@@ -75,6 +75,11 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchData();
   }, [paginator.pageIndex, paginator.pageSize]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setIsEditModalOpen(newOpen);
+    setSelectedColor(undefined);
+  };
   
   return (
     <div className="w-full h-full dark:bg-neutral-800 bg-neutral-100">
@@ -97,7 +102,7 @@ export default function DashboardPage() {
         />
 
         <AddNewModal isModalOpen={isAddNewModalOpen} onOpenChange={setIsAddNewModalOpen} fetchData={fetchData} />
-        <EditModal isModalOpen={isEditModalOpen} onOpenChange={setIsEditModalOpen} selectedColor={selectedColor} />
+        <EditModal isModalOpen={isEditModalOpen} onOpenChange={handleOpenChange} selectedColor={selectedColor} fetchData={fetchData} />
       </div>
     </div>
   );

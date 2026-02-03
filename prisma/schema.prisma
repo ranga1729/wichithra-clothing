@@ -143,7 +143,7 @@ model CategoryDesign {
 model Color {
   id        String   @id @default(uuid()) @db.Uuid
   name      String   @unique @db.VarChar(50)
-  hexCode   String?  @db.VarChar(7)
+  hexCode   String  @db.Char(6)
   isActive  Boolean  @default(true)
   deletedAt DateTime? @db.Timestamptz(6)
   createdAt DateTime @default(now()) @db.Timestamptz(6)

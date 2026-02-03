@@ -129,6 +129,7 @@ export default function EditModal(props: Props) {
         reset();
         setFilePreview(null);
         props.onOpenChange(false);
+        return;
       }
 
       toast.success(en.messages.category_updated_successfully);
