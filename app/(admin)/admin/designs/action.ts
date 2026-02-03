@@ -98,8 +98,8 @@ export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse>
       success: true,
       message: en.messages.design_created_successfully,
     };
-  } catch (error) {
-    console.error("Error creating design:", error);
+  } catch (error:any) {
+    console.error("Error creating design:", error.message);
     
     if (error instanceof Error) {
       return {

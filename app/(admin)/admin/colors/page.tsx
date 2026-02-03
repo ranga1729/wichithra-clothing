@@ -7,6 +7,10 @@ import { useEffect, useRef, useState } from "react";
 import { getColumns } from "./columns";
 import { getColors } from "./action";
 import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+import { CirclePlus } from "lucide-react";
+import { en } from "@/lib/i18n/en";
+import AddNewModal from "./addNewModal";
 
 export default function DashboardPage() {
   const [colors, setColors] = useState<Color[]>([]);
@@ -17,6 +21,7 @@ export default function DashboardPage() {
     pageIndex: 0,
     totalRecords: 0,
   })
+  const [isAddNewModalOpen, setIsAddNewModalOpen] = useState(false);
 
   const tableRef = useRef<TableWithPaginationRef>(null);
 
@@ -49,6 +54,9 @@ export default function DashboardPage() {
   return (
     <div className="w-full h-full dark:bg-neutral-800 bg-neutral-100">
       <div className="container flex flex-col gap-3 mx-auto p-5">
+        <div className="flex flex-row gap-2 items-center justify-end">
+          <Button size={"default"} type="button" onClick={() => setIsAddNewModalOpen(true)}> <CirclePlus />{en.common.buttons.add_new} </Button>
+        </div>
         <TableWithPagination 
           ref={tableRef}
           columns={getColumns({
@@ -62,6 +70,8 @@ export default function DashboardPage() {
           initialPageSize={10}
           onPaginationChange={setPaginator}
         />
+
+        <AddNewModal isModalOpen={isAddNewModalOpen} onOpenChange={setIsAddNewModalOpen} fetchData={fetchData} />
       </div>
     </div>
   );

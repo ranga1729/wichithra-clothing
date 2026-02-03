@@ -46,5 +46,17 @@ export const designSchema = z.object({
     .optional(),
 })
 
+export const colorSchema = z.object({
+  name: z
+    .string("Enter a valid name")
+    .min(1, "Name is required")
+    .max(100, "Name can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  hexCode : z
+    .string("Enter a valid color code")
+    .length(6, "Color code must have 6 digits"),
+})
+
 export type CategorySchema = z.infer<typeof categorySchema>
 export type DesignSchema = z.infer<typeof designSchema>
+export type ColorSchema = z.infer<typeof colorSchema>

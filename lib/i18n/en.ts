@@ -12,7 +12,7 @@ export const en = {
       signin: "Signin",
       apply_filters: "Apply Filters",
       reset_filters: "Reset Filters",
-      create_new: "Create New",
+      add_new: "Add New",
       remove: "Remove"
     },
     status: {
@@ -45,7 +45,8 @@ export const en = {
     description: "Description",
     sort_order: "Sort order",
     size_guide_image: "Size guide image",
-    
+    hexCode : "Hexcode",
+    preview: "Preview"
   },
 
   texts: {
@@ -73,6 +74,12 @@ export const en = {
       edit_design_subtitle : "Update details of this design",
       create_design_title: "Create design",
       create_design_subtitle : "Enter details for the new design",
+    },
+    color: {
+      edit_color_title: "Edit color",
+      edit_color_subtitle : "Update details of this color",
+      create_color_title: "Create color",
+      create_color_subtitle : "Enter details for the new color",
     }
   },
 
@@ -114,6 +121,9 @@ export const en = {
     design_created_successfully: "Design created successfully",
     failed_to_create_design: "Failed to create design",
     design_doesnt_exist: "Design doesn't exist",
+
+    color_created_successfully: "Color created successfully",
+    failed_to_create_color: "Failed to create color",
 
     error_updating: "Error updating",
     error_creating: "Error creating",

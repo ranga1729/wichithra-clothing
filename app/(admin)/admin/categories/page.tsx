@@ -167,7 +167,7 @@ export default function CategoryPage() {
             <div className="flex flex-row gap-2">
               <Button size={"default"} type="button" onClick={handleSearch}> <Search /> {en.common.buttons.apply_filters} </Button>
               <Button size={"default"} type="button" onClick={handleReset}> <RotateCcw /> {en.common.buttons.reset_filters} </Button>
-              <Button size={"default"} type="button" onClick={() => setIsAddNewModalOpen(true)}> <CirclePlus /> {en.common.buttons.create_new} </Button>
+              <Button size={"default"} type="button" onClick={() => setIsAddNewModalOpen(true)}> <CirclePlus /> {en.common.buttons.add_new} </Button>
             </div>
           </form>
         </div>
