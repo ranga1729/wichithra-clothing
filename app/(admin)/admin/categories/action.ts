@@ -10,7 +10,6 @@ import path, { join } from "path";
 import { CategorySchema, categorySchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
-import { Category } from "@/generated/prisma/client";
 
 export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter):Promise<ApiResponse> {
   try {

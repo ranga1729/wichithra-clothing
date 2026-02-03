@@ -45,8 +45,8 @@ export const en = {
     description: "Description",
     sort_order: "Sort order",
     size_guide_image: "Size guide image",
-    hexCode : "Hexcode",
-    preview: "Preview"
+    hexCode : "HexCode",
+    preview: "Preview",
   },
 
   texts: {

@@ -4,26 +4,45 @@ import { en } from "@/lib/i18n/en";
 import { prisma } from "@/lib/prisma";
 import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
 import { ApiResponse } from "@/types/auth-types";
+import { ColorFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { revalidatePath } from "next/cache";
 
-export async function getColors(paginator: Paginator):Promise<ApiResponse> {
+export async function getColors(paginator: Paginator, filter: ColorFilter):Promise<ApiResponse> {
   try {
     const pageSize = Math.max(1, paginator.pageSize);
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
 
+    const whereClause: any = {
+      ...(filter.name && {
+        name: {
+          contains: filter.name as string,
+          mode: 'insensitive'
+        }
+      }),
+      ...(filter.hexCode && {
+        hexCode: {
+          contains: filter.hexCode as string,
+          mode: 'insensitive'
+        }
+      })
+    }
+    
     const sizes = await prisma.color.findMany({
       select: {
         id: true,
         name: true,
         hexCode: true,
       },
+      where: whereClause,
       skip: skip,
       take: pageSize
     })
 
-    const totalRecords = await prisma.color.count({})
+    const totalRecords = await prisma.color.count({
+      where: whereClause,
+    })
 
     if(!sizes) {
       return {
