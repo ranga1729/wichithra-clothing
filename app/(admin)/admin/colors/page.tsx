@@ -2,8 +2,8 @@
 
 import TableWithPagination, { TableWithPaginationRef } from "@/components/custom/table/TableWithPagination";
 import { Color } from "@/generated/prisma/client";
-import { Paginator, Sorter } from "@/types/table-types";
-import { useDeferredValue, useEffect, useRef, useState } from "react";
+import { Paginator } from "@/types/table-types";
+import { useEffect, useRef, useState } from "react";
 import { getColumns } from "./columns";
 import { deleteColor, getColors } from "./action";
 import toast from "react-hot-toast";
@@ -22,7 +22,7 @@ const InitiaFilter:ColorFilter = {
  hexCode : "",
 }
 
-export default function DashboardPage() {
+export default function ColorsPage() {
   const [colors, setColors] = useState<Color[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -49,7 +49,7 @@ export default function DashboardPage() {
       }
       
       if(response.success) {
-        setColors(response.data.sizes)
+        setColors(response.data.colors)
         setTotalRecords(response.data.totalRecords)
       }
 
@@ -110,7 +110,6 @@ export default function DashboardPage() {
   return (
     <div className="w-full h-full dark:bg-neutral-800 bg-neutral-100">
       <div className="container flex flex-col gap-3 mx-auto p-5">
-        
         <form className="flex flex-col gap-3">
           <div className="flex flex-row justify-start items-center gap-3 w-full border py-3 px-2 rounded-md">
             <div className="grid w-60 max-w-sm items-center gap-2">

@@ -58,7 +58,7 @@ export default function DesignPage() {
       }
       
       if(response.success) {
-        setDesigns(response.data.categories)
+        setDesigns(response.data.designs)
         setTotalRecords(response.data.totalRecords)
       }
 

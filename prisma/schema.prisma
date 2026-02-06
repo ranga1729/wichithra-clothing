@@ -336,8 +336,9 @@ enum AddressType {
 
 enum ProductStatus {
   DRAFT // not ready for customers/seasonal products/under review
-  ACTIVE // products available for customers, available in inventory
   DISCONTINUED // end of line products
+  OUTOFSTOCK //out of stock
+  AVAILABLE // ready to show to customers
 
   @@map("product_status")
 }

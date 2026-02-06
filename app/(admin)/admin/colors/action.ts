@@ -54,7 +54,7 @@ export async function getColors(paginator: Paginator, filter: ColorFilter):Promi
     return {
       success: true,
       data: {
-        sizes : sizes,
+        colors : sizes,
         totalRecords : totalRecords
       }
     };

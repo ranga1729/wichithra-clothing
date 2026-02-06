@@ -60,7 +60,7 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
     return {
       success: true,
       data: {
-        categories : designs,
+        designs : designs,
         totalRecords : totalRecords
       }
     };

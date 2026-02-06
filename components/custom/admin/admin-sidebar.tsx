@@ -11,8 +11,8 @@ import {
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavSecondary } from "@/components/nav-secondary"
+// import { NavProjects } from "@/components/nav-projects"
+// import { NavSecondary } from "@/components/nav-secondary"
 import {
   Sidebar,
   SidebarContent,
@@ -28,7 +28,7 @@ const data = {
   navMain: [
     {
       title: "Analytics",
-      url: "#",
+      url: "analytics",
       icon: ChartNoAxesCombined,
       isActive: true,
     },
@@ -40,33 +40,32 @@ const data = {
       items: [
         {
           title: "New orders",
-          url: "new-orders",
+          url: "new",
         },
         {
           title: "Ongoing",
-          url: "ongoing-orders",
+          url: "ongoing",
         },
         {
           title: "Completed",
-          url: "completed-orders",
+          url: "completed",
         },
       ]
     },
     {
       title: "Products",
-      url: "#",
+      url: "products",
       icon: Shirt,
       isActive: true,
     },
     {
       title: "Inventory",
-      url: "#",
+      url: "inventory",
       icon: SquaresExclude,
       isActive: true,
     },
     {
       title: "Facets",
-      url: "categories",
       icon: ListCollapse,
       isActive: true,
       items: [
@@ -90,7 +89,7 @@ const data = {
     },
     {
       title: "Customers",
-      url: "#",
+      url: "customers",
       icon: UserRound,
       isActive: true,
     },
