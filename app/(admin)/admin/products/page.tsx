@@ -1,7 +1,6 @@
 'use client'
 
 import TableWithPagination, { TableWithPaginationRef } from "@/components/custom/table/TableWithPagination";
-import { Product } from "@/generated/prisma/client";
 import { Paginator } from "@/types/table-types";
 import { useEffect, useRef, useState } from "react";
 import { getColumns } from "./columns";
@@ -11,7 +10,7 @@ import { SimpleProductSchema } from "@/schemas/admin-schemas";
 import { useRouter } from "next/navigation";
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<SimpleProductSchema[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [totalRecords, setTotalRecords] = useState(0);
   const [paginator, setPaginator] = useState<Paginator>({

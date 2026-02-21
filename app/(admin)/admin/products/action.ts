@@ -34,10 +34,8 @@ export async function getProducts():Promise<ApiResponse> {
         id: true,
         name: true,
         slug: true,
-        categoryId: true,
         basePrice: true,
         discountPercentage: true,
-        mainColorId: true,
         isFeatured: true,
         isActive: true,
         status: true,
@@ -103,27 +101,19 @@ export async function getProduct(productId: string):Promise<ApiResponse> {
         name: true,
         slug: true,
         description: true,
-        categoryId: true,
         brand: true,
         material: true,
         careInstructions: true,
         basePrice: true,
         discountPercentage: true,
-        mainColorId: true,
         isFeatured: true,
         isActive: true,
         status: true,
-        metaTitle: true,
-        metaDescription: true,
-        deletedAt: true,
-        createdAt: true,
-        updatedAt: true,
 
         category: {
           select: {
             id: true,
             name: true,
-            slug: true,
           }
         },
         mainColor: {
@@ -138,13 +128,10 @@ export async function getProduct(productId: string):Promise<ApiResponse> {
             id: true,
             productId: true,
             designId: true,
-            createdAt: true,
             design: {
               select: {
                 id: true,
                 name: true,
-                slug: true,
-                description: true,
               }
             }
           }
@@ -155,9 +142,7 @@ export async function getProduct(productId: string):Promise<ApiResponse> {
             productId: true,
             colorId: true,
             isMainColor: true,
-            additionalPrice: true,
             colorImageUrl: true,
-            createdAt: true,
             color: {
               select: {
                 id: true,
@@ -173,10 +158,8 @@ export async function getProduct(productId: string):Promise<ApiResponse> {
             productId: true,
             colorId: true,
             imageUrl: true,
-            altText: true,
             isPrimary: true,
             sortOrder: true,
-            createdAt: true,
           },
           orderBy: {
             sortOrder: 'asc',
@@ -188,7 +171,6 @@ export async function getProduct(productId: string):Promise<ApiResponse> {
             productId: true,
             sizeId: true,
             isActive: true,
-            createdAt: true,
             size: {
               select: {
                 id: true,
@@ -220,7 +202,7 @@ export async function getProduct(productId: string):Promise<ApiResponse> {
     return {
       success: true,
       data: {
-        selectedProduct : serializedProducts,
+        product : serializedProducts,
       }
     };
 

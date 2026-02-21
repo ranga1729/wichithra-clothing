@@ -58,12 +58,13 @@ export const colorSchema = z.object({
     .length(6, "Color code must have 6 digits"),
 })
 
+//for products page
 const categorySelectSchema = z.object({
   id: z.uuid(),
   name: z.string(),
 });
 
-const mainColorSelectSchema = z.object({
+const colorSelectSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   hexCode: z.string().length(6),
@@ -73,12 +74,9 @@ const productDesignSchema = z.object({
   id: z.uuid(),
   productId: z.uuid(),
   designId: z.uuid(),
-  createdAt: z.date(),
   design: z.object({
     id: z.string().uuid(),
     name: z.string(),
-    slug: z.string(),
-    description: z.string().nullable(),
   }),
 });
 
@@ -87,14 +85,8 @@ const productColorSchema = z.object({
   productId: z.uuid(),
   colorId: z.uuid(),
   isMainColor: z.boolean(),
-  additionalPrice: z.number().nullable(),
   colorImageUrl: z.string().nullable(),
-  createdAt: z.date(),
-  color: z.object({
-    id: z.uuid(),
-    name: z.string(),
-    hexCode: z.string().length(6),
-  }),
+  color: colorSelectSchema,
 });
 
 const productImageSchema = z.object({
@@ -102,10 +94,8 @@ const productImageSchema = z.object({
   productId: z.uuid(),
   colorId: z.uuid().nullable(),
   imageUrl: z.string(),
-  altText: z.string().nullable(),
   isPrimary: z.boolean(),
   sortOrder: z.number().int(),
-  createdAt: z.date(),
 });
 
 const productSizeSchema = z.object({
@@ -113,7 +103,6 @@ const productSizeSchema = z.object({
   productId: z.uuid(),
   sizeId: z.uuid(),
   isActive: z.boolean(),
-  createdAt: z.date(),
   size: z.object({
     id: z.uuid(),
     name: z.string(),
@@ -127,24 +116,17 @@ export const productSchema = z.object({
   name: z.string(),
   slug: z.string(),
   description: z.string().nullable(),
-  categoryId: z.uuid(),
   brand: z.string().nullable(),
   material: z.string().nullable(),
   careInstructions: z.string().nullable(),
   basePrice: z.number(),
   discountPercentage: z.number().nullable(),
-  mainColorId: z.uuid().nullable(),
   isFeatured: z.boolean(),
   isActive: z.boolean(),
   status: z.enum(ProductStatus),
-  metaTitle: z.string().nullable(),
-  metaDescription: z.string().nullable(),
-  deletedAt: z.date().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
 
   category: categorySelectSchema,
-  mainColor: mainColorSelectSchema.nullable(),
+  mainColor: colorSelectSchema.nullable(),
   productDesigns: z.array(productDesignSchema),
   productColors: z.array(productColorSchema),
   productImages: z.array(productImageSchema),
@@ -155,15 +137,13 @@ export const simpleProductSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   slug: z.string(),
-  categoryId: z.uuid(),
   basePrice: z.number(),
   discountPercentage: z.number().nullable(),
-  mainColorId: z.uuid().nullable(),
   isFeatured: z.boolean(),
   isActive: z.boolean(),
   status: z.enum(ProductStatus),
   category: categorySelectSchema,
-  mainColor: mainColorSelectSchema.nullable(),
+  mainColor: colorSelectSchema.nullable(),
 })
 
 export type CategorySchema = z.infer<typeof categorySchema>

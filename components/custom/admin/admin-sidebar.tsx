@@ -28,39 +28,39 @@ const data = {
   navMain: [
     {
       title: "Analytics",
-      url: "analytics",
+      url: "/admin/analytics",
       icon: ChartNoAxesCombined,
       isActive: true,
     },
     {
       title: "Orders",
-      url: "new-orders",
+      url: "/admin/new-orders",
       icon: ListOrdered,
       isActive: true,
       items: [
         {
           title: "New orders",
-          url: "new",
+          url: "/admin/new-orders",
         },
         {
           title: "Ongoing",
-          url: "ongoing",
+          url: "/admin/ongoing-orders",
         },
         {
           title: "Completed",
-          url: "completed",
+          url: "/admin/completed-orders",
         },
       ]
     },
     {
       title: "Products",
-      url: "products",
+      url: "/admin/products",
       icon: Shirt,
       isActive: true,
     },
     {
       title: "Inventory",
-      url: "inventory",
+      url: "/admin/inventory",
       icon: SquaresExclude,
       isActive: true,
     },
@@ -71,25 +71,25 @@ const data = {
       items: [
         {
           title: "Categories",
-          url: "categories",
+          url: "/admin/categories",
         },
         {
           title: "Designs",
-          url: "designs",
+          url: "/admin/designs",
         },
         {
           title: "Colors",
-          url: "colors",
+          url: "/admin/colors",
         },
         {
           title: "Sizes",
-          url: "sizes",
+          url: "/admin/sizes",
         },
       ],
     },
     {
       title: "Customers",
-      url: "customers",
+      url: "/admin/customers",
       icon: UserRound,
       isActive: true,
     },

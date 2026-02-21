@@ -38,7 +38,7 @@ export const getColumns = ({
   },
   {
     id: "categoryName",
-    header: () => { return <div className="text-center">Category Name</div> },
+    header: () => { return <div className="text-center">Category</div> },
     cell: ({row}) => {
       const categoryName = row.original.category.name;
       return (
