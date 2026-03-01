@@ -149,5 +149,10 @@ export const simpleProductSchema = z.object({
 export type CategorySchema = z.infer<typeof categorySchema>
 export type DesignSchema = z.infer<typeof designSchema>
 export type ColorSchema = z.infer<typeof colorSchema>
+
 export type ProductSchema = z.infer<typeof productSchema>
 export type SimpleProductSchema = z.infer<typeof simpleProductSchema>
+
+export type ProductColorSchema = z.infer<typeof productColorSchema>
+export type ProductSizeSchema = z.infer<typeof productSizeSchema>
+export type ProductDesignSchema = z.infer<typeof productDesignSchema>

@@ -5,12 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
 import { Paginator } from "@/types/table-types";
 
-export async function getSizes(paginator: Paginator):Promise<ApiResponse> {
+export async function getSizes():Promise<ApiResponse> {
   try {
-    const pageSize = Math.max(1, paginator.pageSize);
-    const pageIndex = Math.max(0, paginator.pageIndex);
-    const skip = pageIndex * pageSize;
-
     const sizes = await prisma.size.findMany({
       select: {
         id: true,
@@ -19,8 +15,6 @@ export async function getSizes(paginator: Paginator):Promise<ApiResponse> {
         sortOrder: true,
         isActive: true,
       },
-      skip: skip,
-      take: pageSize
     })
 
     const totalRecords = await prisma.size.count({})

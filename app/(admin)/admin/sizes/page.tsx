@@ -24,7 +24,7 @@ export default function DashboardPage() {
     try {
       setIsLoading(true);
 
-      const response = await getSizes(paginator);
+      const response = await getSizes();
 
       if(!response.success && response.error) {
         toast.error(response.error);

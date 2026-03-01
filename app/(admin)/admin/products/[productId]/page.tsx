@@ -1,14 +1,30 @@
 'use client'
-import { ProductSchema } from "@/schemas/admin-schemas";
+import { productSchema, ProductSchema } from "@/schemas/admin-schemas";
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react";
-import { getProduct } from "../action";
+import { getProductById } from "../action";
 import toast from "react-hot-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
+import { Field, FieldGroup } from "@/components/ui/field";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { en } from "@/lib/i18n/en";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator"
+import ColorMapper from "@/components/custom/general/ColorMapper";
+import SizeMapper from "@/components/custom/general/SizeMapper";
+import DesignMapper from "@/components/custom/general/DesignMapper";
+import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import IsActiveToggler from "@/components/custom/general/IsActiveToggler";
+import IsFeaturedToggler from "@/components/custom/general/IsFeaturedToggler";
+import ProductStatusChanger from "@/components/custom/general/ProductStatusChanger";
+import { Pridi, Prosto_One } from "next/font/google";
+import { ProductStatus } from "@/generated/prisma/enums";
 
- 
 
 export default function ProductDetailPage() {
   const [product, setProduct] = useState<ProductSchema>();
@@ -16,12 +32,32 @@ export default function ProductDetailPage() {
   
   const params = useParams();
   const productId = params.productId?.toString();
+  
+  const {
+    register,
+    setValue, watch,
+    formState: { errors },
+  } = useForm<ProductSchema>({
+    resolver: zodResolver(productSchema),
+    mode: "onChange",
+    defaultValues: {
+      name: "",
+      slug: "",
+      brand: "",
+      material: "",
+      careInstructions: "",
+      description: "",
+    },
+  });
+  
+  const currentFormData = watch();
+
 
   const fetchData = async () => {
     try {
       setIsLoading(true);
 
-      const response = await getProduct(productId!);
+      const response = await getProductById(productId!);
 
       if(!response.success && response.message) {
         toast.error(response.message);
@@ -42,9 +78,43 @@ export default function ProductDetailPage() {
     fetchData()
   }, [productId])
 
+  const loadCategoryData = async () => {
+    if (product) {
+      setValue("name", product.name);
+      setValue("slug", product.slug);
+      setValue("brand", product.brand);
+      setValue("material", product.material);
+      setValue("careInstructions", product.careInstructions);
+      setValue("description", product.description);
+    }
+  };
+
   useEffect(() => {
-    console.log("test:", product)
-  }, [product])
+    loadCategoryData();
+  }, [product]);
+
+  const handleReset = () => {
+    loadCategoryData();
+  }
+
+  const handleSubmit = () => {
+    console.log(currentFormData);
+    //implement sbmit server action call
+  }
+
+  const hasDataChanged = () => {
+    if(
+      currentFormData.name != product?.name ||
+      currentFormData.slug != product.slug ||
+      currentFormData.brand != product.brand ||
+      currentFormData.material != product.material ||
+      currentFormData.careInstructions != product.careInstructions ||
+      currentFormData.description != product.description
+    ) {
+      return false;
+    }
+    return true;
+  }
 
   const ImageCarousel = () => {
     return <Carousel
@@ -58,9 +128,9 @@ export default function ProductDetailPage() {
         {product?.productImages.map((image, index) => (
           <CarouselItem key={index} className="basis-1/2 lg:basis-1/4">
             <div className="p-1">
-              <Card className="p-0.5">
+              <Card className="p-0.5 bg-neutral-400 dark:bg-neutral-700">
                 <CardContent className="flex aspect-square items-center justify-center m-0 p-0">
-                  <Image src={image.imageUrl} alt={"test"} width={1200} height={1200} className="rounded-md" />
+                  <Image src={image.imageUrl} alt={"test"} width={1200} height={1200} className="rounded-xl" />
                 </CardContent>
               </Card>
             </div>
@@ -72,10 +142,141 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="flex items-center justify-center bg-neutral-200 py-3">
-      <ImageCarousel />
-      
-      
+    <div className="w-full h-full dark:bg-neutral-800 bg-neutral-100">
+    <div className="p-5 flex flex-col gap-3">
+      <h1 className="font-bold text-md text-neutral-600 text-center">Product Images</h1>
+      <div className="flex items-center justify-center bg-neutral-200 dark:bg-neutral-600 py-3 rounded-2xl">
+        <ImageCarousel />
+      </div>
+
+      <h1 className="font-bold text-md text-neutral-600 text-center">Product Information</h1>
+      <div className="flex flex-col items-center justify-center border border-neutral-300 p-5 rounded-2xl gap-4">
+        <FieldGroup >
+          <FieldGroup className="flex flex-row flex-wrap gap-4">
+            <Field className="flex flex-col gap-2 flex-1">
+              <Label htmlFor="edit-name"> {en.input_labels.name} </Label>
+              <div className="flex flex-col">
+                <Input
+                  id="edit-name"
+                  placeholder={en.input_labels.name}
+                  {...register("name")}
+                  disabled= {isLoading}
+                />
+                {errors.name && (
+                  <span className="text-sm text-red-500">
+                    {errors.name.message as string}
+                  </span>
+                )}
+              </div>
+            </Field>
+            <Field className="flex flex-col gap-2 flex-1">
+              <Label htmlFor="edit-slug"> {en.input_labels.slug} </Label>
+              <div className="flex flex-col">
+                <Input
+                  id="edit-slug"
+                  placeholder={en.input_labels.slug}
+                  {...register("slug")}
+                  disabled= {isLoading}
+                />
+                {errors.slug && (
+                  <span className="text-sm text-red-500">
+                    {errors.slug.message as string}
+                  </span>
+                )}
+              </div>
+            </Field>
+            <Field className="flex flex-col gap-2 flex-1">
+              <Label htmlFor="edit-brand"> {en.input_labels.brand} </Label>
+              <div className="flex flex-col">
+                <Input
+                  id="edit-brand"
+                  placeholder={en.input_labels.brand}
+                  {...register("brand")}
+                  disabled= {isLoading}
+                />
+                {errors.brand && (
+                  <span className="text-sm text-red-500">
+                    {errors.brand.message as string}
+                  </span>
+                )}
+              </div>
+            </Field>
+            <Field className="flex flex-col gap-2 flex-1">
+              <Label htmlFor="edit-material"> {en.input_labels.material} </Label>
+              <div className="flex flex-col">
+                <Input
+                  id="edit-material"
+                  placeholder={en.input_labels.material}
+                  {...register("material")}
+                  disabled= {isLoading}
+                />
+                {errors.material && (
+                  <span className="text-sm text-red-500">
+                    {errors.material.message as string}
+                  </span>
+                )}
+              </div>
+            </Field>
+          </FieldGroup>
+          <FieldGroup className="flex lg:flex-row sm:flex-col">
+            <Field className="flex flex-col gap-2">
+              <Label htmlFor="edit-careinstructions"> {en.input_labels.careInstructions} </Label>
+              <div className="flex flex-col">
+                <Textarea
+                  id="edit-careinstructions"
+                  placeholder="Care instruction for this product"
+                  {...register("careInstructions")}
+                  disabled= {isLoading}
+                />
+                {errors.careInstructions && (
+                  <span className="text-sm text-red-500">
+                    {errors.careInstructions.message as string}
+                  </span>
+                )}
+              </div>
+            </Field>
+            <Field className="flex flex-col gap-2">
+              <Label htmlFor="edit-description"> {en.input_labels.description} </Label>
+              <div> 
+                <Textarea
+                  id="edit-description"
+                  placeholder="Description of this product"
+                  {...register("description")}
+                  disabled= {isLoading}
+                />
+                {errors.description && (
+                  <span className="text-sm text-red-500">
+                    {errors.description.message as string}
+                  </span>
+                )}
+              </div> 
+            </Field>
+          </FieldGroup>
+          <FieldGroup className="flex items-end justify-center">
+            <div className="flex flex-row gap-3">
+              <Button className="w-30" variant={"default"} disabled={hasDataChanged()} onClick={handleSubmit}>Save</Button>
+              <Button className="w-30" variant={"default"} onClick={handleReset}> Reset</Button>
+            </div>
+          </FieldGroup>
+        </FieldGroup>
+        
+
+        <Separator className="bg-neutral-400" />
+
+        <FieldGroup className="flex lg:flex-row">
+          <IsActiveToggler isActive={product?.isActive} />
+          <IsFeaturedToggler isFeatured={product?.isFeatured} />
+          <ProductStatusChanger productStatus={product?.status as ProductStatus} />
+        </FieldGroup>
+      </div>
+
+      <h1 className="font-bold text-md text-neutral-600 text-center">Product Mappings</h1>
+      <div className="flex flex-row items-center justify-center border flex-wrap border-neutral-300 p-5 rounded-2xl gap-4">
+        <ColorMapper colors={product?.productColors}  />
+        <SizeMapper productSizes={product?.productSizes} />
+        <DesignMapper designs={product?.productDesigns} />
+      </div>
     </div>
+  </div>
   )
 }

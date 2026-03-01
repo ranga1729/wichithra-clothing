@@ -49,10 +49,6 @@ export default function ProductsPage() {
     fetchData();
   }, [paginator.pageIndex, paginator.pageSize]);
 
-  useEffect(() => {
-    console.log("products", products)
-  }, [products])
-
   const onEdit = (product:SimpleProductSchema) => {
     router.push(`/admin/products/${product.id}`);
   }

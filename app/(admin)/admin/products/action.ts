@@ -90,7 +90,7 @@ export async function getProducts():Promise<ApiResponse> {
   }
 }
 
-export async function getProduct(productId: string):Promise<ApiResponse> {
+export async function getProductById(productId: string):Promise<ApiResponse> {
   try {
     const selectedProduct = await prisma.product.findUnique({
       where: {

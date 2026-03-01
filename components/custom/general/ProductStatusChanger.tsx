@@ -1,0 +1,46 @@
+import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from "@/components/ui/field"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ProductStatus } from "@/generated/prisma/enums";
+import { en } from "@/lib/i18n/en"
+
+interface Props {
+  productStatus: ProductStatus
+}
+
+const ProductStatusChanger = (props: Props) => {
+
+  const productStatusChanger = (value: ProductStatus) => {
+    console.log("product status chnaged to ", value)
+  }
+
+  return <FieldLabel htmlFor="status-card">
+    <Field orientation="responsive" className="h-full">
+    <FieldContent>
+      <FieldTitle> {en.input_labels.product_status} </FieldTitle>
+      <FieldDescription>
+        {en.input_labels.product_status_description}
+      </FieldDescription>
+    </FieldContent>
+
+      <Select value={props.productStatus} onValueChange={(value) => productStatusChanger(value as ProductStatus)}>
+        <SelectTrigger className="w-full max-w-48">
+          <SelectValue placeholder="Select Status" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {
+              Object.values(ProductStatus).map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status.charAt(0) + status.slice(1).toLowerCase()}
+                </SelectItem>
+              ))
+            }
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+
+    </Field>
+  </FieldLabel>
+}
+
+export default ProductStatusChanger;

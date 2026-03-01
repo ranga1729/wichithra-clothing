@@ -47,6 +47,15 @@ export const en = {
     size_guide_image: "Size guide image",
     hexCode : "HexCode",
     preview: "Preview",
+    careInstructions: "Care Instructions",
+    brand: "Brand",
+    material: "Material",
+    isActive: "Is Active",
+    isFeatured: "Is Featured",
+    isActive_description : "Only active products will be visible to customers",
+    isFeatured_description : "Featured products will be highlighted in the shop-front",
+    product_status: "Product Status",
+    product_status_description: "Changing product status will affect the visibility of the product in the shop-front"
   },
 
   texts: {
