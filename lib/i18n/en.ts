@@ -50,6 +50,8 @@ export const en = {
     careInstructions: "Care Instructions",
     brand: "Brand",
     material: "Material",
+    base_price: "Base Price",
+    discount_precentage: "Discount Percentage",
     isActive: "Is Active",
     isFeatured: "Is Featured",
     isActive_description : "Only active products will be visible to customers",
@@ -138,6 +140,10 @@ export const en = {
     color_deleted_successfully: "Color deleted successfully",
     color_update_failed: "Color update failed",
     color_updated_successfully: "Color updated successfully",
+
+    product_doesnt_exist: "Product doesn't exist",
+    product_update_failed: "Product update failed",
+    product_updated_successfully: "Color updated successfully",
 
     error_updating: "Error updating",
     error_creating: "Error creating",

@@ -61,23 +61,37 @@ export const colorSchema = z.object({
 //for products page
 const categorySelectSchema = z.object({
   id: z.uuid(),
-  name: z.string(),
+  name: z
+    .string("Enter a valid name")
+    .min(1, "Name is required")
+    .max(100, "Name can not exceed 100 characters")
+    .transform((val) => val.trim()),
 });
 
 const colorSelectSchema = z.object({
   id: z.uuid(),
-  name: z.string(),
+  name: z
+    .string("Enter a valid name")
+    .min(1, "Name is required")
+    .max(100, "Name can not exceed 100 characters")
+    .transform((val) => val.trim()),
   hexCode: z.string().length(6),
+});
+
+const designSelectSchema = z.object({
+  id: z.uuid(),
+  name: z
+    .string("Enter a valid name")
+    .min(1, "Name is required")
+    .max(100, "Name can not exceed 100 characters")
+    .transform((val) => val.trim()),
 });
 
 const productDesignSchema = z.object({
   id: z.uuid(),
   productId: z.uuid(),
   designId: z.uuid(),
-  design: z.object({
-    id: z.string().uuid(),
-    name: z.string(),
-  }),
+  design: designSelectSchema
 });
 
 const productColorSchema = z.object({
@@ -113,14 +127,31 @@ const productSizeSchema = z.object({
 
 export const productSchema = z.object({
   id: z.uuid(),
-  name: z.string(),
-  slug: z.string(),
+  name: z
+    .string("Enter a valid name")
+    .min(1, "Name is required")
+    .max(100, "Name can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  slug: z
+    .string("Enter a valid slug")
+    .min(1, "Slug is required")
+    .max(100, "Slug can not exceed 100 characters")
+    .transform((val) => val.trim()),
   description: z.string().nullable(),
   brand: z.string().nullable(),
   material: z.string().nullable(),
   careInstructions: z.string().nullable(),
-  basePrice: z.number(),
-  discountPercentage: z.number().nullable(),
+  basePrice: z
+    .coerce
+    .number()
+    .min(0)
+    .default(0),
+  discountPercentage: z
+    .coerce
+    .number()
+    .min(0)
+    .max(100)
+    .default(0),
   isFeatured: z.boolean(),
   isActive: z.boolean(),
   status: z.enum(ProductStatus),
@@ -135,16 +166,61 @@ export const productSchema = z.object({
 
 export const simpleProductSchema = z.object({
   id: z.uuid(),
-  name: z.string(),
-  slug: z.string(),
-  basePrice: z.number(),
-  discountPercentage: z.number().nullable(),
+  name: z
+    .string("Enter a valid name")
+    .min(1, "Name is required")
+    .max(100, "Name can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  slug: z
+    .string("Enter a valid slug")
+    .min(1, "Slug is required")
+    .max(100, "Slug can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  basePrice: z
+    .coerce
+    .number()
+    .min(0)
+    .default(0),
+  discountPercentage: z
+    .coerce
+    .number()
+    .min(0)
+    .max(100)
+    .default(0),
   isFeatured: z.boolean(),
   isActive: z.boolean(),
   status: z.enum(ProductStatus),
   category: categorySelectSchema,
   mainColor: colorSelectSchema.nullable(),
 })
+
+export const basicProductInfoSchema = z.object({
+  id: z.uuid(),
+  name: z
+    .string("Enter a valid name")
+    .min(1, "Name is required")
+    .max(100, "Name can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  slug: z
+    .string("Enter a valid slug")
+    .min(1, "Slug is required")
+    .max(100, "Slug can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  basePrice: z
+    .coerce
+    .number()
+    .min(0, "Price must be 0 or more"),
+  discountPercentage: z
+    .coerce
+    .number()
+    .min(0)
+    .max(100),
+  description: z.string().nullable(),
+  brand: z.string().nullable(),
+  material: z.string().nullable(),
+  careInstructions: z.string().nullable(),
+  status: z.enum(ProductStatus),
+});
 
 export type CategorySchema = z.infer<typeof categorySchema>
 export type DesignSchema = z.infer<typeof designSchema>
@@ -156,3 +232,4 @@ export type SimpleProductSchema = z.infer<typeof simpleProductSchema>
 export type ProductColorSchema = z.infer<typeof productColorSchema>
 export type ProductSizeSchema = z.infer<typeof productSizeSchema>
 export type ProductDesignSchema = z.infer<typeof productDesignSchema>
+export type BasicProductInfoSchema = z.infer<typeof basicProductInfoSchema>;

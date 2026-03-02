@@ -1,8 +1,9 @@
 'use client'
-import { productSchema, ProductSchema } from "@/schemas/admin-schemas";
+
+import { basicProductInfoSchema, BasicProductInfoSchema, productSchema, ProductSchema } from "@/schemas/admin-schemas";
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react";
-import { getProductById } from "../action";
+import { changeBasicInfo, getProductById } from "../action";
 import toast from "react-hot-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,9 +23,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import IsActiveToggler from "@/components/custom/general/IsActiveToggler";
 import IsFeaturedToggler from "@/components/custom/general/IsFeaturedToggler";
 import ProductStatusChanger from "@/components/custom/general/ProductStatusChanger";
-import { Pridi, Prosto_One } from "next/font/google";
 import { ProductStatus } from "@/generated/prisma/enums";
-
+import { Slider } from "@/components/ui/slider";
 
 export default function ProductDetailPage() {
   const [product, setProduct] = useState<ProductSchema>();
@@ -37,16 +37,20 @@ export default function ProductDetailPage() {
     register,
     setValue, watch,
     formState: { errors },
-  } = useForm<ProductSchema>({
-    resolver: zodResolver(productSchema),
+  } = useForm<BasicProductInfoSchema>({
+    resolver: zodResolver(basicProductInfoSchema),
     mode: "onChange",
     defaultValues: {
-      name: "",
-      slug: "",
-      brand: "",
-      material: "",
-      careInstructions: "",
-      description: "",
+      id: product?.id,
+      name: product?.name ||"",
+      slug: product?.slug || "",
+      brand: product?.brand || "",
+      material: product?.material || "",
+      careInstructions: product?.careInstructions || "",
+      description: product?.description || "",
+      basePrice: product?.basePrice || 0,
+      discountPercentage: product?.discountPercentage || 0,
+      status: product?.status || "DRAFT" as ProductStatus,
     },
   });
   
@@ -86,6 +90,8 @@ export default function ProductDetailPage() {
       setValue("material", product.material);
       setValue("careInstructions", product.careInstructions);
       setValue("description", product.description);
+      setValue("basePrice", product.basePrice)
+      setValue("discountPercentage", product.discountPercentage)
     }
   };
 
@@ -97,9 +103,8 @@ export default function ProductDetailPage() {
     loadCategoryData();
   }
 
-  const handleSubmit = () => {
-    console.log(currentFormData);
-    //implement sbmit server action call
+  const handleSubmit = async () => {
+    await changeBasicInfo(currentFormData)
   }
 
   const hasDataChanged = () => {
@@ -109,7 +114,9 @@ export default function ProductDetailPage() {
       currentFormData.brand != product.brand ||
       currentFormData.material != product.material ||
       currentFormData.careInstructions != product.careInstructions ||
-      currentFormData.description != product.description
+      currentFormData.description != product.description ||
+      currentFormData.basePrice != product?.basePrice ||
+      currentFormData.discountPercentage != product.discountPercentage
     ) {
       return false;
     }
@@ -121,7 +128,7 @@ export default function ProductDetailPage() {
         opts={{
           align: "start",
         }}
-        className="w-full max-w-[12rem] sm:max-w-md md:max-w-lg lg:max-w-4xl"
+        className="w-full sm:max-w-md md:max-w-lg lg:max-w-4xl"
       >
       <CarouselPrevious />
       <CarouselContent>
@@ -201,6 +208,8 @@ export default function ProductDetailPage() {
                 )}
               </div>
             </Field>
+          </FieldGroup>
+          <FieldGroup className="flex flex-row flex-wrap gap-4">
             <Field className="flex flex-col gap-2 flex-1">
               <Label htmlFor="edit-material"> {en.input_labels.material} </Label>
               <div className="flex flex-col">
@@ -216,6 +225,39 @@ export default function ProductDetailPage() {
                   </span>
                 )}
               </div>
+            </Field>
+            <Field className="flex flex-col gap-2 flex-1">
+              <Label htmlFor="edit-baseprice"> {en.input_labels.base_price} </Label>
+              <div className="flex flex-col">
+                <Input
+                  id="edit-baseprice"
+                  placeholder={en.input_labels.base_price}
+                  {...register("basePrice")}
+                  disabled= {isLoading}
+                />
+                {errors.basePrice && (
+                  <span className="text-sm text-red-500">
+                    {errors.basePrice.message as string}
+                  </span>
+                )}
+              </div>
+            </Field>
+            <Field className="flex flex-col gap-2 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="slider-demo-temperature">{en.input_labels.discount_precentage}</Label>
+                  <span className="text-muted-foreground text-sm">
+                    {currentFormData.discountPercentage + "%"}
+                  </span>
+                </div>
+                <Slider 
+                  id="discount-percentage-handle"
+                  value={[currentFormData.discountPercentage!]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="mx-auto w-full max-w-xs border border-neutral-500 rounded-2xl"
+                  onValueChange={(value) => setValue("discountPercentage", value[0])}
+                />
             </Field>
           </FieldGroup>
           <FieldGroup className="flex lg:flex-row sm:flex-col">

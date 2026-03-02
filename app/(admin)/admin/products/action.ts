@@ -2,7 +2,9 @@
 
 import { en } from "@/lib/i18n/en";
 import { prisma } from "@/lib/prisma";
+import { basicProductInfoSchema, BasicProductInfoSchema, productSchema, ProductSchema } from "@/schemas/admin-schemas";
 import { ApiResponse } from "@/types/auth-types";
+import { revalidatePath } from "next/cache";
 
 export async function getProducts():Promise<ApiResponse> {
   try {
@@ -210,6 +212,77 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
     return { 
       success: false,
       error: error.message || en.messages.data_retrieval_failed 
+    };
+  }
+}
+
+export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiResponse> {
+  try {
+    const validatedData = basicProductInfoSchema.parse(data);
+
+    const existingProduct = await prisma.product.findUnique({
+      where: {id : validatedData.id},
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        brand: true,
+        material: true,
+        careInstructions: true,
+        description: true,
+        basePrice: true,
+        discountPercentage: true,
+      }
+    })
+
+    if(!existingProduct) {
+      return {
+        success: false,
+        error: en.messages.product_doesnt_exist
+      };
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: { id: existingProduct.id },
+      data: {
+        name: validatedData.name,
+        slug: validatedData.slug,
+        brand: validatedData.brand,
+        material: validatedData.material,
+        careInstructions: validatedData.careInstructions,
+        description: validatedData.description,
+        basePrice: validatedData.basePrice,
+        discountPercentage: validatedData.discountPercentage,
+      }
+    });
+
+    if (!updatedProduct) {
+      return {
+        success: false,
+        error: en.messages.product_update_failed,
+      };
+    }
+
+    revalidatePath(`/admin/products/${updatedProduct.id}`);
+
+    return {
+      success: true,
+      message: en.messages.product_updated_successfully,
+    };
+
+  } catch(error) {
+    console.error("Error updating product:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: en.messages.product_update_failed,
     };
   }
 }
