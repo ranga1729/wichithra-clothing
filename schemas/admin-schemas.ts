@@ -2,6 +2,8 @@ import { ProductStatus } from "@/generated/prisma/enums";
 import * as z from "zod"
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+ 
+export const ProductStatusSchema = z.enum(ProductStatus);
 
 export const categorySchema = z.object({
   name: z
@@ -207,19 +209,19 @@ export const basicProductInfoSchema = z.object({
     .max(100, "Slug can not exceed 100 characters")
     .transform((val) => val.trim()),
   basePrice: z
-    .coerce
-    .number()
-    .min(0, "Price must be 0 or more"),
+    .preprocess(
+      (val) => (val === "" ? undefined : Number(val)),
+      z.number().min(0, "Price must be 0 or more")
+    ),
   discountPercentage: z
-    .coerce
-    .number()
-    .min(0)
-    .max(100),
+    .preprocess(
+      (val) => (val === "" ? undefined : Number(val)),
+      z.number().min(0).max(100)
+    ),
   description: z.string().nullable(),
   brand: z.string().nullable(),
   material: z.string().nullable(),
   careInstructions: z.string().nullable(),
-  status: z.enum(ProductStatus),
 });
 
 export type CategorySchema = z.infer<typeof categorySchema>

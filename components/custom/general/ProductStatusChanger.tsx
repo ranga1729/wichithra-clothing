@@ -4,17 +4,17 @@ import { ProductStatus } from "@/generated/prisma/enums";
 import { en } from "@/lib/i18n/en"
 
 interface Props {
-  productStatus: ProductStatus
+  productStatus: ProductStatus;
+  isLoading: boolean;
+  changer: (newStatus: ProductStatus) => void;
 }
 
 const ProductStatusChanger = (props: Props) => {
-
-  const productStatusChanger = (value: ProductStatus) => {
-    console.log("product status chnaged to ", value)
-  }
-
   return <FieldLabel htmlFor="status-card">
-    <Field orientation="responsive" className="h-full">
+    <Field orientation="responsive" 
+      className={
+        props.isLoading ? "opacity-50 pointer-events-none select-none" : "opacity-100"
+      }>
     <FieldContent>
       <FieldTitle> {en.input_labels.product_status} </FieldTitle>
       <FieldDescription>
@@ -22,7 +22,7 @@ const ProductStatusChanger = (props: Props) => {
       </FieldDescription>
     </FieldContent>
 
-      <Select value={props.productStatus} onValueChange={(value) => productStatusChanger(value as ProductStatus)}>
+      <Select value={props.productStatus} onValueChange={(value) => props.changer(value as ProductStatus)}>
         <SelectTrigger className="w-full max-w-48">
           <SelectValue placeholder="Select Status" />
         </SelectTrigger>

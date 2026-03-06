@@ -16,10 +16,6 @@ const ColorMapper = (props:Props) => {
     setMainColor(props.colors?.find(color => color.isMainColor = true))
   }, [props.colors])
 
-  useEffect(() => {
-    console.log(props.colors)
-  }, [props.colors])
-
   return (
     <Card className="w-full max-w-90">
       <CardHeader className="flex flex-col items-center justify-between">

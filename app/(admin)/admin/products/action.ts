@@ -1,8 +1,9 @@
 'use server'
 
+import { ProductStatus } from "@/generated/prisma/enums";
 import { en } from "@/lib/i18n/en";
 import { prisma } from "@/lib/prisma";
-import { basicProductInfoSchema, BasicProductInfoSchema, productSchema, ProductSchema } from "@/schemas/admin-schemas";
+import { basicProductInfoSchema, BasicProductInfoSchema, productSchema, ProductSchema, ProductStatusSchema } from "@/schemas/admin-schemas";
 import { ApiResponse } from "@/types/auth-types";
 import { revalidatePath } from "next/cache";
 
@@ -253,6 +254,182 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
         description: validatedData.description,
         basePrice: validatedData.basePrice,
         discountPercentage: validatedData.discountPercentage,
+      }
+    });
+
+    if (!updatedProduct) {
+      return {
+        success: false,
+        error: en.messages.product_update_failed,
+      };
+    }
+
+    revalidatePath(`/admin/products/${updatedProduct.id}`);
+
+    return {
+      success: true,
+      message: en.messages.product_updated_successfully,
+    };
+
+  } catch(error) {
+    console.error("Error updating product:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: en.messages.product_update_failed,
+    };
+  }
+}
+
+export async function toggleActiveStatus(id: string):Promise<ApiResponse> {
+  try {
+    const existingProduct = await prisma.product.findUnique({
+      where: {id : id},
+      select: {
+        id: true,
+        isActive: true,
+      }
+    })
+
+    if(!existingProduct) {
+      return {
+        success: false,
+        error: en.messages.product_doesnt_exist
+      };
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: { id: existingProduct.id },
+      data: {
+        isActive : !existingProduct.isActive,
+      }
+    });
+
+    if (!updatedProduct) {
+      return {
+        success: false,
+        error: en.messages.product_update_failed,
+      };
+    }
+
+    revalidatePath(`/admin/products/${updatedProduct.id}`);
+
+    return {
+      success: true,
+      message: en.messages.product_updated_successfully,
+    };
+
+  } catch(error) {
+    console.error("Error updating product:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: en.messages.product_update_failed,
+    };
+  }
+}
+
+export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
+  try {
+    const existingProduct = await prisma.product.findUnique({
+      where: {id : id},
+      select: {
+        id: true,
+        isFeatured: true,
+      }
+    })
+
+    if(!existingProduct) {
+      return {
+        success: false,
+        error: en.messages.product_doesnt_exist
+      };
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: { id: existingProduct.id },
+      data: {
+        isFeatured : !existingProduct.isFeatured,
+      }
+    });
+
+    if (!updatedProduct) {
+      return {
+        success: false,
+        error: en.messages.product_update_failed,
+      };
+    }
+
+    revalidatePath(`/admin/products/${updatedProduct.id}`);
+
+    return {
+      success: true,
+      message: en.messages.product_updated_successfully,
+    };
+
+  } catch(error) {
+    console.error("Error updating product:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: en.messages.product_update_failed,
+    };
+  }
+}
+
+export async function changeProductStatus(id: string, newStatus: ProductStatus):Promise<ApiResponse> {
+  try {
+    const validation = ProductStatusSchema.safeParse(newStatus);
+
+    if (!validation.success) {
+      return { 
+        success: false, 
+        error: "Invalid status value provided" 
+      };
+    }
+
+    const validatedStatus = validation.data
+    
+    const existingProduct = await prisma.product.findUnique({
+      where: {id : id},
+      select: {
+        id: true,
+        status: true
+      }
+    })
+
+    if(!existingProduct) {
+      return {
+        success: false,
+        error: en.messages.product_doesnt_exist
+      };
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: { id: existingProduct.id },
+      data: {
+        status: validatedStatus as ProductStatus
       }
     });
 

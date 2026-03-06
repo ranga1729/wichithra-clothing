@@ -3,7 +3,7 @@
 import { basicProductInfoSchema, BasicProductInfoSchema, productSchema, ProductSchema } from "@/schemas/admin-schemas";
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react";
-import { changeBasicInfo, getProductById } from "../action";
+import { changeBasicInfo, changeProductStatus, getProductById, toggleActiveStatus, toggleFeaturedStatus } from "../action";
 import toast from "react-hot-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +25,7 @@ import IsFeaturedToggler from "@/components/custom/general/IsFeaturedToggler";
 import ProductStatusChanger from "@/components/custom/general/ProductStatusChanger";
 import { ProductStatus } from "@/generated/prisma/enums";
 import { Slider } from "@/components/ui/slider";
+import { useRouter } from "next/navigation";
 
 export default function ProductDetailPage() {
   const [product, setProduct] = useState<ProductSchema>();
@@ -32,6 +33,8 @@ export default function ProductDetailPage() {
   
   const params = useParams();
   const productId = params.productId?.toString();
+
+  const router = useRouter()
   
   const {
     register,
@@ -50,7 +53,6 @@ export default function ProductDetailPage() {
       description: product?.description || "",
       basePrice: product?.basePrice || 0,
       discountPercentage: product?.discountPercentage || 0,
-      status: product?.status || "DRAFT" as ProductStatus,
     },
   });
   
@@ -84,6 +86,7 @@ export default function ProductDetailPage() {
 
   const loadCategoryData = async () => {
     if (product) {
+      setValue("id", product.id);
       setValue("name", product.name);
       setValue("slug", product.slug);
       setValue("brand", product.brand);
@@ -104,7 +107,25 @@ export default function ProductDetailPage() {
   }
 
   const handleSubmit = async () => {
-    await changeBasicInfo(currentFormData)
+    try {
+      setIsLoading(true);
+
+      const response = await changeBasicInfo(currentFormData);
+
+      if(!response.success && response.message) {
+        toast.error(response.message);
+      }
+      
+      if(response.success) {
+        toast.success(response.message!);
+        fetchData();
+      }
+
+    } catch(error:any) {
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const hasDataChanged = () => {
@@ -115,12 +136,78 @@ export default function ProductDetailPage() {
       currentFormData.material != product.material ||
       currentFormData.careInstructions != product.careInstructions ||
       currentFormData.description != product.description ||
-      currentFormData.basePrice != product?.basePrice ||
-      currentFormData.discountPercentage != product.discountPercentage
+      Number(currentFormData.basePrice) != product?.basePrice ||
+      Number(currentFormData.discountPercentage) != product.discountPercentage
     ) {
       return false;
     }
     return true;
+  }
+
+  const activeStatusToggler = async () => {
+    try {
+      setIsLoading(true);
+
+      const response = await toggleActiveStatus(product!.id);
+
+      if(!response.success && response.message) {
+        toast.error(response.message);
+      }
+      
+      if(response.success) {
+        toast.success(response.message!);
+        fetchData();
+      }
+
+    } catch(error:any) {
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false);
+    }
+  } 
+
+  const featuredStatustoggler = async () => {
+    try {
+      setIsLoading(true);
+
+      const response = await toggleFeaturedStatus(product!.id);
+
+      if(!response.success && response.message) {
+        toast.error(response.message);
+      }
+      
+      if(response.success) {
+        toast.success(response.message!);
+        fetchData();
+      }
+
+    } catch(error:any) {
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const productStatusChanger = async (newStatus:ProductStatus) => {
+    try {
+      setIsLoading(true);
+      
+      const response = await changeProductStatus(product!.id, newStatus);
+
+      if(!response.success && response.message) {
+        toast.error(response.message);
+      }
+      
+      if(response.success) {
+        toast.success(response.message!);
+        fetchData();
+      }
+
+    } catch(error:any) {
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const ImageCarousel = () => {
@@ -231,9 +318,11 @@ export default function ProductDetailPage() {
               <div className="flex flex-col">
                 <Input
                   id="edit-baseprice"
+                  type="number"
+                  step={0.01}
                   placeholder={en.input_labels.base_price}
-                  {...register("basePrice")}
-                  disabled= {isLoading}
+                  {...register("basePrice", {valueAsNumber: true})}
+                  disabled={isLoading}
                 />
                 {errors.basePrice && (
                   <span className="text-sm text-red-500">
@@ -306,9 +395,9 @@ export default function ProductDetailPage() {
         <Separator className="bg-neutral-400" />
 
         <FieldGroup className="flex lg:flex-row">
-          <IsActiveToggler isActive={product?.isActive} />
-          <IsFeaturedToggler isFeatured={product?.isFeatured} />
-          <ProductStatusChanger productStatus={product?.status as ProductStatus} />
+          <IsActiveToggler isActive={product?.isActive} isLoading={isLoading} toggler={activeStatusToggler} />
+          <IsFeaturedToggler isFeatured={product?.isFeatured} isLoading={isLoading} toggler={featuredStatustoggler} />
+          <ProductStatusChanger productStatus={product?.status as ProductStatus} isLoading={isLoading} changer={productStatusChanger} />
         </FieldGroup>
       </div>
 
