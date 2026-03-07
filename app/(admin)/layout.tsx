@@ -1,6 +1,6 @@
 import { AdminSidebar } from '@/components/custom/admin/admin-sidebar'; 
 import { AdminHeader } from '@/components/custom/admin/admin-header';
-import { ThemeProvider } from '@/components/theme/theme-provider';
+import { ThemeProvider } from '@/components/providers/theme/theme-provider';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import React from 'react';
 import { getUserFromCookie } from '@/lib/get-cookie';

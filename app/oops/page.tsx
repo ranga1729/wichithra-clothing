@@ -6,7 +6,7 @@ import Image from "next/image";
 import oops_light from "@/public/images/oops-light.png"
 import oops_dark from "@/public/images/oops-dark.png"
 import { useRouter, useSearchParams } from "next/navigation";
-import { ThemeToggler } from "@/components/theme/theme-toggler";
+import { ThemeToggler } from "@/components/providers/theme/theme-toggler";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";

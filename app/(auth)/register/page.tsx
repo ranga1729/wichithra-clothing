@@ -19,7 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
-import { ThemeToggler } from "@/components/theme/theme-toggler";
+import { ThemeToggler } from "@/components/providers/theme/theme-toggler";
 import { en } from "@/lib/i18n/en";
 
 export default function Register() {
