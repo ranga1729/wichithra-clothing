@@ -27,7 +27,7 @@ const IsActiveToggler = (props: Props) => {
     </FieldContent>
     <Switch 
       id="switch-active" 
-      checked={props.isActive}
+      checked={props.isActive ?? false}
       onCheckedChange={props.toggler}
       className="data-[state=checked]:bg-green-500"
       disabled={props.isLoading}

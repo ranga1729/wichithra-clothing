@@ -28,7 +28,7 @@ const IsFeaturedToggler = (props: Props) => {
     </FieldContent>
     <Switch 
       id="switch-featured" 
-      checked={props.isFeatured}
+      checked={props.isFeatured ?? false}
       onCheckedChange={props.toggler} 
       className="data-[state=checked]:bg-blue-500"
       disabled={props.isLoading}

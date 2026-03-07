@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { basicProductInfoSchema, BasicProductInfoSchema, productSchema, ProductSchema, ProductStatusSchema } from "@/schemas/admin-schemas";
 import { ApiResponse } from "@/types/auth-types";
 import { revalidatePath } from "next/cache";
+import test from "node:test";
 
 export async function getProducts():Promise<ApiResponse> {
   try {
@@ -441,6 +442,84 @@ export async function changeProductStatus(id: string, newStatus: ProductStatus):
     }
 
     revalidatePath(`/admin/products/${updatedProduct.id}`);
+
+    return {
+      success: true,
+      message: en.messages.product_updated_successfully,
+    };
+
+  } catch(error) {
+    console.error("Error updating product:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: en.messages.product_update_failed,
+    };
+  }
+}
+
+export async function changeProductSizes(productId: string, newSizes: string[]):Promise<ApiResponse> {
+  try {    
+    const existingProduct = await prisma.product.findUnique({
+      where: {id : productId},
+      select: {
+        id: true,
+        productSizes: true
+      }
+    })
+
+    if(!existingProduct) {
+      return {
+        success: false,
+        error: en.messages.product_doesnt_exist
+      };
+    }
+
+    const existingSizeIds = existingProduct.productSizes.map(s => s.sizeId);
+
+    const toAdd = newSizes.filter(id => !existingSizeIds.includes(id));
+    const toRemove = existingSizeIds.filter(id => !newSizes.includes(id));
+
+    await prisma.$transaction([
+      prisma.productSize.deleteMany({
+        where: {
+          productId: existingProduct.id,
+          sizeId: {in: toRemove}
+        }
+      }),
+      ...toAdd.map(sizeId => 
+        prisma.productSize.create({
+          data: {
+            productId: existingProduct.id,
+            sizeId,
+            isActive: true
+          }
+        })
+      )
+    ])
+
+    // const updatedProduct = await prisma.product.update({
+    //   where: { id: existingProduct.id },
+    //   data: {
+    //     status: validatedStatus as ProductStatus
+    //   }
+    // });
+
+    // if (!updatedProduct) {
+    //   return {
+    //     success: false,
+    //     error: en.messages.product_update_failed,
+    //   };
+    // }
+
+    revalidatePath(`/admin/products/${productId}`);
 
     return {
       success: true,

@@ -1,21 +1,22 @@
 import { getSizes } from "@/app/(admin)/admin/sizes/action";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Size } from "@/generated/prisma/client";
 import { cn } from "@/lib/utils";
 import { ProductSizeSchema } from "@/schemas/admin-schemas";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
 interface Props {
   productSizes?: ProductSizeSchema[];
-  onChange?: (selectedIds: string[]) => void;
+  sizeChanger: (newSizes: string[]) => void;
 }
 
 const SizeMapper = (props:Props) => {
   const [StandardSizes, setStandardSizes] = useState<Size[]>([]);
-  const [selectedSizeIds, setSelectedSizeIds] = useState<string[]>([]);
+  const [newSelectedSizeIds, setNewSelectedSizeIds] = useState<string[]>([]);
 
   const fetchSizes = async () => {
     try {
@@ -33,32 +34,46 @@ const SizeMapper = (props:Props) => {
     }
   }
 
+  const hasDataChanged = useMemo(() => {
+    if(props.productSizes?.length !== newSelectedSizeIds.length) {
+      return false;
+    }
+    const setOfNewIds = new Set(newSelectedSizeIds);
+    return props.productSizes.every(size => setOfNewIds.has(size.sizeId));
+  }, [props.productSizes, newSelectedSizeIds])
+
+  const handleSizeChange = (sizeId: string) => {
+    let newSelectedIds: string[];
+    if (newSelectedSizeIds.includes(sizeId)) {
+      newSelectedIds = newSelectedSizeIds.filter((id) => id !== sizeId);
+    } else {
+      newSelectedIds = [...newSelectedSizeIds, sizeId];
+    }
+    setNewSelectedSizeIds(newSelectedIds);
+  };
+
+  const setInitialSelectedIds = () => {
+    if (props.productSizes && props.productSizes.length > 0) {
+      const initialIds = props.productSizes!.map((ps) => ps.sizeId);
+      setNewSelectedSizeIds(initialIds);
+    }
+  }
+
+  const handleSave = () => {
+    props.sizeChanger(newSelectedSizeIds);
+  }
+
+  const handleReset = () => {
+    setInitialSelectedIds();
+  }
+
   useEffect(() => {
     fetchSizes();
   }, [])
 
   useEffect(() => {
-    if (props.productSizes && props.productSizes.length > 0) {
-      const initialIds = props.productSizes!.map((ps) => ps.sizeId);
-      setSelectedSizeIds(initialIds);
-    }
+    setInitialSelectedIds();
   }, [props.productSizes]);
-
-  const handleToggle = (sizeId: string) => {
-    let newSelectedIds: string[];
-
-    if (selectedSizeIds.includes(sizeId)) {
-      newSelectedIds = selectedSizeIds.filter((id) => id !== sizeId);
-    } else {
-      newSelectedIds = [...selectedSizeIds, sizeId];
-    }
-
-    setSelectedSizeIds(newSelectedIds);
-    
-    if (props.onChange) {
-      props.onChange(newSelectedIds);
-    }
-  };
 
   return (
     <Card className="w-full max-w-70">
@@ -71,14 +86,14 @@ const SizeMapper = (props:Props) => {
       <CardContent className="flex flex-col gap-2">
         {
           StandardSizes.map((s_size) => {
-            const isChecked = selectedSizeIds.includes(s_size.id);
+            const isChecked = newSelectedSizeIds.includes(s_size.id);
 
             return (
               <div key={s_size.id} className="flex flex-row items-center gap-3">
                 <Checkbox
                   id={`size-${s_size.id}`}
                   checked={isChecked}
-                  onCheckedChange={() => handleToggle(s_size.id)}
+                  onCheckedChange={() => handleSizeChange(s_size.id)}
                 />
                 <Label 
                   htmlFor={`size-${s_size.id}`} 
@@ -86,7 +101,7 @@ const SizeMapper = (props:Props) => {
                     "cursor-pointer border flex w-fit items-center justify-center rounded-md px-1.5 py-1 text-xs font-medium transition-colors",
                     isChecked 
                       ? "bg-neutral-200 text-neutral-800 border-neutral-400 hover:bg-neutral-300"
-                      : "bg-neutral-100 text-neutral-400 border-neutral-200 cursor-not-allowed opacity-100" 
+                      : "bg-neutral-100 text-neutral-500 border-neutral-200 opacity-100" 
                   )}
                 >
                   {s_size.name}
@@ -96,7 +111,10 @@ const SizeMapper = (props:Props) => {
           })
         }
       </CardContent>
-      
+      <CardFooter className="flex flex-row items-center justify-end gap-2">
+        <Button disabled={hasDataChanged} onClick={handleSave}>Save</Button>
+        <Button disabled={hasDataChanged} onClick={handleReset}>Reset</Button>
+      </CardFooter>
     </Card>
   )
 }

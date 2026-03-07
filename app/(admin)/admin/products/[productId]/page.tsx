@@ -3,7 +3,7 @@
 import { basicProductInfoSchema, BasicProductInfoSchema, productSchema, ProductSchema } from "@/schemas/admin-schemas";
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react";
-import { changeBasicInfo, changeProductStatus, getProductById, toggleActiveStatus, toggleFeaturedStatus } from "../action";
+import { changeBasicInfo, changeProductSizes, changeProductStatus, getProductById, toggleActiveStatus, toggleFeaturedStatus } from "../action";
 import toast from "react-hot-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
@@ -193,6 +193,31 @@ export default function ProductDetailPage() {
       setIsLoading(true);
       
       const response = await changeProductStatus(product!.id, newStatus);
+
+      if(!response.success && response.message) {
+        toast.error(response.message);
+      }
+      
+      if(response.success) {
+        toast.success(response.message!);
+        fetchData();
+      }
+
+    } catch(error:any) {
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const ProductSizeChanger = async (newSizes: string[]) => {
+    console.log("productId", product?.id);
+    console.log("NewSizes", newSizes);
+    
+    try {
+      setIsLoading(true);
+      
+      const response = await changeProductSizes(product!.id, newSizes);
 
       if(!response.success && response.message) {
         toast.error(response.message);
@@ -402,10 +427,10 @@ export default function ProductDetailPage() {
       </div>
 
       <h1 className="font-bold text-md text-neutral-600 text-center">Product Mappings</h1>
-      <div className="flex flex-row items-center justify-center border flex-wrap border-neutral-300 p-5 rounded-2xl gap-4">
+      <div className="flex flex-row items-start justify-center border flex-wrap border-neutral-300 p-5 rounded-2xl gap-4">
         <ColorMapper colors={product?.productColors}  />
-        <SizeMapper productSizes={product?.productSizes} />
         <DesignMapper designs={product?.productDesigns} />
+        <SizeMapper productSizes={product?.productSizes} sizeChanger={ProductSizeChanger} />
       </div>
     </div>
   </div>

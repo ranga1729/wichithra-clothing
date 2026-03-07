@@ -1,3 +1,4 @@
+'use client'
 import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from "@/components/ui/field"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProductStatus } from "@/generated/prisma/enums";
@@ -22,7 +23,7 @@ const ProductStatusChanger = (props: Props) => {
       </FieldDescription>
     </FieldContent>
 
-      <Select value={props.productStatus} onValueChange={(value) => props.changer(value as ProductStatus)}>
+      <Select value={props.productStatus ?? ""} onValueChange={(value) => props.changer(value as ProductStatus)}>
         <SelectTrigger className="w-full max-w-48">
           <SelectValue placeholder="Select Status" />
         </SelectTrigger>
