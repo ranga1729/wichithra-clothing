@@ -20,7 +20,7 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
     if(existingUser) {
       return {
         success: false,
-        message: en.messages.user_with_this_email_exists,
+        message: en.user_with_this_email_exists,
       };
     }
 
@@ -88,7 +88,7 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
 
     return {
       success: true,
-      message: en.messages.registration_successful,
+      message: en.registration_successful,
       data: {
         user: {
           id: user.id,
@@ -103,14 +103,14 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
     if (error instanceof ZodError) {
       return {
         success: false,
-        message: en.messages.validation_failed,
-        error: error.issues[0].message || en.messages.validation_failed
+        message: en.validation_failed,
+        error: error.issues[0].message || en.validation_failed
       };
     }
     
     return {
       success: false,
-      message: en.messages.something_went_wrong,
+      message: en.something_went_wrong,
     };
   }
 }

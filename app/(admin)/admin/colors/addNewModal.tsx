@@ -42,15 +42,15 @@ export default function AddNewModal(props: Props) {
       const result = await createColor(newColor);
 
       if (result.success) {
-        toast.success(en.messages.design_created_successfully);
+        toast.success(en.design_created_successfully);
         reset();
         props.onOpenChange(false);
         props.fetchData()
       } else {
-        toast.error(result.error || en.messages.failed_to_create_design);
+        toast.error(result.error || en.failed_to_create_design);
       }
     } catch (error) {
-      toast.error(en.messages.failed_to_create_design);
+      toast.error(en.failed_to_create_design);
     } finally {
       setIsSubmitting(false);
     }
@@ -65,9 +65,9 @@ export default function AddNewModal(props: Props) {
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
       <DialogContent className="dark:bg-neutral-800 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle> {en.texts.color.create_color_title} </DialogTitle>
+          <DialogTitle> {en.create_color_title} </DialogTitle>
           <DialogDescription>
-            {en.texts.color.create_color_subtitle}
+            {en.create_color_subtitle}
           </DialogDescription>
         </DialogHeader>
 
@@ -75,7 +75,7 @@ export default function AddNewModal(props: Props) {
           <FieldGroup className="flex flex-col gap-4">
             <FieldGroup className="flex flex-row gap-4 items-center justify-center">
               <Field className="flex flex-col gap-2 flex-2">
-                <Label htmlFor="new-name"> {en.input_labels.name} </Label>
+                <Label htmlFor="new-name"> {en.name} </Label>
                 <div className="flex flex-col">
                   <Input
                     id="new-name"
@@ -91,7 +91,7 @@ export default function AddNewModal(props: Props) {
                 </div>
               </Field>
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="new-slug"> {en.input_labels.hexCode} </Label>
+                <Label htmlFor="new-slug"> {en.hexCode} </Label>
                 <div className="flex flex-col">
                   <div className="relative">
                     <Item className="absolute left-1 top-1 p-1 m-0" variant={"default"} > # </Item>
@@ -111,7 +111,7 @@ export default function AddNewModal(props: Props) {
                 </div>
               </Field>
               <Field className="flex flex-col gap-2 w-fit">
-                <Label htmlFor="preview"> {en.input_labels.preview} </Label>
+                <Label htmlFor="preview"> {en.preview} </Label>
                 <div id="preview" className="flex items-center justify-center h-full">
                   <div  className="w-9 h-9 rounded-full border border-neutral-400" style={{backgroundColor: `#${getValues().hexCode}`}}>
                   
@@ -127,8 +127,8 @@ export default function AddNewModal(props: Props) {
           <DialogFooter className="mt-6">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? <>
-                  <LoaderCircle className="animate-spin w-8 h-8" /> {en.common.status.saving}
-                </> : <>{en.common.buttons.save}</>}
+                  <LoaderCircle className="animate-spin w-8 h-8" /> {en.saving}
+                </> : <>{en.save}</> }
             </Button>
             <Button
               type="button"
@@ -136,7 +136,7 @@ export default function AddNewModal(props: Props) {
               onClick={handleCancel}
               disabled={isSubmitting}
             >
-              {en.common.buttons.cancel}
+              {en.cancel}
             </Button>
           </DialogFooter>
         </form>

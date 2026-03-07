@@ -93,7 +93,7 @@ export default function CategoryPage() {
       }
       
       if(response.success) {
-        toast.success(response.message || en.messages.category_deleted_successfully)
+        toast.success(response.message || en.category_deleted_successfully)
         fetchData();
       }
     } catch(error:any) {
@@ -109,7 +109,7 @@ export default function CategoryPage() {
       }
       
       if(response.success) {
-        toast.success(response.message || en.messages.active_status_toggled)
+        toast.success(response.message || en.active_status_toggled)
         fetchData();
       }
     } catch(error:any) {
@@ -143,16 +143,16 @@ export default function CategoryPage() {
           <form className="flex flex-col gap-3">
             <div className="flex flex-row justify-start items-center gap-3 w-full border py-3 px-2 rounded-md">
               <div className="grid w-60 max-w-sm items-center gap-2">
-                <Label htmlFor="name"> {en.input_labels.name} </Label>
+                <Label htmlFor="name"> {en.name} </Label>
                 <Input type="text" id="name" placeholder="Name" value={filter.name} name="name" onChange={handleFilterChange} />
               </div>
               <div className="grid w-60 max-w-sm items-center gap-2">
-                <Label htmlFor="Slug"> {en.input_labels.slug} </Label>
+                <Label htmlFor="Slug"> {en.slug} </Label>
                 <Input type="text" id="Slug" placeholder="Slug" value={filter.slug} name="slug" onChange={handleFilterChange} />
               </div>
 
               <div className="flex flex-col gap-2 w-60">
-                <Label htmlFor="sort"> {en.input_labels.slug} </Label>
+                <Label htmlFor="sort"> {en.slug} </Label>
                 <SortDropDown
                   id="sort"
                   sortColumnOptions={SortColumns}
@@ -165,9 +165,9 @@ export default function CategoryPage() {
             </div>
             
             <div className="flex flex-row gap-2">
-              <Button size={"default"} type="button" onClick={handleSearch}> <Search /> {en.common.buttons.apply_filters} </Button>
-              <Button size={"default"} type="button" onClick={handleReset}> <RotateCcw /> {en.common.buttons.reset_filters} </Button>
-              <Button size={"default"} type="button" onClick={() => setIsAddNewModalOpen(true)}> <CirclePlus /> {en.common.buttons.add_new} </Button>
+              <Button size={"default"} type="button" onClick={handleSearch}> <Search /> {en.apply_filters} </Button>
+              <Button size={"default"} type="button" onClick={handleReset}> <RotateCcw /> {en.reset_filters} </Button>
+              <Button size={"default"} type="button" onClick={() => setIsAddNewModalOpen(true)}> <CirclePlus /> {en.add_new} </Button>
             </div>
           </form>
         </div>

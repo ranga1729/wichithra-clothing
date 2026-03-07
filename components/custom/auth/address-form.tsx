@@ -34,7 +34,7 @@ export const AddressForm = (props:Props) => {
       <FieldGroup className="gap-2 p-1">
         <div className="flex flex-row gap-3">
           <Field className="gap-1">
-            <FieldLabel htmlFor="houseNo"> {en.input_labels.house_number_required} </FieldLabel>
+            <FieldLabel htmlFor="houseNo"> {en.house_number_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Input 
                 id="houseNo" type="text" placeholder="123/4"
@@ -49,7 +49,7 @@ export const AddressForm = (props:Props) => {
             </div>
           </Field>
           <Field className="gap-1">
-            <FieldLabel htmlFor="zipCode"> {en.input_labels.zipcode_required} </FieldLabel>
+            <FieldLabel htmlFor="zipCode"> {en.zipcode_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Input 
                 id="zipCode" type="text" 
@@ -67,7 +67,7 @@ export const AddressForm = (props:Props) => {
         </div>
 
         <Field className="gap-1">
-          <FieldLabel htmlFor="addressLine1"> {en.input_labels.address_line_1_required} </FieldLabel>
+          <FieldLabel htmlFor="addressLine1"> {en.address_line_1_required} </FieldLabel>
           <div className="flex flex-col gap-0">
             <Input 
               id="addressLine1" type="text" 
@@ -83,7 +83,7 @@ export const AddressForm = (props:Props) => {
           </div>
         </Field>
         <Field className="gap-1">
-          <FieldLabel htmlFor="addressLine2"> {en.input_labels.address_line_2_required} </FieldLabel>
+          <FieldLabel htmlFor="addressLine2"> {en.address_line_2_required} </FieldLabel>
           <div className="flex flex-col gap-0">
             <Input 
               id="addressLine2" type="text" 
@@ -100,7 +100,7 @@ export const AddressForm = (props:Props) => {
 
         <div className="flex flex-row gap-3">
           <Field className="gap-1">
-            <FieldLabel htmlFor="city"> {en.input_labels.nearest_city_required} </FieldLabel>
+            <FieldLabel htmlFor="city"> {en.nearest_city_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Input
                 id="city" type="text" placeholder="Colombo"
@@ -116,7 +116,7 @@ export const AddressForm = (props:Props) => {
           </Field>
 
           <Field className="gap-1">
-            <FieldLabel htmlFor="province"> {en.input_labels.province_required} </FieldLabel>
+            <FieldLabel htmlFor="province"> {en.province_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Controller
                 name="province"

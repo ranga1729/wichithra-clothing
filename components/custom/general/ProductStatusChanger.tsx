@@ -17,9 +17,9 @@ const ProductStatusChanger = (props: Props) => {
         props.isLoading ? "opacity-50 pointer-events-none select-none" : "opacity-100"
       }>
     <FieldContent>
-      <FieldTitle> {en.input_labels.product_status} </FieldTitle>
+      <FieldTitle> {en.product_status} </FieldTitle>
       <FieldDescription>
-        {en.input_labels.product_status_description}
+        {en.product_status_description}
       </FieldDescription>
     </FieldContent>
 

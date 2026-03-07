@@ -59,8 +59,8 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
     if(!categories) {
       return {
         success: false,
-        message: en.messages.data_retrieval_failed,
-        error: en.messages.data_retrieval_failed
+        message: en.data_retrieval_failed,
+        error: en.data_retrieval_failed
       }
     }
 
@@ -75,7 +75,7 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
   } catch(error:any) {
     return { 
       success: false,
-      error: error.message || en.messages.data_retrieval_failed 
+      error: error.message || en.data_retrieval_failed 
     };
   }
 }
@@ -97,7 +97,7 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
     if(!category) {
       return {
         success: false,
-        error: en.messages.failed_to_create_category,
+        error: en.failed_to_create_category,
       };
     }
 
@@ -129,7 +129,7 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
       if(!updatedCategory) {
         return {
           success: false,
-          error: en.messages.category_create_and_failed_adding_sizeguide,
+          error: en.category_create_and_failed_adding_sizeguide,
         };
       }
     }
@@ -138,10 +138,10 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
 
     return {
       success: true,
-      message: en.messages.category_created_successfully,
+      message: en.category_created_successfully,
     };
   } catch (error) {
-    console.error(en.messages.failed_to_create_category + ": ", error);
+    console.error(en.failed_to_create_category + ": ", error);
     
     if (error instanceof Error) {
       return {
@@ -152,7 +152,7 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
     
     return {
       success: false,
-      error: en.messages.failed_to_create_category,
+      error: en.failed_to_create_category,
     };
   }
 }
@@ -170,7 +170,7 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
     if(!category) {
       return {
         success: false,
-        error: en.messages.category_doesnt_exist
+        error: en.category_doesnt_exist
       }
     }
 
@@ -184,7 +184,7 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
     if(!deletedCategory) {
       return {
         success: false,
-        error: en.messages.category_deletion_failed
+        error: en.category_deletion_failed
       }
     }
 
@@ -200,7 +200,7 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
       } catch(error) {
         return { 
             success: true, 
-            message: en.messages.category_deleted_image_not_exist 
+            message: en.category_deleted_image_not_exist 
         };
       }
       
@@ -210,10 +210,10 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
 
     return {
       success: true,
-      message: en.messages.category_deleted
+      message: en.category_deleted
     }
   } catch(error) {
-    console.error(en.messages.category_deletion_failed + ": ", error);
+    console.error(en.category_deletion_failed + ": ", error);
     
     if (error instanceof Error) {
       return {
@@ -224,7 +224,7 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
     
     return {
       success: false,
-      error: en.messages.category_deletion_failed,
+      error: en.category_deletion_failed,
     };
   }
 }
@@ -241,14 +241,14 @@ export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
     if(!category) {
       return {
         success: false,
-        error: en.messages.category_doesnt_exist
+        error: en.category_doesnt_exist
       }
     }
 
     if(!category.sizeGuide) {
       return {
         success: false,
-        error: en.messages.no_size_guide_for_this_category
+        error: en.no_size_guide_for_this_category
       }
     }
 
@@ -265,7 +265,7 @@ export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
     if(!sizeGuide) {
       return {
         success: false,
-        error: en.messages.file_doesnt_exist_or_unable_to_fetch
+        error: en.file_doesnt_exist_or_unable_to_fetch
       }
     }
 
@@ -276,7 +276,7 @@ export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
       }
     }
   } catch(error) {
-    console.error(en.messages.error_fetching_sizeguide + ": ", error);
+    console.error(en.error_fetching_sizeguide + ": ", error);
     
     if (error instanceof Error) {
       return {
@@ -287,7 +287,7 @@ export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
     
     return {
       success: false,
-      error: en.messages.failed_to_fetch_sizeguide,
+      error: en.failed_to_fetch_sizeguide,
     };
   }
 }
@@ -307,7 +307,7 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
     if (!existingCategory) {
       return {
         success: false,
-        error: en.messages.category_doesnt_exist
+        error: en.category_doesnt_exist
       };
     }
 
@@ -365,7 +365,7 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
     if (!updatedCategory) {
       return {
         success: false,
-        error: en.messages.failed_to_update_category,
+        error: en.failed_to_update_category,
       };
     }
 
@@ -373,11 +373,11 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
 
     return {
       success: true,
-      message: en.messages.category_updated_successfully,
+      message: en.category_updated_successfully,
       data: { updatedCategory }
     };
   } catch (error) {
-    console.error( en.messages.failed_to_update_category + ": ", error);
+    console.error( en.failed_to_update_category + ": ", error);
     
     if (error instanceof Error) {
       return {
@@ -388,7 +388,7 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
     
     return {
       success: false,
-      error: en.messages.failed_to_update_category,
+      error: en.failed_to_update_category,
     };
   }
 }
@@ -406,7 +406,7 @@ export async function toggleActiveStatusOfCategory(id: string): Promise<ApiRespo
     if (!existingCategory) {
       return {
         success: false,
-        error: en.messages.category_doesnt_exist
+        error: en.category_doesnt_exist
       };
     }
 
@@ -423,7 +423,7 @@ export async function toggleActiveStatusOfCategory(id: string): Promise<ApiRespo
     if (!updatedCategory) {
       return {
         success: false,
-        error: en.messages.failed_to_update_active_status,
+        error: en.failed_to_update_active_status,
       };
     }
 
@@ -431,15 +431,15 @@ export async function toggleActiveStatusOfCategory(id: string): Promise<ApiRespo
 
     return {
       success: true,
-      message: en.messages.category_updated_successfully,
+      message: en.category_updated_successfully,
     };
 
   } catch(error) {
-    console.error( en.messages.failed_to_update_category + ": ", error);
+    console.error( en.failed_to_update_category + ": ", error);
 
     return {
       success: false,
-      error: en.messages.failed_to_toggle_active_status,
+      error: en.failed_to_toggle_active_status,
     };
   }
 }

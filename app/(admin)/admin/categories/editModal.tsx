@@ -73,7 +73,7 @@ export default function EditModal(props: Props) {
         const result = await fetchSizeGuide(props.selectedCategory.id);
 
         if(!result.success) {
-          toast.error(result.error || en.messages.error_fetching_sizeguide);
+          toast.error(result.error || en.error_fetching_sizeguide);
           return null;
         }
 
@@ -82,7 +82,7 @@ export default function EditModal(props: Props) {
       }
       return null;
     } catch (error:any) {
-      toast.error(error.message || en.messages.error_fetching_sizeguide);
+      toast.error(error.message || en.error_fetching_sizeguide);
       return null;
     } finally {
       setIsLoadingSizeGuide(false);
@@ -104,7 +104,7 @@ export default function EditModal(props: Props) {
   const onSubmit = async (data: CategorySchema) => {
 
     if (!hasChanges) {
-      toast.error(en.messages.no_changes_detected);
+      toast.error(en.no_changes_detected);
       return;
     }
 
@@ -125,21 +125,21 @@ export default function EditModal(props: Props) {
       const result = await updateCategory(prevData!.id, data);
 
       if (!result.success) {
-        toast.error(result.error || en.messages.category_update_failed);
+        toast.error(result.error || en.category_update_failed);
         reset();
         setFilePreview(null);
         props.onOpenChange(false);
         return;
       }
 
-      toast.success(en.messages.category_updated_successfully);
+      toast.success(en.category_updated_successfully);
       props.onOpenChange(false);
       reset();
       setFilePreview(null);
       setPrevData(undefined);
 
     } catch (error) {
-      toast.error(en.messages.category_update_failed);
+      toast.error(en.category_update_failed);
     } finally {
       setIsSubmitting(false);
     }
@@ -186,9 +186,9 @@ export default function EditModal(props: Props) {
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
       <DialogContent className="dark:bg-neutral-800 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle> {en.texts.category.edit_category_title} </DialogTitle>
+          <DialogTitle> {en.edit_category_title} </DialogTitle>
           <DialogDescription>
-            {en.texts.category.edit_category_subtitle}
+            {en.edit_category_subtitle}
           </DialogDescription>
         </DialogHeader>
 
@@ -196,7 +196,7 @@ export default function EditModal(props: Props) {
           <FieldGroup className="flex flex-col gap-4">
             <FieldGroup className="flex flex-row gap-4">
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-name"> {en.input_labels.name} </Label>
+                <Label htmlFor="edit-name"> {en.name} </Label>
                 <div className="flex flex-col">
                   <Input
                     id="edit-name"
@@ -212,7 +212,7 @@ export default function EditModal(props: Props) {
                 </div>
               </Field>
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-slug"> {en.input_labels.slug} </Label>
+                <Label htmlFor="edit-slug"> {en.slug} </Label>
                 <div className="flex flex-col">
                   <Input
                     id="edit-slug"
@@ -230,7 +230,7 @@ export default function EditModal(props: Props) {
             </FieldGroup>
 
             <Field className="flex flex-col gap-2">
-              <Label htmlFor="edit-description"> {en.input_labels.description} </Label>
+              <Label htmlFor="edit-description"> {en.description} </Label>
               <Textarea
                 id="edit-description"
                 placeholder="Type a description for this category"
@@ -242,7 +242,7 @@ export default function EditModal(props: Props) {
             <FieldGroup className="flex flex-col">
               <FieldGroup className="flex flex-row gap-4">
                 <Field className="flex flex-col gap-2 flex-1">
-                  <Label htmlFor="edit-sortOrder"> {en.input_labels.sort_order} </Label>
+                  <Label htmlFor="edit-sortOrder"> {en.sort_order} </Label>
                   <div className="flex flex-col">
                     <Input
                       id="edit-sortOrder"
@@ -258,7 +258,7 @@ export default function EditModal(props: Props) {
                   </div>
                 </Field>
                 <Field className="flex flex-col gap-2 flex-3">
-                  <Label htmlFor="edit-sizeGuideImage"> {en.input_labels.size_guide_image} </Label>
+                  <Label htmlFor="edit-sizeGuideImage"> {en.size_guide_image} </Label>
                   <div>
                     <Input
                       id="edit-sizeGuideImage"
@@ -280,7 +280,7 @@ export default function EditModal(props: Props) {
               {isLoadingSizeGuide && (
                 <div className="flex items-center justify-center mt-2 p-4 border rounded-lg">
                   <LoaderCircle className="animate-spin w-6 h-6 mr-2" />
-                  <span> {en.common.status.loading} </span>
+                  <span> {en.loading} </span>
                 </div>
               )}
               
@@ -299,7 +299,7 @@ export default function EditModal(props: Props) {
                     onClick={handleRemoveFile}
                     disabled={isSubmitting}
                   >
-                    {en.common.buttons.remove}
+                    {en.remove}
                   </Button>
                 </div>
               )}
@@ -315,7 +315,7 @@ export default function EditModal(props: Props) {
               {isSubmitting ? (
                 <>
                   <LoaderCircle className="animate-spin w-4 h-4 mr-2" />
-                  {en.common.status.saving}
+                  {en.saving}
                 </>
               ) : (
                 "Save Category"
@@ -327,7 +327,7 @@ export default function EditModal(props: Props) {
               onClick={handleCancel}
               disabled={isSubmitting}
             >
-              {en.common.buttons.cancel}
+              {en.cancel}
             </Button>
           </DialogFooter>
         </div>

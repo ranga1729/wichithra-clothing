@@ -73,8 +73,8 @@ export async function getProducts():Promise<ApiResponse> {
     if(!products) {
       return {
         success: false,
-        message: en.messages.data_retrieval_failed,
-        error: en.messages.data_retrieval_failed
+        message: en.data_retrieval_failed,
+        error: en.data_retrieval_failed
       }
     }
 
@@ -89,7 +89,7 @@ export async function getProducts():Promise<ApiResponse> {
   } catch(error:any) {
     return { 
       success: false,
-      error: error.message || en.messages.data_retrieval_failed 
+      error: error.message || en.data_retrieval_failed 
     };
   }
 }
@@ -198,8 +198,8 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
     if(!selectedProduct) {
       return {
         success: false,
-        message: en.messages.data_retrieval_failed,
-        error: en.messages.data_retrieval_failed
+        message: en.data_retrieval_failed,
+        error: en.data_retrieval_failed
       }
     }
 
@@ -213,7 +213,7 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
   } catch(error:any) {
     return { 
       success: false,
-      error: error.message || en.messages.data_retrieval_failed 
+      error: error.message || en.data_retrieval_failed 
     };
   }
 }
@@ -240,7 +240,7 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
     if(!existingProduct) {
       return {
         success: false,
-        error: en.messages.product_doesnt_exist
+        error: en.product_doesnt_exist
       };
     }
 
@@ -261,7 +261,7 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
     if (!updatedProduct) {
       return {
         success: false,
-        error: en.messages.product_update_failed,
+        error: en.product_update_failed,
       };
     }
 
@@ -269,7 +269,7 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
 
     return {
       success: true,
-      message: en.messages.product_updated_successfully,
+      message: en.product_updated_successfully,
     };
 
   } catch(error) {
@@ -284,7 +284,7 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
     
     return {
       success: false,
-      error: en.messages.product_update_failed,
+      error: en.product_update_failed,
     };
   }
 }
@@ -302,7 +302,7 @@ export async function toggleActiveStatus(id: string):Promise<ApiResponse> {
     if(!existingProduct) {
       return {
         success: false,
-        error: en.messages.product_doesnt_exist
+        error: en.product_doesnt_exist
       };
     }
 
@@ -316,7 +316,7 @@ export async function toggleActiveStatus(id: string):Promise<ApiResponse> {
     if (!updatedProduct) {
       return {
         success: false,
-        error: en.messages.product_update_failed,
+        error: en.product_update_failed,
       };
     }
 
@@ -324,7 +324,7 @@ export async function toggleActiveStatus(id: string):Promise<ApiResponse> {
 
     return {
       success: true,
-      message: en.messages.product_updated_successfully,
+      message: en.product_updated_successfully,
     };
 
   } catch(error) {
@@ -339,7 +339,7 @@ export async function toggleActiveStatus(id: string):Promise<ApiResponse> {
     
     return {
       success: false,
-      error: en.messages.product_update_failed,
+      error: en.product_update_failed,
     };
   }
 }
@@ -357,7 +357,7 @@ export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
     if(!existingProduct) {
       return {
         success: false,
-        error: en.messages.product_doesnt_exist
+        error: en.product_doesnt_exist
       };
     }
 
@@ -371,7 +371,7 @@ export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
     if (!updatedProduct) {
       return {
         success: false,
-        error: en.messages.product_update_failed,
+        error: en.product_update_failed,
       };
     }
 
@@ -379,7 +379,7 @@ export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
 
     return {
       success: true,
-      message: en.messages.product_updated_successfully,
+      message: en.product_updated_successfully,
     };
 
   } catch(error) {
@@ -394,7 +394,7 @@ export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
     
     return {
       success: false,
-      error: en.messages.product_update_failed,
+      error: en.product_update_failed,
     };
   }
 }
@@ -423,7 +423,7 @@ export async function changeProductStatus(id: string, newStatus: ProductStatus):
     if(!existingProduct) {
       return {
         success: false,
-        error: en.messages.product_doesnt_exist
+        error: en.product_doesnt_exist
       };
     }
 
@@ -437,7 +437,7 @@ export async function changeProductStatus(id: string, newStatus: ProductStatus):
     if (!updatedProduct) {
       return {
         success: false,
-        error: en.messages.product_update_failed,
+        error: en.product_update_failed,
       };
     }
 
@@ -445,7 +445,7 @@ export async function changeProductStatus(id: string, newStatus: ProductStatus):
 
     return {
       success: true,
-      message: en.messages.product_updated_successfully,
+      message: en.product_updated_successfully,
     };
 
   } catch(error) {
@@ -460,7 +460,7 @@ export async function changeProductStatus(id: string, newStatus: ProductStatus):
     
     return {
       success: false,
-      error: en.messages.product_update_failed,
+      error: en.product_update_failed,
     };
   }
 }
@@ -478,7 +478,7 @@ export async function changeProductSizes(productId: string, newSizes: string[]):
     if(!existingProduct) {
       return {
         success: false,
-        error: en.messages.product_doesnt_exist
+        error: en.product_doesnt_exist
       };
     }
 
@@ -515,7 +515,7 @@ export async function changeProductSizes(productId: string, newSizes: string[]):
     // if (!updatedProduct) {
     //   return {
     //     success: false,
-    //     error: en.messages.product_update_failed,
+    //     error: en.product_update_failed,
     //   };
     // }
 
@@ -523,7 +523,7 @@ export async function changeProductSizes(productId: string, newSizes: string[]):
 
     return {
       success: true,
-      message: en.messages.product_updated_successfully,
+      message: en.product_updated_successfully,
     };
 
   } catch(error) {
@@ -538,7 +538,7 @@ export async function changeProductSizes(productId: string, newSizes: string[]):
     
     return {
       success: false,
-      error: en.messages.product_update_failed,
+      error: en.product_update_failed,
     };
   }
 }

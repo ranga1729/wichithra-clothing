@@ -61,15 +61,15 @@ export default function Register() {
           toast.success(result.message)
           router.push("/");
         } else {
-          toast.error(result.message || en.messages.registration_failed);
+          toast.error(result.message || en.registration_failed);
         }
       } catch(error:any) {
-        toast.error(error.message || en.messages.registration_failed);
+        toast.error(error.message || en.registration_failed);
       } finally {
         setIsSubmitting(false);
       }
     } else {
-      toast.error(en.messages.fill_all_required_fileds);
+      toast.error(en.fill_all_required_fileds);
     }
   }
 
@@ -79,17 +79,17 @@ export default function Register() {
       <Card className="w-full">
         <CardHeader className="flex flex-col items-center justify-start" >
           <ThemeToggler />
-          <CardTitle className="text-center"> {en.texts.register.title} </CardTitle>
-          <CardDescription className="text-center"> {en.texts.register.subtitle} </CardDescription>
+          <CardTitle className="text-center"> {en.register_title} </CardTitle>
+          <CardDescription className="text-center"> {en.register_subtitle} </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col flex-wrap gap-7">
           <FieldGroup className="w-full flex flex-col md:flex-row gap-10 md:gap-7">
             <Field className="border p-3 rounded-md flex-1">
-              <p className="text-center font-semibold"> {en.texts.register.user_information} </p>
+              <p className="text-center font-semibold"> {en.user_information} </p>
               <CustomerForm form={form} />
             </Field>
             <Field className="border p-3 rounded-md flex-1">
-              <p className="text-center font-semibold"> {en.texts.register.address_information} </p>
+              <p className="text-center font-semibold"> {en.address_information} </p>
               <AddressForm form={form} />
             </Field>
           </FieldGroup>
@@ -98,14 +98,14 @@ export default function Register() {
               <Button disabled={isSubmitting} size={"lg"} type="button" onClick={onSubmit}> 
                 {isSubmitting ? 
                   <>
-                    <LoaderCircle className="animate-spin w-8 h-8" /> {en.common.status.loading}
+                    <LoaderCircle className="animate-spin w-8 h-8" /> {en.loading}
                   </> : <>
-                    {en.common.buttons.register}
+                    {en.register}
                   </>
                 }
               </Button>
               <FieldDescription className="text-center">
-                {en.texts.register.already_have_an_account} <Link href="login"> {en.common.buttons.signin} </Link>
+                {en.already_have_an_account} <Link href="login"> {en.signin} </Link>
               </FieldDescription>
             </Field>
           </FieldGroup>

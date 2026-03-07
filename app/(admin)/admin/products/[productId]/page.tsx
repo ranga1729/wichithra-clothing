@@ -273,11 +273,11 @@ export default function ProductDetailPage() {
         <FieldGroup >
           <FieldGroup className="flex flex-row flex-wrap gap-4">
             <Field className="flex flex-col gap-2 flex-1">
-              <Label htmlFor="edit-name"> {en.input_labels.name} </Label>
+              <Label htmlFor="edit-name"> {en.name} </Label>
               <div className="flex flex-col">
                 <Input
                   id="edit-name"
-                  placeholder={en.input_labels.name}
+                  placeholder={en.name}
                   {...register("name")}
                   disabled= {isLoading}
                 />
@@ -289,11 +289,11 @@ export default function ProductDetailPage() {
               </div>
             </Field>
             <Field className="flex flex-col gap-2 flex-1">
-              <Label htmlFor="edit-slug"> {en.input_labels.slug} </Label>
+              <Label htmlFor="edit-slug"> {en.slug} </Label>
               <div className="flex flex-col">
                 <Input
                   id="edit-slug"
-                  placeholder={en.input_labels.slug}
+                  placeholder={en.slug}
                   {...register("slug")}
                   disabled= {isLoading}
                 />
@@ -305,11 +305,11 @@ export default function ProductDetailPage() {
               </div>
             </Field>
             <Field className="flex flex-col gap-2 flex-1">
-              <Label htmlFor="edit-brand"> {en.input_labels.brand} </Label>
+              <Label htmlFor="edit-brand"> {en.brand} </Label>
               <div className="flex flex-col">
                 <Input
                   id="edit-brand"
-                  placeholder={en.input_labels.brand}
+                  placeholder={en.brand}
                   {...register("brand")}
                   disabled= {isLoading}
                 />
@@ -323,11 +323,11 @@ export default function ProductDetailPage() {
           </FieldGroup>
           <FieldGroup className="flex flex-row flex-wrap gap-4">
             <Field className="flex flex-col gap-2 flex-1">
-              <Label htmlFor="edit-material"> {en.input_labels.material} </Label>
+              <Label htmlFor="edit-material"> {en.material} </Label>
               <div className="flex flex-col">
                 <Input
                   id="edit-material"
-                  placeholder={en.input_labels.material}
+                  placeholder={en.material}
                   {...register("material")}
                   disabled= {isLoading}
                 />
@@ -339,13 +339,13 @@ export default function ProductDetailPage() {
               </div>
             </Field>
             <Field className="flex flex-col gap-2 flex-1">
-              <Label htmlFor="edit-baseprice"> {en.input_labels.base_price} </Label>
+              <Label htmlFor="edit-baseprice"> {en.base_price} </Label>
               <div className="flex flex-col">
                 <Input
                   id="edit-baseprice"
                   type="number"
                   step={0.01}
-                  placeholder={en.input_labels.base_price}
+                  placeholder={en.base_price}
                   {...register("basePrice", {valueAsNumber: true})}
                   disabled={isLoading}
                 />
@@ -358,7 +358,7 @@ export default function ProductDetailPage() {
             </Field>
             <Field className="flex flex-col gap-2 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <Label htmlFor="slider-demo-temperature">{en.input_labels.discount_precentage}</Label>
+                  <Label htmlFor="slider-demo-temperature">{en.discount_precentage}</Label>
                   <span className="text-muted-foreground text-sm">
                     {currentFormData.discountPercentage + "%"}
                   </span>
@@ -376,7 +376,7 @@ export default function ProductDetailPage() {
           </FieldGroup>
           <FieldGroup className="flex lg:flex-row sm:flex-col">
             <Field className="flex flex-col gap-2">
-              <Label htmlFor="edit-careinstructions"> {en.input_labels.careInstructions} </Label>
+              <Label htmlFor="edit-careinstructions"> {en.careInstructions} </Label>
               <div className="flex flex-col">
                 <Textarea
                   id="edit-careinstructions"
@@ -392,7 +392,7 @@ export default function ProductDetailPage() {
               </div>
             </Field>
             <Field className="flex flex-col gap-2">
-              <Label htmlFor="edit-description"> {en.input_labels.description} </Label>
+              <Label htmlFor="edit-description"> {en.description} </Label>
               <div> 
                 <Textarea
                   id="edit-description"

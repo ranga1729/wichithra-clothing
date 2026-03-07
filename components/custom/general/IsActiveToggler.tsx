@@ -20,9 +20,9 @@ const IsActiveToggler = (props: Props) => {
         ${props.isLoading ? "opacity-50 pointer-events-none select-none" : "opacity-100"}
       `}>
     <FieldContent>
-      <FieldTitle> {en.input_labels.isActive} </FieldTitle>
+      <FieldTitle> {en.isActive} </FieldTitle>
       <FieldDescription>
-        {en.input_labels.isActive_description} 
+        {en.isActive_description} 
       </FieldDescription>
     </FieldContent>
     <Switch 

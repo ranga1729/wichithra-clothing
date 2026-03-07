@@ -42,14 +42,14 @@ export default function AddNewModal(props: Props) {
       const result = await createDesign(newDesign);
 
       if (result.success) {
-        toast.success(en.messages.design_created_successfully);
+        toast.success(en.design_created_successfully);
         reset();
         props.onOpenChange(false);
       } else {
-        toast.error(result.error || en.messages.failed_to_create_design);
+        toast.error(result.error || en.failed_to_create_design);
       }
     } catch (error) {
-      toast.error(en.messages.failed_to_create_design);
+      toast.error(en.failed_to_create_design);
     } finally {
       setIsSubmitting(false);
     }
@@ -64,9 +64,9 @@ export default function AddNewModal(props: Props) {
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
       <DialogContent className="dark:bg-neutral-800 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle> {en.texts.design.create_design_title} </DialogTitle>
+          <DialogTitle> {en.create_design_title} </DialogTitle>
           <DialogDescription>
-            {en.texts.design.create_design_subtitle}
+            {en.create_design_subtitle}
           </DialogDescription>
         </DialogHeader>
 
@@ -74,7 +74,7 @@ export default function AddNewModal(props: Props) {
           <FieldGroup className="flex flex-col gap-4">
             <FieldGroup className="flex flex-row gap-4">
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="new-name"> {en.input_labels.name} </Label>
+                <Label htmlFor="new-name"> {en.name} </Label>
                 <div className="flex flex-col">
                   <Input
                     id="new-name"
@@ -90,7 +90,7 @@ export default function AddNewModal(props: Props) {
                 </div>
               </Field>
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="new-slug"> {en.input_labels.slug} </Label>
+                <Label htmlFor="new-slug"> {en.slug} </Label>
                 <div className="flex flex-col">
                   <Input
                     id="new-slug"
@@ -108,7 +108,7 @@ export default function AddNewModal(props: Props) {
             </FieldGroup>
 
             <Field className="flex flex-col gap-2">
-              <Label htmlFor="new-description"> {en.input_labels.description} </Label>
+              <Label htmlFor="new-description"> {en.description} </Label>
               <Textarea
                 id="new-description"
                 placeholder="Type a description for this new design"
@@ -121,7 +121,7 @@ export default function AddNewModal(props: Props) {
           <DialogFooter className="mt-6">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? <>
-                  <LoaderCircle className="animate-spin w-8 h-8" /> {en.common.status.saving}
+                  <LoaderCircle className="animate-spin w-8 h-8" /> {en.saving}
                 </> : "Save Design"}
             </Button>
             <Button
@@ -130,7 +130,7 @@ export default function AddNewModal(props: Props) {
               onClick={handleCancel}
               disabled={isSubmitting}
             >
-              {en.common.buttons.cancel}
+              {en.cancel}
             </Button>
           </DialogFooter>
         </form>

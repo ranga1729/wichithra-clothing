@@ -53,7 +53,7 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
     if(!designs) {
       return {
         success: false,
-        error: en.messages.data_retrieval_failed
+        error: en.data_retrieval_failed
       }
     }
 
@@ -68,7 +68,7 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
   } catch(error:any) {
     return { 
       success: false,
-      error: error.message || en.messages.data_retrieval_failed 
+      error: error.message || en.data_retrieval_failed 
     };
   }
 }
@@ -88,7 +88,7 @@ export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse>
     if(!design) {
       return {
         success: false,
-        error: en.messages.failed_to_create_design,
+        error: en.failed_to_create_design,
       };
     }
 
@@ -96,7 +96,7 @@ export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse>
 
     return {
       success: true,
-      message: en.messages.design_created_successfully,
+      message: en.design_created_successfully,
     };
   } catch (error:any) {
     console.error("Error creating design:", error.message);
@@ -110,7 +110,7 @@ export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse>
     
     return {
       success: false,
-      error: en.messages.failed_to_create_design,
+      error: en.failed_to_create_design,
     };
   }
 }
@@ -127,7 +127,7 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
     if(!design) {
       return {
         success: false,
-        error: en.messages.design_doesnt_exist
+        error: en.design_doesnt_exist
       }
     }
 
@@ -143,7 +143,7 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
     if(!deletedDesign) {
       return {
         success: false,
-        error: en.messages.design_delete_failed
+        error: en.design_delete_failed
       }
     }
     
@@ -151,7 +151,7 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
 
     return {
       success: true,
-      message: en.messages.design_deleted_successfully
+      message: en.design_deleted_successfully
     }
   } catch(error:any) {
     console.error("Error deleting design:", error.message);
@@ -165,7 +165,7 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
     
     return {
       success: false,
-      error: en.messages.design_delete_failed,
+      error: en.design_delete_failed,
     };
   }
 }
@@ -184,7 +184,7 @@ export async function updateDesign(id: string, updatedDesign: DesignSchema): Pro
     if (!existingDesign) {
       return {
         success: false,
-        error: en.messages.design_doesnt_exist
+        error: en.design_doesnt_exist
       };
     }
 
@@ -200,7 +200,7 @@ export async function updateDesign(id: string, updatedDesign: DesignSchema): Pro
     if (!design) {
       return {
         success: false,
-        error: en.messages.design_update_failed,
+        error: en.design_update_failed,
       };
     }
 
@@ -208,7 +208,7 @@ export async function updateDesign(id: string, updatedDesign: DesignSchema): Pro
 
     return {
       success: true,
-      message: en.messages.design_update_successfully,
+      message: en.design_update_successfully,
       data: { design: design }
     };
   } catch (error) {
@@ -223,7 +223,7 @@ export async function updateDesign(id: string, updatedDesign: DesignSchema): Pro
     
     return {
       success: false,
-      error: en.messages.design_update_failed,
+      error: en.design_update_failed,
     };
   }
 }

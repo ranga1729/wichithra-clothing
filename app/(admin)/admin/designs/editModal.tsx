@@ -68,19 +68,19 @@ export default function EditModal(props: Props) {
       const result = await updateDesign(prevData!.id, data);
 
       if (!result.success) {
-        toast.error(result.error || en.messages.design_update_failed);
+        toast.error(result.error || en.design_update_failed);
         reset();
         props.onOpenChange(false);
         return;
       }
 
-      toast.success(en.messages.design_update_successfully);
+      toast.success(en.design_update_successfully);
       props.onOpenChange(false);
       reset();
       setPrevData(undefined);
 
     } catch (error) {
-      toast.error(en.messages.design_update_failed);
+      toast.error(en.design_update_failed);
     } finally {
       setIsSubmitting(false);
     }
@@ -122,9 +122,9 @@ export default function EditModal(props: Props) {
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
       <DialogContent className="dark:bg-neutral-800 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle> {en.texts.design.create_design_title} </DialogTitle>
+          <DialogTitle> {en.create_design_title} </DialogTitle>
           <DialogDescription>
-            {en.texts.design.create_design_subtitle}
+            {en.create_design_subtitle}
           </DialogDescription>
         </DialogHeader>
 
@@ -132,7 +132,7 @@ export default function EditModal(props: Props) {
           <FieldGroup className="flex flex-col gap-4">
             <FieldGroup className="flex flex-row gap-4">
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-name"> {en.input_labels.name} </Label>
+                <Label htmlFor="edit-name"> {en.name} </Label>
                 <div className="flex flex-col">
                   <Input
                     id="edit-name"
@@ -148,7 +148,7 @@ export default function EditModal(props: Props) {
                 </div>
               </Field>
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-slug"> {en.input_labels.slug} </Label>
+                <Label htmlFor="edit-slug"> {en.slug} </Label>
                 <div className="flex flex-col">
                   <Input
                     id="edit-slug"
@@ -166,7 +166,7 @@ export default function EditModal(props: Props) {
             </FieldGroup>
 
             <Field className="flex flex-col gap-2">
-              <Label htmlFor="edit-description"> {en.input_labels.description} </Label>
+              <Label htmlFor="edit-description"> {en.description} </Label>
               <Textarea
                 id="edit-description"
                 placeholder="Type a description for this design"
@@ -184,7 +184,7 @@ export default function EditModal(props: Props) {
             > 
               {isSubmitting ? (
                 <>
-                  <LoaderCircle className="animate-spin w-4 h-4 mr-2" /> {en.common.status.saving}
+                  <LoaderCircle className="animate-spin w-4 h-4 mr-2" /> {en.saving}
                 </>
               ) : (
                 "Save Design"
@@ -196,7 +196,7 @@ export default function EditModal(props: Props) {
               onClick={handleCancel}
               disabled={isSubmitting}
             >
-              {en.common.buttons.cancel}
+              {en.cancel}
             </Button>
           </DialogFooter>
         </div>

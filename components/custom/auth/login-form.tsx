@@ -32,14 +32,14 @@ export const LoginForm = (props: Props) => {
     <Card className="w-full">
       <CardHeader className="flex flex-col items-center justify-start">
         <ThemeToggler />
-        <CardTitle className="text-center"> {en.texts.login.title} </CardTitle>
-        <CardDescription> {en.texts.login.subtitle} </CardDescription>
+        <CardTitle className="text-center"> {en.login_title} </CardTitle>
+        <CardDescription> {en.login_subtitle} </CardDescription>
       </CardHeader>
       <CardContent>
         <form className={cn("flex flex-col gap-6")}>
           <FieldGroup className="gap-3 p-1">
             <Field className="gap-1">
-              <FieldLabel htmlFor="email"> {en.input_labels.email} </FieldLabel>
+              <FieldLabel htmlFor="email"> {en.email} </FieldLabel>
               <div className="flex flex-col gap-0">
                 <Input 
                   id="email" type="email" 
@@ -56,7 +56,7 @@ export const LoginForm = (props: Props) => {
 
             <Field className="gap-2">
               <div className="flex items-center">
-                <FieldLabel htmlFor="password"> {en.input_labels.password} </FieldLabel>
+                <FieldLabel htmlFor="password"> {en.password} </FieldLabel>
               </div>
               <div className="flex flex-col gap-0">
                 <div className="relative">
@@ -89,14 +89,14 @@ export const LoginForm = (props: Props) => {
               </div>
               <FieldDescription className="text-center">
                 <Link className="text-sm underline-offset-4 hover:underline text-center" href={"/#"}>
-                  {en.texts.login.forgot_password}
+                  {en.forgot_password}
                 </Link>
               </FieldDescription>
             </Field>
 
             <Field>
               <Button type="button" size={"lg"} onClick={props.onSubmit}>
-                {isSubmitting ? <><LoaderCircle className="animate-spin w-12 h-12"/> {en.common.status.loading} </> : <>{en.common.buttons.login}</> } 
+                {isSubmitting ? <><LoaderCircle className="animate-spin w-12 h-12"/> {en.loading} </> : <>{en.login}</> } 
               </Button>
             </Field>
 
@@ -112,9 +112,9 @@ export const LoginForm = (props: Props) => {
                 Login with GitHub
               </Button> */}
               <FieldDescription className="text-center">
-                {en.texts.login.dont_have_an_account} {" "}
+                {en.dont_have_an_account} {" "}
                 <Link className="underline underline-offset-4" href={"/register"}>
-                  {en.common.buttons.signup}
+                  {en.signup}
                 </Link>
               </FieldDescription>
             </Field>

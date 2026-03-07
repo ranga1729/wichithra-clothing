@@ -21,9 +21,9 @@ const IsFeaturedToggler = (props: Props) => {
         ${props.isLoading ? "opacity-50 pointer-events-none select-none" : "opacity-100"}
       `}>
     <FieldContent>
-      <FieldTitle> {en.input_labels.isFeatured} </FieldTitle>
+      <FieldTitle> {en.isFeatured} </FieldTitle>
       <FieldDescription>
-        {en.input_labels.isFeatured_description}
+        {en.isFeatured_description}
       </FieldDescription>
     </FieldContent>
     <Switch 

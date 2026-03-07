@@ -36,13 +36,13 @@ export default function Login() {
           toast.success(result.message)
           router.push("/")
         } else {
-          toast.error(result.message || en.messages.registration_failed);
+          toast.error(result.message || en.registration_failed);
         }
       } catch(error:any) {
         toast.error(error.message);
       }
     } else {
-      toast.error(en.messages.fill_all_required_fileds);
+      toast.error(en.fill_all_required_fileds);
     }
   }
 

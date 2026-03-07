@@ -27,7 +27,7 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
     if(!user) {
       return {
         success: false,
-        message: en.messages.invalid_email_or_password,
+        message: en.invalid_email_or_password,
       }
     }
 
@@ -36,7 +36,7 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
     if(!isPasswordValid) {
       return {
         success: false,
-        message: en.messages.invalid_email_or_password,
+        message: en.invalid_email_or_password,
       }
     }
 
@@ -58,7 +58,7 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
 
     return {
       success: true,
-      message: en.messages.loggin_successful,
+      message: en.loggin_successful,
       data: {
         user: {
           id: user.id,
@@ -74,15 +74,15 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
     if (error instanceof ZodError) {
       return {
         success: false,
-        message: en.messages.validation_failed,
-        error: error.issues[0].message || en.messages.validation_failed
+        message: en.validation_failed,
+        error: error.issues[0].message || en.validation_failed
       };
     }
     
     return {
       success: false,
-      message: en.messages.something_went_wrong,
-      error: en.messages.internal_server_error
+      message: en.something_went_wrong,
+      error: en.internal_server_error
     };
   }
 }

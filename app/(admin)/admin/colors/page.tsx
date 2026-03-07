@@ -70,7 +70,7 @@ export default function ColorsPage() {
       
       if(response.success) {
         fetchData();
-        toast.success(response.message || en.messages.design_deleted_successfully)
+        toast.success(response.message || en.design_deleted_successfully)
       }
     } catch(error:any) {
       toast.error(error.message);
@@ -113,13 +113,13 @@ export default function ColorsPage() {
         <form className="flex flex-col gap-3">
           <div className="flex flex-row justify-start items-center gap-3 w-full border py-3 px-2 rounded-md">
             <div className="grid w-60 max-w-sm items-center gap-2">
-              <Label htmlFor="name"> {en.input_labels.name } </Label>
+              <Label htmlFor="name"> {en.name } </Label>
               <Input type="text" id="name" placeholder="Name" value={filter.name} name="name" onChange={handleFilterChange} />
             </div>
             <div className="relative">
               <Item className="absolute left-1 top-6.5 p-1 m-0" variant={"default"} > # </Item>
               <div className="grid w-60 max-w-sm items-center gap-2">
-                <Label htmlFor="hexcode"> {en.input_labels.hexCode } </Label>
+                <Label htmlFor="hexcode"> {en.hexCode } </Label>
                 <Input type="text" id="hexCode" placeholder="HexCode" value={filter.hexCode} name="hexCode" className="pl-5" onChange={handleFilterChange} />
               </div>
             </div>
@@ -127,10 +127,10 @@ export default function ColorsPage() {
           
           <div className="flex flex-row gap-2 items-center justify-between">
             <div className="flex flex-row gap-2">
-              <Button size={"default"} type="button" onClick={handleSearch}> <Search /> {en.common.buttons.apply_filters} </Button>
-              <Button size={"default"} type="button" onClick={handleReset}> <RotateCcw /> {en.common.buttons.reset_filters} </Button>
+              <Button size={"default"} type="button" onClick={handleSearch}> <Search /> {en.apply_filters} </Button>
+              <Button size={"default"} type="button" onClick={handleReset}> <RotateCcw /> {en.reset_filters} </Button>
             </div>
-            <Button size={"default"} type="button" onClick={() => setIsAddNewModalOpen(true)}> <CirclePlus />{en.common.buttons.add_new} </Button>
+            <Button size={"default"} type="button" onClick={() => setIsAddNewModalOpen(true)}> <CirclePlus />{en.add_new} </Button>
           </div>
         </form>
 

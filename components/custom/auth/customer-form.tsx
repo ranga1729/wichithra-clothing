@@ -22,7 +22,7 @@ export const CustomerForm = (props:Props) => {
       <FieldGroup className="gap-2 p-1">
         <div className="flex flex-row gap-3">
           <Field className="gap-1">
-            <FieldLabel htmlFor="name"> {en.input_labels.firstname_required} </FieldLabel>
+            <FieldLabel htmlFor="name"> {en.firstname_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Input 
                 id="firstName" type="text" placeholder="John" 
@@ -38,7 +38,7 @@ export const CustomerForm = (props:Props) => {
           </Field>
 
           <Field className="gap-1">
-            <FieldLabel htmlFor="name"> {en.input_labels.lastname_required} </FieldLabel>
+            <FieldLabel htmlFor="name"> {en.lastname_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Input 
                 id="lastName" type="text" placeholder="Doe"
@@ -55,7 +55,7 @@ export const CustomerForm = (props:Props) => {
         </div>
 
         <Field className="gap-1">
-          <FieldLabel htmlFor="email"> {en.input_labels.email_required} </FieldLabel>
+          <FieldLabel htmlFor="email"> {en.email_required} </FieldLabel>
           <div className="flex flex-col gap-0">
             <Input 
               id="email" type="email" placeholder="johndoe@example.com"
@@ -72,7 +72,7 @@ export const CustomerForm = (props:Props) => {
         
         <div className="flex flex-row gap-3">
           <Field className="gap-1">
-            <FieldLabel htmlFor="password"> {en.input_labels.password} </FieldLabel>
+            <FieldLabel htmlFor="password"> {en.password} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Input 
                 id="password" type="password"
@@ -88,7 +88,7 @@ export const CustomerForm = (props:Props) => {
           </Field>
 
           <Field className="gap-1">
-            <FieldLabel htmlFor="confirm-password"> {en.input_labels.confirm_password} </FieldLabel>
+            <FieldLabel htmlFor="confirm-password"> {en.confirm_password} </FieldLabel>
             <div className="flex flex-col gap-0">
               <Input 
                 id="confirm-password" type="password"
@@ -106,7 +106,7 @@ export const CustomerForm = (props:Props) => {
 
         <div className="flex flex-row gap-3">
           <Field className="gap-1">
-            <FieldLabel htmlFor="mobilePhoneNumber"> {en.input_labels.contact_mobile_required} </FieldLabel>
+            <FieldLabel htmlFor="mobilePhoneNumber"> {en.contact_mobile_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <div className="flex flex-row items-center">
                 <Item className="p-1 text-center font-semibold h-9" variant={"default"} > {en.common.country_code} </Item>
@@ -125,7 +125,7 @@ export const CustomerForm = (props:Props) => {
             </div>
           </Field>
           <Field className="gap-1">
-            <FieldLabel htmlFor="homePhoneNumber"> {en.input_labels.contact_home} </FieldLabel>
+            <FieldLabel htmlFor="homePhoneNumber"> {en.contact_home} </FieldLabel>
             <div className="flex flex-col gap-0">
               <div className="flex flex-row items-center">
                 <Item className="p-1 text-center font-semibold h-9" variant={"default"}> {en.common.country_code} </Item>

@@ -47,7 +47,7 @@ export async function getColors(paginator: Paginator, filter: ColorFilter):Promi
     if(!sizes) {
       return {
         success: false,
-        error: en.messages.data_retrieval_failed
+        error: en.data_retrieval_failed
       }
     }
 
@@ -62,7 +62,7 @@ export async function getColors(paginator: Paginator, filter: ColorFilter):Promi
   } catch(error:any) {
     return { 
       success: false,
-      error: error.message || en.messages.data_retrieval_failed 
+      error: error.message || en.data_retrieval_failed 
     };
   }
 }
@@ -83,7 +83,7 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
     if(!newColor) {
       return {
         success: false,
-        error: en.messages.failed_to_create_color,
+        error: en.failed_to_create_color,
       };
     }
 
@@ -91,7 +91,7 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
     
     return {
       success: true,
-      message: en.messages.color_created_successfully,
+      message: en.color_created_successfully,
     };
   } catch(error: any) {
     console.error("Error creating color:", error.message);
@@ -105,7 +105,7 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
     
     return {
       success: false,
-      error: en.messages.failed_to_create_color,
+      error: en.failed_to_create_color,
     };
   }
 }
@@ -124,7 +124,7 @@ export async function deleteColor(id: string):Promise<ApiResponse> {
     if(!color) {
       return {
         success: false,
-        error: en.messages.design_doesnt_exist
+        error: en.design_doesnt_exist
       }
     }
 
@@ -140,7 +140,7 @@ export async function deleteColor(id: string):Promise<ApiResponse> {
     if(!deletedColor) {
         return {
         success: false,
-        error: en.messages.failed_to_delete_color,
+        error: en.failed_to_delete_color,
       }
     }
 
@@ -148,7 +148,7 @@ export async function deleteColor(id: string):Promise<ApiResponse> {
 
     return {
       success: true,
-      message: en.messages.color_deleted_successfully
+      message: en.color_deleted_successfully
     }
   } catch(error:any) {
     console.error("Error deleting color:", error.message);
@@ -162,7 +162,7 @@ export async function deleteColor(id: string):Promise<ApiResponse> {
     
     return {
       success: false,
-      error: en.messages.failed_to_delete_color,
+      error: en.failed_to_delete_color,
     };
   }
 }
@@ -185,7 +185,7 @@ export async function updateColor(id: string, data: ColorSchema):Promise<ApiResp
   if(!color) {
     return {
       success: false,
-      error: en.messages.color_doesnt_exist
+      error: en.color_doesnt_exist
     }
   }
 
@@ -202,7 +202,7 @@ export async function updateColor(id: string, data: ColorSchema):Promise<ApiResp
   if(!updatedColor) {
     return {
       success: false,
-      error: en.messages.color_update_failed
+      error: en.color_update_failed
     }
   }
 
@@ -210,7 +210,7 @@ export async function updateColor(id: string, data: ColorSchema):Promise<ApiResp
 
   return {
     success: true,
-    message: en.messages.color_updated_successfully
+    message: en.color_updated_successfully
   }
 
  } catch(error: any) {
@@ -225,7 +225,7 @@ export async function updateColor(id: string, data: ColorSchema):Promise<ApiResp
     
     return {
       success: false,
-      error: en.messages.color_update_failed,
+      error: en.color_update_failed,
     };
  }
 }

@@ -22,7 +22,7 @@ export async function getSizes():Promise<ApiResponse> {
     if(!sizes) {
       return {
         success: false,
-        error: en.messages.data_retrieval_failed
+        error: en.data_retrieval_failed
       }
     }
 
@@ -37,7 +37,7 @@ export async function getSizes():Promise<ApiResponse> {
   } catch(error:any) {
     return { 
       success: false,
-      error: error.message || en.messages.data_retrieval_failed 
+      error: error.message || en.data_retrieval_failed 
     };
   }
 }
