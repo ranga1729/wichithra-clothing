@@ -13,19 +13,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
-import { updateColor } from "./action";
+import { useUpdateColor } from "./useColors";
 
 interface Props {
   isModalOpen: boolean;
   onOpenChange: (open: boolean) => void;
   selectedColor?: Color;
-  fetchData: () => void;
 }
 
 export default function EditModal(props: Props) {
   const [prevData, setPrevData] = useState<Color>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const {
     register, handleSubmit,
@@ -40,6 +37,13 @@ export default function EditModal(props: Props) {
     },
   });
 
+  const { mutate: updateColor, isPending} = useUpdateColor(() => {
+    reset(),
+    props.onOpenChange(false)
+  })
+
+  const onSubmit = (data: ColorSchema) => updateColor({id: prevData?.id!, data: data});
+
   const currentFormData = watch();
 
   const hasChanges = useMemo(() => {
@@ -50,38 +54,7 @@ export default function EditModal(props: Props) {
 
     return nameChanged || hexCodechnaged;
   }, [currentFormData, prevData])
-
-  const onSubmit = async (data: ColorSchema) => {
-
-    if (!hasChanges) {
-      toast.error(en.no_changes_detected);
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      const response = await updateColor(prevData?.id!, data);
-
-      if (!response.success) {
-        toast.error(response.error || en.color_update_failed);
-        reset();
-        props.onOpenChange(false);
-        return;
-      }
-
-      toast.success(en.color_updated_successfully);
-      props.onOpenChange(false);
-      reset();
-      setPrevData(undefined);
-      props.fetchData()
-
-    } catch (error) {
-      toast.error(en.color_update_failed);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+ 
   const handleCancel = () => {
     props.onOpenChange(false);
     reset();
@@ -113,7 +86,7 @@ export default function EditModal(props: Props) {
                   id="new-name"
                   placeholder="Name"
                   {...register("name")}
-                  disabled={isSubmitting}
+                  disabled={isPending}
                 />
                 {errors.name && (
                   <span className="text-sm text-red-500">
@@ -131,7 +104,7 @@ export default function EditModal(props: Props) {
                     id="new-slug"
                     placeholder="345678"
                     {...register("hexCode")}
-                    disabled={isSubmitting}
+                    disabled={isPending}
                     className="pl-6"
                   />
                 </div>
@@ -153,8 +126,8 @@ export default function EditModal(props: Props) {
           </FieldGroup>
 
           <DialogFooter className="mt-6">
-            <Button type="submit" disabled={isSubmitting || !hasChanges || !isValid}>
-              {isSubmitting ? <>
+            <Button type="submit" disabled={isPending || !hasChanges || !isValid}>
+              {isPending ? <>
                   <LoaderCircle className="animate-spin w-8 h-8" /> {en.saving}
                 </> : <>{en.save}</> }
             </Button>
@@ -162,7 +135,7 @@ export default function EditModal(props: Props) {
               type="button"
               variant="outline"
               onClick={handleCancel}
-              disabled={isSubmitting}
+              disabled={isPending}
             >
               {en.cancel}
             </Button>

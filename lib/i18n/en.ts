@@ -124,6 +124,7 @@ export const en = {
   color_deleted_successfully: "Color deleted successfully",
   color_update_failed: "Color update failed",
   color_updated_successfully: "Color updated successfully",
+  color_name_already_exist: "Color name already exist",
 
   product_doesnt_exist: "Product doesn't exist",
   product_update_failed: "Product update failed",

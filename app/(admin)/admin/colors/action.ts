@@ -1,7 +1,7 @@
 'use server'
 
 import { en } from "@/lib/i18n/en";
-import { prisma } from "@/lib/prisma";
+import { includingDeleted, notDeleted, prisma } from "@/lib/prisma";
 import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
 import { ApiResponse } from "@/types/auth-types";
 import { ColorFilter } from "@/types/filter-types";
@@ -15,6 +15,7 @@ export async function getColors(paginator: Paginator, filter: ColorFilter):Promi
     const skip = pageIndex * pageSize;
 
     const whereClause: any = {
+      ...notDeleted,
       ...(filter.name && {
         name: {
           contains: filter.name as string,
@@ -25,7 +26,7 @@ export async function getColors(paginator: Paginator, filter: ColorFilter):Promi
         hexCode: {
           contains: filter.hexCode as string,
           mode: 'insensitive'
-        }
+        },
       })
     }
     
@@ -71,6 +72,49 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
   try{ 
     const validatedData = colorSchema.parse(data);
 
+    const existingColor = await prisma.color.findUnique({
+      where: {
+        name: validatedData.name,
+        ...includingDeleted,
+      },
+      select: {
+        id: true,
+        deletedAt: true,
+      }
+    })
+
+    if(existingColor) {
+      if(existingColor.deletedAt === null) {
+        return {
+          success: false,
+          error: en.color_name_already_exist,
+        }
+      }
+      
+      const reActivatedColor = await prisma.color.update({
+        where: { id: existingColor.id },
+        data: {
+          hexCode: validatedData.hexCode,
+          deletedAt: null,
+          isActive: true,
+        }
+      })
+
+      if(!reActivatedColor) {
+        return {
+          success: false,
+          error: en.failed_to_create_color,
+        };
+      }
+
+      revalidatePath("/admin/colors");
+
+      return {
+        success: true,
+        message: en.color_created_successfully,
+      }
+    }
+
     const newColor = await prisma.color.create({
       data: {
         name: validatedData.name,
@@ -113,7 +157,7 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
 export async function deleteColor(id: string):Promise<ApiResponse> {
   try {
     const color = await prisma.color.findUnique({
-      where: { id: id },
+      where: { id: id , ...notDeleted},
       select: {
         id: true,
         name: true,
@@ -170,15 +214,17 @@ export async function deleteColor(id: string):Promise<ApiResponse> {
 export async function updateColor(id: string, data: ColorSchema):Promise<ApiResponse> {
  try {
   const validatedData = colorSchema.parse(data);
-
+ 
   const color = await prisma.color.findUnique({
     where: { 
       id: id,
+      ...notDeleted, 
     },
     select: {
       id: true,
       name: true,
       hexCode: true,
+      deletedAt: true,
     }
   })
 
@@ -186,6 +232,35 @@ export async function updateColor(id: string, data: ColorSchema):Promise<ApiResp
     return {
       success: false,
       error: en.color_doesnt_exist
+    }
+  }
+
+  if(validatedData.name !== color.name) {
+    const nameConflict = await prisma.color.findUnique({
+      where: {
+        name: validatedData.name,
+        ...includingDeleted
+      },
+      select: {
+        id: true,
+        deletedAt: true,
+      }
+    })
+
+    console.log("conflict: ", nameConflict)
+
+    if(nameConflict && nameConflict.deletedAt === null) {
+      return { success: false, error: en.color_name_already_exist };
+    }
+
+    console.log("#########")
+
+    if(nameConflict && nameConflict.deletedAt !== null) {
+      await prisma.color.delete({
+        where: {
+          id: nameConflict.id
+        }
+      })
     }
   }
 

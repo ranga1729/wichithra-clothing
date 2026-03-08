@@ -5,22 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Item } from "@/components/ui/item";
 import { Label } from "@/components/ui/label";
 import { en } from "@/lib/i18n/en";
-import { colorSchema, ColorSchema, designSchema } from "@/schemas/admin-schemas";
+import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
-import { createColor } from "./action";
+import { useCreateColor } from "./useColors";
 
 interface Props {
   isModalOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  fetchData: () => void;
 }
 
 export default function AddNewModal(props: Props) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register, handleSubmit,
@@ -35,26 +31,12 @@ export default function AddNewModal(props: Props) {
     },
   });
 
-  const onSubmit = async (data: ColorSchema) => {
-    try {
-      setIsSubmitting(true);
-      const newColor = getValues();
-      const result = await createColor(newColor);
+  const { mutate: createColor, isPending } = useCreateColor(() => {
+    reset(),
+    props.onOpenChange(false)
+  })
 
-      if (result.success) {
-        toast.success(en.design_created_successfully);
-        reset();
-        props.onOpenChange(false);
-        props.fetchData()
-      } else {
-        toast.error(result.error || en.failed_to_create_design);
-      }
-    } catch (error) {
-      toast.error(en.failed_to_create_design);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const onSubmit = (data: ColorSchema) => createColor(data);
 
   const handleCancel = () => {
     props.onOpenChange(false);
@@ -81,7 +63,7 @@ export default function AddNewModal(props: Props) {
                     id="new-name"
                     placeholder="Name"
                     {...register("name")}
-                    disabled={isSubmitting}
+                    disabled={isPending}
                   />
                   {errors.name && (
                     <span className="text-sm text-red-500">
@@ -99,7 +81,7 @@ export default function AddNewModal(props: Props) {
                       id="new-slug"
                       placeholder="345678"
                       {...register("hexCode")}
-                      disabled={isSubmitting}
+                      disabled={isPending}
                       className="pl-6"
                     />
                   </div>
@@ -125,8 +107,8 @@ export default function AddNewModal(props: Props) {
           </FieldGroup>
 
           <DialogFooter className="mt-6">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? <>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? <>
                   <LoaderCircle className="animate-spin w-8 h-8" /> {en.saving}
                 </> : <>{en.save}</> }
             </Button>
@@ -134,7 +116,7 @@ export default function AddNewModal(props: Props) {
               type="button"
               variant="outline"
               onClick={handleCancel}
-              disabled={isSubmitting}
+              disabled={isPending}
             >
               {en.cancel}
             </Button>
