@@ -154,7 +154,7 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
   }
 }
 
-export async function deleteColor(id: string):Promise<ApiResponse> {
+export async function deleteColorById(id: string):Promise<ApiResponse> {
   try {
     const color = await prisma.color.findUnique({
       where: { id: id , ...notDeleted},
@@ -211,7 +211,7 @@ export async function deleteColor(id: string):Promise<ApiResponse> {
   }
 }
 
-export async function updateColor(id: string, data: ColorSchema):Promise<ApiResponse> {
+export async function updateColorById(id: string, data: ColorSchema):Promise<ApiResponse> {
  try {
   const validatedData = colorSchema.parse(data);
  

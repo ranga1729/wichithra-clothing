@@ -9,7 +9,9 @@ import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useCreateColor } from "./useColors";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createColor } from "./action";
+import toast from "react-hot-toast";
 
 interface Props {
   isModalOpen: boolean;
@@ -17,11 +19,11 @@ interface Props {
 }
 
 export default function AddNewModal(props: Props) {
+  const queryClient = useQueryClient();
 
   const {
-    register, handleSubmit,
-    getValues, reset,
-    formState: { errors },
+    register, handleSubmit, watch, 
+    reset, formState: { errors },
   } = useForm<ColorSchema>({
     resolver: zodResolver(colorSchema),
     mode: "onChange",
@@ -31,17 +33,32 @@ export default function AddNewModal(props: Props) {
     },
   });
 
-  const { mutate: createColor, isPending } = useCreateColor(() => {
-    reset(),
-    props.onOpenChange(false)
-  })
-
-  const onSubmit = (data: ColorSchema) => createColor(data);
+  const hexCode = watch("hexCode");
 
   const handleCancel = () => {
     props.onOpenChange(false);
     reset();
   }
+
+  // react queries
+  const {mutate: createNewColor, isPending } = useMutation({
+    mutationFn: (data: ColorSchema) => createColor(data),
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ['colors'] });
+        toast.success(en.color_created_successfully);
+        reset();
+        props.onOpenChange(false);
+      } else {
+        toast.error(response.error || en.failed_to_create_color);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.failed_to_create_color);
+    }
+  });
+
+  const onSubmit = (data: ColorSchema) => createNewColor(data);
 
   return (
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
@@ -95,7 +112,7 @@ export default function AddNewModal(props: Props) {
               <Field className="flex flex-col gap-2 w-fit">
                 <Label htmlFor="preview"> {en.preview} </Label>
                 <div id="preview" className="flex items-center justify-center h-full">
-                  <div  className="w-9 h-9 rounded-full border border-neutral-400" style={{backgroundColor: `#${getValues().hexCode}`}}>
+                  <div  className="w-9 h-9 rounded-full border border-neutral-400" style={{ backgroundColor: hexCode ? `#${hexCode}` : 'transparent' }}>
                   
                   </div>
                 </div>

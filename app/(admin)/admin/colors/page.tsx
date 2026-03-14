@@ -5,9 +5,8 @@ import { Color } from "@/generated/prisma/client";
 import { Paginator } from "@/types/table-types";
 import { useRef, useState } from "react";
 import { getColumns } from "./columns";
-import { deleteColor } from "./action";
 import { Button } from "@/components/ui/button";
-import { CirclePlus, RotateCcw, Search } from "lucide-react";
+import { CirclePlus, RotateCcw } from "lucide-react";
 import { en } from "@/lib/i18n/en";
 import AddNewModal from "./addNewModal";
 import EditModal from "./editModal";
@@ -15,7 +14,9 @@ import { ColorFilter } from "@/types/filter-types";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Item } from "@/components/ui/item";
-import { useDeleteColor, useGetColors } from "./useColors";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteColorById, getColors } from "./action";
+import toast from "react-hot-toast";
 
 const InitiaFilter:ColorFilter = {
  name : "",
@@ -31,7 +32,6 @@ const initialPaginator: Paginator = {
 export default function ColorsPage() {
   const [paginator, setPaginator] = useState<Paginator>(initialPaginator)
   const [filter, setFilter] = useState<ColorFilter>(InitiaFilter);
-  const [activeFilter, setActiveFilter] = useState<ColorFilter>(InitiaFilter)
   
   const [isAddNewModalOpen, setIsAddNewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -39,30 +39,18 @@ export default function ColorsPage() {
 
   const tableRef = useRef<TableWithPaginationRef>(null);
 
-  const { data, isLoading } = useGetColors(paginator, activeFilter);
-
-  const { mutate: deleteColor } = useDeleteColor();
-
-  const onDelete = (color: Color) => deleteColor(color.id)
-
   const onEdit = (color: Color) => {
     setSelectedColor(color)
     setIsEditModalOpen(true);
   }
 
-  const handleOpenChange = (newOpen: boolean) => {
+  const handleEditModalOpenChange = (newOpen: boolean) => {
     setIsEditModalOpen(newOpen);
     setSelectedColor(undefined);
   };
 
-  const handleSearch = () => {
-    setPaginator((prev) => ({...prev, pageIndex: 0}))
-    setActiveFilter(filter);
-  }
-
   const handleReset = () => {
     setFilter(InitiaFilter);
-    setActiveFilter(InitiaFilter);
     setPaginator((prev) => ({...prev, pageIndex: 0}))
   }
 
@@ -73,10 +61,33 @@ export default function ColorsPage() {
     }));
   }
 
-  const handleEditOpenChange = (open: boolean) => {
-    setIsEditModalOpen(open)
-    if (!open) setSelectedColor(undefined)
-  }
+  // react queries
+  const queryClient = useQueryClient();
+  
+  const { data, isLoading } = useQuery({
+    queryKey: ['colors', 'list', {
+      pageSize: paginator.pageSize, 
+      pageIndex: paginator.pageIndex,
+      filter
+    }],
+    queryFn: () => getColors(paginator, filter),
+    placeholderData: (prevData) => prevData,
+  })
+
+  const { mutate: deleteColor } = useMutation({
+    mutationFn: (id: string) => deleteColorById(id),
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ['colors'] });
+        toast.success(response.message || en.color_deleted_successfully);
+      } else {
+        toast.error(response.error || en.failed_to_delete_color);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.failed_to_delete_color);
+    },
+  });
   
   return (
     <div className="w-full h-full dark:bg-neutral-800 bg-neutral-100">
@@ -112,7 +123,6 @@ export default function ColorsPage() {
           
           <div className="flex flex-row gap-2 items-center justify-between">
             <div className="flex flex-row gap-2">
-              <Button size={"default"} type="button" onClick={handleSearch}> <Search /> {en.apply_filters} </Button>
               <Button size={"default"} type="button" onClick={handleReset}> <RotateCcw /> {en.reset_filters} </Button>
             </div>
             <Button size={"default"} type="button" onClick={() => setIsAddNewModalOpen(true)}> <CirclePlus />{en.add_new} </Button>
@@ -121,10 +131,10 @@ export default function ColorsPage() {
 
         <TableWithPagination 
           ref={tableRef}
-          columns={getColumns({
+          columns= {getColumns({
             onEdit: onEdit,
-            onDelete: onDelete,
-            paginator:paginator
+            onDelete: (color: Color) => deleteColor(color.id),
+            paginator: paginator
           })}
           data={data?.data.colors ?? []} 
           isLoading={isLoading}
@@ -139,7 +149,7 @@ export default function ColorsPage() {
         />
         <EditModal 
           isModalOpen={isEditModalOpen} 
-          onOpenChange={handleOpenChange} 
+          onOpenChange={handleEditModalOpenChange} 
           selectedColor={selectedColor} 
         />
       </div>

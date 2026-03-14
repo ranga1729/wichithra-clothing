@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback, useImperativeHandle, forwardRef, useState } from "react";
+import { useEffect, useCallback, useImperativeHandle, forwardRef, useState, useRef } from "react";
 import type { Paginator } from "@/types/table-types";
 import { DataTable } from "./data-table";
 import TablePaginator from "./paginator";
@@ -72,10 +72,15 @@ const TableWithPagination = forwardRef<TableWithPaginationRef, TableWithPaginati
     });
   }, []);
 
+  const onPaginationChangeRef = useRef(onPaginationChange);
+  useEffect(() => { 
+    onPaginationChangeRef.current = onPaginationChange; 
+  });
+
   // Notify parent when pagination changes
   useEffect(() => {
-    onPaginationChange(paginator);
-  }, [paginator, onPaginationChange]);
+    onPaginationChangeRef.current(paginator);
+  }, [paginator]);
 
   // Expose methods to parent component
   useImperativeHandle(ref, () => ({

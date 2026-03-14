@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Item } from "@/components/ui/item";
@@ -10,10 +10,12 @@ import { Color } from "@/generated/prisma/client";
 import { en } from "@/lib/i18n/en";
 import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useUpdateColor } from "./useColors";
+import { updateColorById } from "./action";
+import toast from "react-hot-toast";
 
 interface Props {
   isModalOpen: boolean;
@@ -23,6 +25,7 @@ interface Props {
 
 export default function EditModal(props: Props) {
   const [prevData, setPrevData] = useState<Color>();
+  const queryClient = useQueryClient();
   
   const {
     register, handleSubmit,
@@ -36,13 +39,6 @@ export default function EditModal(props: Props) {
       hexCode: props.selectedColor?.hexCode!,
     },
   });
-
-  const { mutate: updateColor, isPending} = useUpdateColor(() => {
-    reset(),
-    props.onOpenChange(false)
-  })
-
-  const onSubmit = (data: ColorSchema) => updateColor({id: prevData?.id!, data: data});
 
   const currentFormData = watch();
 
@@ -62,10 +58,33 @@ export default function EditModal(props: Props) {
   }
 
   useEffect(() => {
-    setPrevData(props.selectedColor)
-    setValue("name", props.selectedColor?.name!)
-    setValue("hexCode", props.selectedColor?.hexCode!)
+    if(props.selectedColor) {
+      setPrevData(props.selectedColor)
+      setValue("name", props.selectedColor.name)
+      setValue("hexCode", props.selectedColor.hexCode)
+    }
   }, [props.selectedColor])
+
+  // react query
+  const {mutate: updateColor, isPending} = useMutation({
+    mutationFn: ({id, data}:{id: string, data: ColorSchema}) => updateColorById(id, data),
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ['colors'] });
+        toast.success(en.color_updated_successfully);
+        reset();
+        props.onOpenChange(false);
+        setPrevData(undefined);
+      } else {
+        toast.error(response.error || en.color_update_failed);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.color_update_failed);
+    },
+  });
+
+  const onSubmit = (data: ColorSchema) => updateColor({id: prevData?.id!, data: data})
 
   return (
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
