@@ -120,8 +120,8 @@ export default function DesignPage() {
   }, [paginator.pageIndex, paginator.pageSize]);
   
   return (
-    <div className="w-full h-full dark:bg-neutral-800 bg-neutral-100">
-      <div className="container flex flex-col gap-3 mx-auto p-5">
+    <div>
+      <div className="flex flex-col gap-3">
         <form className="flex flex-col gap-3">
           <div className="flex flex-row justify-start items-center gap-3 w-full border py-3 px-2 rounded-md">
             <div className="grid w-60 max-w-sm items-center gap-2">

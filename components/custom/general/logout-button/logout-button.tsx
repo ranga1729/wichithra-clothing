@@ -41,9 +41,12 @@ export default function Logout() {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button
-          variant="default"
-        >
+        <Button 
+          className="
+            bg-red-600 
+            text-neutral-50
+            hover:bg-red-700
+          ">
           Logout
         </Button>
       </AlertDialogTrigger>

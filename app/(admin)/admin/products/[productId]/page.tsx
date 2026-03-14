@@ -261,8 +261,7 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="w-full h-full dark:bg-neutral-800 bg-neutral-100">
-    <div className="p-5 flex flex-col gap-3">
+    <div>
       <h1 className="font-bold text-md text-neutral-600 text-center">Product Images</h1>
       <div className="flex items-center justify-center bg-neutral-200 dark:bg-neutral-600 py-3 rounded-2xl">
         <ImageCarousel />
@@ -433,6 +432,5 @@ export default function ProductDetailPage() {
         <SizeMapper productSizes={product?.productSizes} sizeChanger={ProductSizeChanger} />
       </div>
     </div>
-  </div>
   )
 }

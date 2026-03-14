@@ -54,24 +54,22 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="w-full h-full dark:bg-neutral-800 bg-neutral-100">
-      <div className="container flex flex-col gap-3 mx-auto p-5">
-        <TableWithPagination 
-          ref={tableRef}
-          columns={getColumns({
-            onEdit: onEdit,
-            // onDelete: onDelete,
-            // toggleActiveStatus: toggleActiveStatus
-            onView: onEdit,
-            paginator:paginator
-          })}
-          data={products} 
-          isLoading={isLoading}
-          totalRecords={totalRecords} 
-          initialPageSize={10}
-          onPaginationChange={setPaginator}
-        />
-      </div>
+    <div>
+      <TableWithPagination 
+        ref={tableRef}
+        columns={getColumns({
+          onEdit: onEdit,
+          // onDelete: onDelete,
+          // toggleActiveStatus: toggleActiveStatus
+          onView: onEdit,
+          paginator:paginator
+        })}
+        data={products} 
+        isLoading={isLoading}
+        totalRecords={totalRecords} 
+        initialPageSize={10}
+        onPaginationChange={setPaginator}
+      />
     </div>
   )
 }

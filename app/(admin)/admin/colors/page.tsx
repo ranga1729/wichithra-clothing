@@ -17,6 +17,8 @@ import { Item } from "@/components/ui/item";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteColorById, getColors } from "./action";
 import toast from "react-hot-toast";
+import ResetFilterButton from "@/components/ResetFilterButton";
+import AddNewButton from "@/components/AddNewButton";
 
 const InitiaFilter:ColorFilter = {
  name : "",
@@ -90,69 +92,65 @@ export default function ColorsPage() {
   });
   
   return (
-    <div className="w-full h-full dark:bg-neutral-800 bg-neutral-100">
-      <div className="container flex flex-col gap-3 mx-auto p-5">
-        <form className="flex flex-col gap-3">
-          <div className="flex flex-row justify-start items-center gap-3 w-full border py-3 px-2 rounded-md">
+    <div className="flex flex-col gap-3">
+      <form className="flex flex-col gap-3">
+        <div className="flex flex-row justify-start items-center gap-3 w-full border py-3 px-2 rounded-md">
+          <div className="grid w-60 max-w-sm items-center gap-2">
+            <Label htmlFor="name"> {en.name } </Label>
+            <Input 
+              type="text" 
+              id="name" 
+              placeholder="Name" 
+              value={filter.name} 
+              name="name" 
+              onChange={handleFilterChange} 
+            />
+          </div>
+          <div className="relative">
+            <Item className="absolute left-1 top-6.5 p-1 m-0" variant={"default"} > # </Item>
             <div className="grid w-60 max-w-sm items-center gap-2">
-              <Label htmlFor="name"> {en.name } </Label>
+              <Label htmlFor="hexcode"> {en.hexCode } </Label>
               <Input 
                 type="text" 
-                id="name" 
-                placeholder="Name" 
-                value={filter.name} 
-                name="name" 
+                id="hexCode" 
+                placeholder="HexCode" 
+                value={filter.hexCode} 
+                name="hexCode" className="pl-5" 
                 onChange={handleFilterChange} 
               />
             </div>
-            <div className="relative">
-              <Item className="absolute left-1 top-6.5 p-1 m-0" variant={"default"} > # </Item>
-              <div className="grid w-60 max-w-sm items-center gap-2">
-                <Label htmlFor="hexcode"> {en.hexCode } </Label>
-                <Input 
-                  type="text" 
-                  id="hexCode" 
-                  placeholder="HexCode" 
-                  value={filter.hexCode} 
-                  name="hexCode" className="pl-5" 
-                  onChange={handleFilterChange} 
-                />
-              </div>
-            </div>
           </div>
-          
-          <div className="flex flex-row gap-2 items-center justify-between">
-            <div className="flex flex-row gap-2">
-              <Button size={"default"} type="button" onClick={handleReset}> <RotateCcw /> {en.reset_filters} </Button>
-            </div>
-            <Button size={"default"} type="button" onClick={() => setIsAddNewModalOpen(true)}> <CirclePlus />{en.add_new} </Button>
-          </div>
-        </form>
+        </div>
+        
+        <div className="flex flex-row items-center justify-between">
+          <ResetFilterButton onClick={handleReset} />
+          <AddNewButton onClick={() => setIsAddNewModalOpen(true)} />
+        </div>
+      </form>
 
-        <TableWithPagination 
-          ref={tableRef}
-          columns= {getColumns({
-            onEdit: onEdit,
-            onDelete: (color: Color) => deleteColor(color.id),
-            paginator: paginator
-          })}
-          data={data?.data.colors ?? []} 
-          isLoading={isLoading}
-          totalRecords={data?.data.totalRecords ?? 0} 
-          initialPageSize={10}
-          onPaginationChange={setPaginator}
-        />
+      <TableWithPagination 
+        ref={tableRef}
+        columns= {getColumns({
+          onEdit: onEdit,
+          onDelete: (color: Color) => deleteColor(color.id),
+          paginator: paginator
+        })}
+        data={data?.data.colors ?? []} 
+        isLoading={isLoading}
+        totalRecords={data?.data.totalRecords ?? 0} 
+        initialPageSize={10}
+        onPaginationChange={setPaginator}
+      />
 
-        <AddNewModal 
-          isModalOpen={isAddNewModalOpen} 
-          onOpenChange={setIsAddNewModalOpen} 
-        />
-        <EditModal 
-          isModalOpen={isEditModalOpen} 
-          onOpenChange={handleEditModalOpenChange} 
-          selectedColor={selectedColor} 
-        />
-      </div>
+      <AddNewModal 
+        isModalOpen={isAddNewModalOpen} 
+        onOpenChange={setIsAddNewModalOpen} 
+      />
+      <EditModal 
+        isModalOpen={isEditModalOpen} 
+        onOpenChange={handleEditModalOpenChange} 
+        selectedColor={selectedColor} 
+      />
     </div>
   );
 }
