@@ -12,6 +12,9 @@ import { createCategory } from "./action";
 import toast from "react-hot-toast";
 import { LoaderCircle } from "lucide-react";
 import { en } from "@/lib/i18n/en";
+import SaveButton from "@/components/SaveButton";
+import CancelButton from "@/components/CancelButton";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   isModalOpen: boolean;
@@ -19,7 +22,7 @@ interface Props {
 }
 
 export default function AddNewModal(props: Props) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
   const [filePreview, setFilePreview] = useState<string | null>(null);
 
   const {
@@ -57,31 +60,52 @@ export default function AddNewModal(props: Props) {
     setValue("sizeGuide", undefined);
   };
 
-  const onSubmit = async (data: CategorySchema) => {
-    try {
-      setIsSubmitting(true);
-      const newCategory = getValues();
-      const result = await createCategory(newCategory);
+  // const onSubmit = async (data: CategorySchema) => {
+  //   try {
+  //     setIsSubmitting(true);
+  //     const newCategory = getValues();
+  //     const result = await createCategory(newCategory);
 
-      if (result.success) {
-        toast.success(en.category_created_successfully);
-        reset();
-        setFilePreview(null);
-        props.onOpenChange(false);
-      } else {
-        toast.error(result.error || en.failed_to_create_category);
-      }
-    } catch (error) {
-      toast.error(en.failed_to_create_category);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  //     if (result.success) {
+  //       toast.success(en.category_created_successfully);
+  //       reset();
+  //       setFilePreview(null);
+  //       props.onOpenChange(false);
+  //     } else {
+  //       toast.error(result.error || en.failed_to_create_category);
+  //     }
+  //   } catch (error) {
+  //     toast.error(en.failed_to_create_category);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   const handleCancel = () => {
     props.onOpenChange(false);
     reset();
   }
+
+  // react query
+  const { mutate: createNewCategory, isPending } = useMutation({
+    mutationFn: (data: CategorySchema) => createCategory(data),
+    onSuccess: (response) => {
+      if (response.success) {
+        console.log(response.message)
+        queryClient.invalidateQueries({ queryKey: ['categories'] });
+        toast.success(en.category_created_successfully);
+        reset();
+        props.onOpenChange(false);
+      } else {
+        toast.error(response.error || en.failed_to_create_category);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.failed_to_create_category);
+    }
+  })
+
+  const onSubmit = (data: CategorySchema) => createNewCategory(data);
 
   return (
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
@@ -103,7 +127,7 @@ export default function AddNewModal(props: Props) {
                     id="new-name"
                     placeholder="Name"
                     {...register("name")}
-                    disabled={isSubmitting}
+                    disabled={isPending}
                   />
                   {errors.name && (
                     <span className="text-sm text-red-500">
@@ -119,7 +143,7 @@ export default function AddNewModal(props: Props) {
                     id="new-slug"
                     placeholder="Slug"
                     {...register("slug")}
-                    disabled={isSubmitting}
+                    disabled={isPending}
                   />
                   {errors.slug && (
                     <span className="text-sm text-red-500">
@@ -136,7 +160,7 @@ export default function AddNewModal(props: Props) {
                 id="new-description"
                 placeholder="Type a description for this new category"
                 {...register("description")}
-                disabled={isSubmitting}
+                disabled={isPending}
               />
             </Field>
 
@@ -149,7 +173,7 @@ export default function AddNewModal(props: Props) {
                       id="new-sortOrder"
                       type="number"
                       {...register("sortOrder", { valueAsNumber: true })}
-                      disabled={isSubmitting}
+                      disabled={isPending}
                     />
                     {errors.sortOrder && (
                       <span className="text-sm text-red-500">
@@ -167,7 +191,7 @@ export default function AddNewModal(props: Props) {
                       accept="image/png,image/jpeg,image/webp"
                       className="cursor-pointer"
                       onChange={handleFileChange}
-                      disabled={isSubmitting}
+                      disabled={isPending}
                     />
                     {errors.sizeGuide && (
                       <span className="text-sm text-red-500">
@@ -190,7 +214,7 @@ export default function AddNewModal(props: Props) {
                     size="sm"
                     className="absolute top-2 right-2"
                     onClick={handleRemoveFile}
-                    disabled={isSubmitting}
+                    disabled={isPending}
                   >
                     {en.remove}
                   </Button>
@@ -200,19 +224,8 @@ export default function AddNewModal(props: Props) {
           </FieldGroup>
 
           <DialogFooter className="mt-6">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? <>
-                  <LoaderCircle className="animate-spin w-8 h-8" /> {en.saving}
-                </> : "Save Category"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
-              {en.cancel}
-            </Button>
+            <SaveButton isPending={isPending} />
+            <CancelButton disabled={isPending} onClick={handleCancel} />
           </DialogFooter>
         </form>
       </DialogContent>

@@ -7,12 +7,12 @@ import { Label } from "@/components/ui/label";
 import { en } from "@/lib/i18n/en";
 import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createColor } from "./action";
 import toast from "react-hot-toast";
 import SaveButton from "@/components/SaveButton";
+import CancelButton from "@/components/CancelButton";
 
 interface Props {
   isModalOpen: boolean;
@@ -126,18 +126,7 @@ export default function AddNewModal(props: Props) {
 
           <DialogFooter className="mt-6">
             <SaveButton isPending={isPending} />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isPending}
-              className="
-                bg-red-600 text-neutral-100 hover:bg-red-700 hover:text-neutral-100
-                dark:bg-red-600 dark:text-neutral-100 dark:hover:bg-red-700 dark:hover:hover:text-neutral-100
-              "
-            >
-              {en.cancel}
-            </Button>
+            <CancelButton onClick={handleCancel} disabled={isPending} />
           </DialogFooter>
         </form>
       </DialogContent>

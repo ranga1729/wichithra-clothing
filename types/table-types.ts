@@ -4,6 +4,12 @@ export interface Paginator {
   totalRecords: number, // total items from server
 }
 
+export const initialPaginator: Paginator = {
+  pageSize: 10,
+  pageIndex: 0,
+  totalRecords: 0,
+}
+
 export interface Sorter {
   sortColumn: string,
   sortOrder: string,

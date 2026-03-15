@@ -1,6 +1,6 @@
 'use server'
 
-import { prisma } from "@/lib/prisma";
+import { notDeleted, prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
 import { CategoryFilter } from "@/types/filter-types";
 import { Paginator, Sorter } from "@/types/table-types";
@@ -18,6 +18,7 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
     const skip = pageIndex * pageSize;
 
     const whereClause: any = {
+      ...notDeleted,
       ...(filter.name && {
         name: {
           contains: filter.name as string,
@@ -59,7 +60,6 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
     if(!categories) {
       return {
         success: false,
-        message: en.data_retrieval_failed,
         error: en.data_retrieval_failed
       }
     }
@@ -84,6 +84,58 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
   try {
     const validatedData = categorySchema.parse(newCategory);
     let sizeGuidePath: string | undefined = undefined;
+
+    const existingCategories = await prisma.category.findMany({
+      where: {
+        OR : [
+          {name: newCategory.name},
+          {slug: newCategory.slug}
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        deletedAt: true
+      }
+    });
+
+    if(existingCategories.length > 0) {
+      //non soft-deleted conflicts
+      const activeConflicts = existingCategories.filter((cat) => cat.deletedAt === null);
+
+      if(activeConflicts.length > 0) {
+        const nameConflicts = activeConflicts.find((cat) => cat.name === validatedData.name);
+        const slugConflicts = activeConflicts.find((cat) => cat.slug === validatedData.slug);
+
+        if(nameConflicts && slugConflicts) {
+          return {
+            success: false,
+            error: en.category_name_and_slug_already_exist
+          }
+        }
+        if(nameConflicts) {
+          return {
+            success: false,
+            error: en.category_name_already_exists
+          }
+        }
+        if(slugConflicts) {
+          return {
+            success: false,
+            error: en.category_slug_already_exists
+          }
+        }
+      }
+
+      const softDeletedId = existingCategories.map((cat) => cat.id);
+      
+      await prisma.category.deleteMany({
+        where: {
+          id: {in: softDeletedId}
+        }
+      })
+    }
 
     const category = await prisma.category.create({
       data: {
@@ -157,10 +209,10 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
   }
 }
 
-export async function deleteCategory(id: string):Promise<ApiResponse> {
+export async function deleteCategoryById(id: string):Promise<ApiResponse> {
   try {
     const category = await prisma.category.findUnique({
-      where: {id : id},
+      where: {id : id, ...notDeleted},
       select: {
         id: true,
         sizeGuide: true,
@@ -184,7 +236,7 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
     if(!deletedCategory) {
       return {
         success: false,
-        error: en.category_deletion_failed
+        error: en.Failed_to_delete_category
       }
     }
 
@@ -213,7 +265,7 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
       message: en.category_deleted
     }
   } catch(error) {
-    console.error(en.category_deletion_failed + ": ", error);
+    console.error(en.Failed_to_delete_category + ": ", error);
     
     if (error instanceof Error) {
       return {
@@ -224,7 +276,7 @@ export async function deleteCategory(id: string):Promise<ApiResponse> {
     
     return {
       success: false,
-      error: en.category_deletion_failed,
+      error: en.Failed_to_delete_category,
     };
   }
 }
@@ -393,10 +445,10 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
   }
 }
 
-export async function toggleActiveStatusOfCategory(id: string): Promise<ApiResponse> {
+export async function toggleActiveStatusById(id: string): Promise<ApiResponse> {
   try {
     const existingCategory = await prisma.category.findUnique({
-      where: { id: id },
+      where: { id: id, ...notDeleted},
       select: {
         id: true,
         isActive: true,

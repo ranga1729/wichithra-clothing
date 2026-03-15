@@ -2,11 +2,9 @@
 
 import TableWithPagination, { TableWithPaginationRef } from "@/components/custom/table/TableWithPagination";
 import { Color } from "@/generated/prisma/client";
-import { Paginator } from "@/types/table-types";
+import { initialPaginator, Paginator } from "@/types/table-types";
 import { useRef, useState } from "react";
 import { getColumns } from "./columns";
-import { Button } from "@/components/ui/button";
-import { CirclePlus, RotateCcw } from "lucide-react";
 import { en } from "@/lib/i18n/en";
 import AddNewModal from "./addNewModal";
 import EditModal from "./editModal";
@@ -25,21 +23,16 @@ const InitiaFilter:ColorFilter = {
  hexCode : "",
 }
 
-const initialPaginator: Paginator = {
-  pageSize: 10,
-  pageIndex: 0,
-  totalRecords: 0,
-}
-
 export default function ColorsPage() {
+  const tableRef = useRef<TableWithPaginationRef>(null);
+  const queryClient = useQueryClient();
+  
   const [paginator, setPaginator] = useState<Paginator>(initialPaginator)
   const [filter, setFilter] = useState<ColorFilter>(InitiaFilter);
   
   const [isAddNewModalOpen, setIsAddNewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState<Color>();
-
-  const tableRef = useRef<TableWithPaginationRef>(null);
 
   const onEdit = (color: Color) => {
     setSelectedColor(color)
@@ -63,10 +56,8 @@ export default function ColorsPage() {
     }));
   }
 
-  // react queries
-  const queryClient = useQueryClient();
-  
-  const { data, isLoading } = useQuery({
+  // react queries  
+  const { data, isPending } = useQuery({
     queryKey: ['colors', 'list', {
       pageSize: paginator.pageSize, 
       pageIndex: paginator.pageIndex,
@@ -136,7 +127,7 @@ export default function ColorsPage() {
           paginator: paginator
         })}
         data={data?.data.colors ?? []} 
-        isLoading={isLoading}
+        isLoading={isPending}
         totalRecords={data?.data.totalRecords ?? 0} 
         initialPageSize={10}
         onPaginationChange={setPaginator}

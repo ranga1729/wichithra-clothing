@@ -91,7 +91,10 @@ export const en = {
   category_create_and_failed_adding_sizeguide: "Category created but failed to add the size link",
   category_created_successfully: "Category created successfully",
   category_doesnt_exist: "Category doesn't exist",
-  category_deletion_failed: "Category deletion failed",
+  Failed_to_delete_category: "Failed to delete category",
+  category_name_and_slug_already_exist: "Category name and slug already exists",
+  category_name_already_exists: "Category name already exists",
+  category_slug_already_exists: "Category slug already exists",
   category_deleted_image_not_exist: 'Category deleted. Image was not found on the server.',
   category_deleted: "Category deleted successfully",
   no_size_guide_for_this_category: "No size guide for this category",
@@ -132,4 +135,5 @@ export const en = {
 
   error_updating: "Error updating",
   error_creating: "Error creating",
+  failed_to_fetch_data: "Failed to fetch data",
 }

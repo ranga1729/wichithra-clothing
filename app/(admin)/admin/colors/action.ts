@@ -247,13 +247,9 @@ export async function updateColorById(id: string, data: ColorSchema):Promise<Api
       }
     })
 
-    console.log("conflict: ", nameConflict)
-
     if(nameConflict && nameConflict.deletedAt === null) {
       return { success: false, error: en.color_name_already_exist };
     }
-
-    console.log("#########")
 
     if(nameConflict && nameConflict.deletedAt !== null) {
       await prisma.color.delete({
