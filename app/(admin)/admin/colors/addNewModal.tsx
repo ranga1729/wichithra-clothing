@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createColor } from "./action";
 import toast from "react-hot-toast";
+import SaveButton from "@/components/SaveButton";
 
 interface Props {
   isModalOpen: boolean;
@@ -124,16 +125,16 @@ export default function AddNewModal(props: Props) {
           </FieldGroup>
 
           <DialogFooter className="mt-6">
-            <Button type="submit" disabled={isPending}>
-              {isPending ? <>
-                  <LoaderCircle className="animate-spin w-8 h-8" /> {en.saving}
-                </> : <>{en.save}</> }
-            </Button>
+            <SaveButton isPending={isPending} />
             <Button
               type="button"
               variant="outline"
               onClick={handleCancel}
               disabled={isPending}
+              className="
+                bg-red-600 text-neutral-100 hover:bg-red-700 hover:text-neutral-100
+                dark:bg-red-600 dark:text-neutral-100 dark:hover:bg-red-700 dark:hover:hover:text-neutral-100
+              "
             >
               {en.cancel}
             </Button>
