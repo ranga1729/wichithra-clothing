@@ -27,7 +27,7 @@ export default function AddNewModal(props: Props) {
 
   const {
     register, handleSubmit,
-    setValue, getValues, reset,
+    setValue, reset,
     formState: { errors },
   } = useForm<CategorySchema>({
     resolver: zodResolver(categorySchema),
@@ -59,27 +59,6 @@ export default function AddNewModal(props: Props) {
     setFilePreview(null);
     setValue("sizeGuide", undefined);
   };
-
-  // const onSubmit = async (data: CategorySchema) => {
-  //   try {
-  //     setIsSubmitting(true);
-  //     const newCategory = getValues();
-  //     const result = await createCategory(newCategory);
-
-  //     if (result.success) {
-  //       toast.success(en.category_created_successfully);
-  //       reset();
-  //       setFilePreview(null);
-  //       props.onOpenChange(false);
-  //     } else {
-  //       toast.error(result.error || en.failed_to_create_category);
-  //     }
-  //   } catch (error) {
-  //     toast.error(en.failed_to_create_category);
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
 
   const handleCancel = () => {
     props.onOpenChange(false);

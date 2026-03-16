@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import { LoaderCircle } from "lucide-react";
 import { en } from "@/lib/i18n/en";
 import { Category } from "@/generated/prisma/client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   isModalOpen: boolean;
@@ -20,15 +21,9 @@ interface Props {
   selectedCategory?: Category;
 }
 
-// even though the file preview is working,
-// if you remove the image b clicking on the "remove" button, it gets removed from the preview.
-// but it deosn't get removed from the server/files
-
 export default function EditModal(props: Props) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
   const [filePreview, setFilePreview] = useState<string | null>(null);
-  const [prevData, setPrevData] = useState<Category>();
-  const [isLoadingSizeGuide, setIsLoadingSizeGuide] = useState(false);
 
   const {
     register, handleSubmit,
@@ -48,15 +43,32 @@ export default function EditModal(props: Props) {
 
   const currentFormData = watch();
 
+  const hasChanges = useMemo(() => {
+    if (!props.selectedCategory) return false;
+
+    const nameChanged = currentFormData.name !== props.selectedCategory.name;
+    const slugChanged = currentFormData.slug !== props.selectedCategory.slug;
+    const descriptionChanged = currentFormData.description !== props.selectedCategory.description;
+    const sortOrderChanged = currentFormData.sortOrder !== props.selectedCategory.sortOrder;
+    const fileChanged = currentFormData.sizeGuide instanceof File;
+
+    return nameChanged || slugChanged || descriptionChanged || sortOrderChanged || fileChanged;
+  }, [currentFormData, props.selectedCategory]);
+
+  const onSubmit = (data: CategorySchema) => {
+    if (!hasChanges) {
+      toast.error(en.no_changes_detected);
+      return;
+    }
+    editCategory(data);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setValue("sizeGuide", file, { shouldValidate: true });
-      
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setFilePreview(reader.result as string);
-      };
+      reader.onloadend = () => setFilePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -66,199 +78,132 @@ export default function EditModal(props: Props) {
     setValue("sizeGuide", undefined, { shouldValidate: true });
   };
 
-  const getSizeGuide = async () => {
-    try {
-      if(props.selectedCategory && props.selectedCategory.sizeGuide) {
-        setIsLoadingSizeGuide(true);
-        const result = await fetchSizeGuide(props.selectedCategory.id);
-
-        if(!result.success) {
-          toast.error(result.error || en.error_fetching_sizeguide);
-          return null;
-        }
-
-        setFilePreview(result.data.sizeGuide);
-        return result.data.sizeGuide;
-      }
-      return null;
-    } catch (error:any) {
-      toast.error(error.message || en.error_fetching_sizeguide);
-      return null;
-    } finally {
-      setIsLoadingSizeGuide(false);
-    }
-  }
-
-  const hasChanges = useMemo(() => {
-    if(!prevData) return false;
-
-    const nameChanged = currentFormData.name !== prevData.name;
-    const slugChanged = currentFormData.slug !== prevData.slug;
-    const descriptionChanged = currentFormData.description !== prevData.description;
-    const sortOrderChanged = currentFormData.sortOrder !== prevData.sortOrder;
-    const fileChanged = currentFormData.sizeGuide instanceof File;
-
-    return nameChanged || slugChanged || descriptionChanged || sortOrderChanged || fileChanged;
-  }, [currentFormData, prevData])
-
-  const onSubmit = async (data: CategorySchema) => {
-
-    if (!hasChanges) {
-      toast.error(en.no_changes_detected);
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      const formData = new FormData();
-      formData.append("id", prevData?.id || "");
-      formData.append("name", data.name);
-      formData.append("slug", data.slug);
-      formData.append("description", data.description || "");
-      formData.append("sortOrder", data.sortOrder?.toString() || "0");
-
-      if (data.sizeGuide instanceof File) {
-        formData.append("sizeGuide", data.sizeGuide);
-      }
-
-      const result = await updateCategory(prevData!.id, data);
-
-      if (!result.success) {
-        toast.error(result.error || en.category_update_failed);
-        reset();
-        setFilePreview(null);
-        props.onOpenChange(false);
-        return;
-      }
-
-      toast.success(en.category_updated_successfully);
-      props.onOpenChange(false);
-      reset();
-      setFilePreview(null);
-      setPrevData(undefined);
-
-    } catch (error) {
-      toast.error(en.category_update_failed);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleCancel = () => {
+  const handleClose = () => {
     props.onOpenChange(false);
     reset();
     setFilePreview(null);
-    setPrevData(undefined);
-  }
-
-  const handleFormSubmit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    handleSubmit(onSubmit)();
   };
 
   useEffect(() => {
-    const loadCategoryData = async () => {
-      if (props.selectedCategory) {
-        setValue("name", props.selectedCategory.name);
-        setValue("slug", props.selectedCategory.slug);
-        setValue("description", props.selectedCategory.description || "");
-        setValue("sortOrder", props.selectedCategory.sortOrder || 0);
-        
-        await getSizeGuide();
-        
-        setPrevData(props.selectedCategory);
-      }
-    };
-
-    loadCategoryData();
-  }, [props.selectedCategory]);
+    if (props.selectedCategory && props.isModalOpen) {
+      setValue("name", props.selectedCategory.name);
+      setValue("slug", props.selectedCategory.slug);
+      setValue("description", props.selectedCategory.description || "");
+      setValue("sortOrder", props.selectedCategory.sortOrder || 0);
+    }
+  }, [props.selectedCategory, props.isModalOpen]);
 
   useEffect(() => {
     if (!props.isModalOpen) {
       reset();
       setFilePreview(null);
-      setPrevData(undefined);
     }
   }, [props.isModalOpen, reset]);
+
+  // react queries
+  const { isFetching: isLoadingSizeGuide } = useQuery({
+    queryKey: ["sizeGuide", props.selectedCategory?.id],
+    queryFn: async () => {
+      const result = await fetchSizeGuide(props.selectedCategory!.id);
+      if (!result.success) {
+        toast.error(result.error || en.error_fetching_sizeguide);
+        return null;
+      }
+
+      if(result.success && result.data) setFilePreview(result.data)
+
+      return result.data.sizeGuide as string;
+    },
+    enabled: !!props.selectedCategory?.id && !!props.selectedCategory?.sizeGuide && props.isModalOpen,
+    staleTime: Infinity, // image won't change unless user uploads a new one
+  });
+
+  const { mutate: editCategory, isPending } = useMutation({
+    mutationFn: (data: CategorySchema) => updateCategory(props.selectedCategory!.id, data),
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ["categories"] });
+        toast.success(en.category_updated_successfully);
+        handleClose();
+      } else {
+        toast.error(response.error || en.category_update_failed);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.category_update_failed);
+    },
+  });
+
 
   return (
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
       <DialogContent className="dark:bg-neutral-800 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle> {en.edit_category_title} </DialogTitle>
-          <DialogDescription>
-            {en.edit_category_subtitle}
-          </DialogDescription>
+          <DialogTitle>{en.edit_category_title}</DialogTitle>
+          <DialogDescription>{en.edit_category_subtitle}</DialogDescription>
         </DialogHeader>
 
-        <div>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup className="flex flex-col gap-4">
             <FieldGroup className="flex flex-row gap-4">
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-name"> {en.name} </Label>
+                <Label htmlFor="edit-name">{en.name}</Label>
                 <div className="flex flex-col">
                   <Input
                     id="edit-name"
                     placeholder="Name"
                     {...register("name")}
-                    disabled={isSubmitting || isLoadingSizeGuide}
+                    disabled={isPending || isLoadingSizeGuide}
                   />
                   {errors.name && (
-                    <span className="text-sm text-red-500">
-                      {errors.name.message as string}
-                    </span>
+                    <span className="text-sm text-red-500">{errors.name.message as string}</span>
                   )}
                 </div>
               </Field>
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-slug"> {en.slug} </Label>
+                <Label htmlFor="edit-slug">{en.slug}</Label>
                 <div className="flex flex-col">
                   <Input
                     id="edit-slug"
                     placeholder="Slug"
                     {...register("slug")}
-                    disabled={isSubmitting || isLoadingSizeGuide}
+                    disabled={isPending || isLoadingSizeGuide}
                   />
                   {errors.slug && (
-                    <span className="text-sm text-red-500">
-                      {errors.slug.message as string}
-                    </span>
+                    <span className="text-sm text-red-500">{errors.slug.message as string}</span>
                   )}
                 </div>
               </Field>
             </FieldGroup>
 
             <Field className="flex flex-col gap-2">
-              <Label htmlFor="edit-description"> {en.description} </Label>
+              <Label htmlFor="edit-description">{en.description}</Label>
               <Textarea
                 id="edit-description"
                 placeholder="Type a description for this category"
                 {...register("description")}
-                disabled={isSubmitting || isLoadingSizeGuide}
+                disabled={isPending || isLoadingSizeGuide}
               />
             </Field>
 
             <FieldGroup className="flex flex-col">
               <FieldGroup className="flex flex-row gap-4">
                 <Field className="flex flex-col gap-2 flex-1">
-                  <Label htmlFor="edit-sortOrder"> {en.sort_order} </Label>
+                  <Label htmlFor="edit-sortOrder">{en.sort_order}</Label>
                   <div className="flex flex-col">
                     <Input
                       id="edit-sortOrder"
                       type="number"
                       {...register("sortOrder", { valueAsNumber: true })}
-                      disabled={isSubmitting || isLoadingSizeGuide}
+                      disabled={isPending || isLoadingSizeGuide}
                     />
                     {errors.sortOrder && (
-                      <span className="text-sm text-red-500">
-                        {errors.sortOrder.message as string}
-                      </span>
+                      <span className="text-sm text-red-500">{errors.sortOrder.message as string}</span>
                     )}
                   </div>
                 </Field>
                 <Field className="flex flex-col gap-2 flex-3">
-                  <Label htmlFor="edit-sizeGuideImage"> {en.size_guide_image} </Label>
+                  <Label htmlFor="edit-sizeGuideImage">{en.size_guide_image}</Label>
                   <div>
                     <Input
                       id="edit-sizeGuideImage"
@@ -266,24 +211,22 @@ export default function EditModal(props: Props) {
                       accept="image/png,image/jpeg,image/webp"
                       className="cursor-pointer"
                       onChange={handleFileChange}
-                      disabled={isSubmitting || isLoadingSizeGuide}
+                      disabled={isPending || isLoadingSizeGuide}
                     />
                     {errors.sizeGuide && (
-                      <span className="text-sm text-red-500">
-                        {errors.sizeGuide.message as string}
-                      </span>
-                    )}                
+                      <span className="text-sm text-red-500">{errors.sizeGuide.message as string}</span>
+                    )}
                   </div>
                 </Field>
               </FieldGroup>
-              
+
               {isLoadingSizeGuide && (
                 <div className="flex items-center justify-center mt-2 p-4 border rounded-lg">
                   <LoaderCircle className="animate-spin w-6 h-6 mr-2" />
-                  <span> {en.loading} </span>
+                  <span>{en.loading}</span>
                 </div>
               )}
-              
+
               {filePreview && !isLoadingSizeGuide && (
                 <div className="relative mt-2 border rounded-lg p-2">
                   <img
@@ -297,7 +240,7 @@ export default function EditModal(props: Props) {
                     size="sm"
                     className="absolute top-2 right-2"
                     onClick={handleRemoveFile}
-                    disabled={isSubmitting}
+                    disabled={isPending}
                   >
                     {en.remove}
                   </Button>
@@ -307,12 +250,8 @@ export default function EditModal(props: Props) {
           </FieldGroup>
 
           <DialogFooter className="mt-6">
-            <Button 
-              type="button"
-              onClick={handleFormSubmit}
-              disabled={isSubmitting || !hasChanges || isLoadingSizeGuide}
-            > 
-              {isSubmitting ? (
+            <Button type="submit" disabled={isPending || !hasChanges || isLoadingSizeGuide}>
+              {isPending ? (
                 <>
                   <LoaderCircle className="animate-spin w-4 h-4 mr-2" />
                   {en.saving}
@@ -324,13 +263,13 @@ export default function EditModal(props: Props) {
             <Button
               type="button"
               variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
+              onClick={handleClose}
+              disabled={isPending}
             >
               {en.cancel}
             </Button>
           </DialogFooter>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -363,6 +363,59 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
       };
     }
 
+    const conflicts = await prisma.category.findMany({
+      where: {
+        OR : [
+          {name: updatedData.name},
+          {slug: updatedData.slug}
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        deletedAt: true
+      }
+    });
+
+    if(conflicts.length > 0) {
+      //non soft-deleted conflicts
+      const activeConflicts = conflicts.filter((cat) => cat.deletedAt === null);
+
+      if(activeConflicts.length > 0) {
+        const nameConflicts = activeConflicts.find((cat) => cat.name === validatedData.name);
+        const slugConflicts = activeConflicts.find((cat) => cat.slug === validatedData.slug);
+
+        if(nameConflicts && slugConflicts) {
+          return {
+            success: false,
+            error: en.category_name_and_slug_already_exist
+          }
+        }
+
+        if(nameConflicts) {
+          return {
+            success: false,
+            error: en.category_name_already_exists
+          }
+        }
+        if(slugConflicts) {
+          return {
+            success: false,
+            error: en.category_slug_already_exists
+          }
+        }
+      }
+
+      const softDeletedId = conflicts.map((cat) => cat.id);
+      
+      await prisma.category.deleteMany({
+        where: {
+          id: {in: softDeletedId}
+        }
+      })
+    }
+
     let sizeGuidePath: string | undefined = existingCategory.sizeGuide || undefined;
     let shouldDeleteOldImage = false;
 
