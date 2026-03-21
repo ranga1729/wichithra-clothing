@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -8,11 +7,13 @@ import { designSchema, DesignSchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { updateDesign } from "./action";
+import { updateDesignById } from "./action";
 import toast from "react-hot-toast";
-import { LoaderCircle } from "lucide-react";
 import { en } from "@/lib/i18n/en";
 import { Design } from "@/generated/prisma/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import SaveButton from "@/components/SaveButton";
+import CancelButton from "@/components/CancelButton";
 
 interface Props {
   isModalOpen: boolean;
@@ -21,7 +22,7 @@ interface Props {
 }
 
 export default function EditModal(props: Props) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
   const [prevData, setPrevData] = useState<Design>();
 
   const {
@@ -50,52 +51,10 @@ export default function EditModal(props: Props) {
     return nameChanged || slugChanged || descriptionChanged;
   }, [currentFormData, prevData])
 
-  const onSubmit = async (data: DesignSchema) => {
-
-    if (!hasChanges) {
-      toast.error("No changes detected");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      const formData = new FormData();
-      formData.append("id", prevData?.id || "");
-      formData.append("name", data.name);
-      formData.append("slug", data.slug);
-
-      const result = await updateDesign(prevData!.id, data);
-
-      if (!result.success) {
-        toast.error(result.error || en.design_update_failed);
-        reset();
-        props.onOpenChange(false);
-        return;
-      }
-
-      toast.success(en.design_update_successfully);
-      props.onOpenChange(false);
-      reset();
-      setPrevData(undefined);
-
-    } catch (error) {
-      toast.error(en.design_update_failed);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleCancel = () => {
     props.onOpenChange(false);
     reset();
-    setPrevData(undefined);
   }
-
-  const handleFormSubmit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    handleSubmit(onSubmit)();
-  };
 
   useEffect(() => {
     const loadDesignData = async () => {
@@ -111,24 +70,38 @@ export default function EditModal(props: Props) {
     loadDesignData();
   }, [props.selectedDesign]);
 
-  useEffect(() => {
-    if (!props.isModalOpen) {
-      reset();
-      setPrevData(undefined);
-    }
-  }, [props.isModalOpen, reset]);
+  // react query
+  const { mutate: updateDesign, isPending } = useMutation({
+    mutationFn: ({id, data}:{id: string, data: DesignSchema}) => updateDesignById(id, data),
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ['designs'] });
+        toast.success(en.design_updated_successfully);
+        reset();
+        props.onOpenChange(false);
+        setPrevData(undefined);
+      } else {
+        toast.error(response.error || en.design_update_failed);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.design_update_failed);
+    },
+  });
 
+  const onSubmit = (data: DesignSchema) => updateDesign({id: prevData?.id!, data: data})
+  
   return (
-    <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
+    <Dialog open={props.isModalOpen} onOpenChange={handleCancel}>
       <DialogContent className="dark:bg-neutral-800 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle> {en.create_design_title} </DialogTitle>
+          <DialogTitle> {en.edit_design_title} </DialogTitle>
           <DialogDescription>
             {en.create_design_subtitle}
           </DialogDescription>
         </DialogHeader>
 
-        <div>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup className="flex flex-col gap-4">
             <FieldGroup className="flex flex-row gap-4">
               <Field className="flex flex-col gap-2 flex-1">
@@ -138,7 +111,7 @@ export default function EditModal(props: Props) {
                     id="edit-name"
                     placeholder="Name"
                     {...register("name")}
-                    disabled={isSubmitting}
+                    disabled={isPending}
                   />
                   {errors.name && (
                     <span className="text-sm text-red-500">
@@ -154,7 +127,7 @@ export default function EditModal(props: Props) {
                     id="edit-slug"
                     placeholder="Slug"
                     {...register("slug")}
-                    disabled={isSubmitting}
+                    disabled={isPending}
                   />
                   {errors.slug && (
                     <span className="text-sm text-red-500">
@@ -171,35 +144,16 @@ export default function EditModal(props: Props) {
                 id="edit-description"
                 placeholder="Type a description for this design"
                 {...register("description")}
-                disabled={isSubmitting}
+                disabled={isPending}
               />
             </Field>
           </FieldGroup>
 
           <DialogFooter className="mt-6">
-            <Button 
-              type="button"
-              onClick={handleFormSubmit}
-              disabled={isSubmitting || !hasChanges}
-            > 
-              {isSubmitting ? (
-                <>
-                  <LoaderCircle className="animate-spin w-4 h-4 mr-2" /> {en.saving}
-                </>
-              ) : (
-                "Save Design"
-              )}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
-              {en.cancel}
-            </Button>
+            <SaveButton isPending={isPending} disabled={isPending || !hasChanges} />
+            <CancelButton onClick={handleCancel} />
           </DialogFooter>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
