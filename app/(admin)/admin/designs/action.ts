@@ -103,19 +103,19 @@ export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse>
         if(nameConflicts && slugConflicts) {
           return {
             success: false,
-            error: en.design_name_and_slug_already_exist
+            error: en.name_and_slug_already_exists
           }
         }
         if(nameConflicts) {
           return {
             success: false,
-            error: en.design_name_already_exists
+            error: en.name_already_exists
           }
         }
         if(slugConflicts) {
           return {
             success: false,
-            error: en.design_slug_already_exists
+            error: en.slug_already_exists
           }
         }
       }
@@ -265,20 +265,20 @@ export async function updateDesignById(id: string, updatedDesign: DesignSchema):
         if(nameConflicts && slugConflicts) {
           return {
             success: false,
-            error: en.design_name_and_slug_already_exist
+            error: en.name_and_slug_already_exists
           }
         }
 
         if(nameConflicts) {
           return {
             success: false,
-            error: en.design_name_already_exists
+            error: en.name_already_exists
           }
         }
         if(slugConflicts) {
           return {
             success: false,
-            error: en.design_slug_already_exists
+            error: en.slug_already_exists
           }
         }
       }

@@ -111,19 +111,19 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
         if(nameConflicts && slugConflicts) {
           return {
             success: false,
-            error: en.category_name_and_slug_already_exist
+            error: en.name_and_slug_already_exists
           }
         }
         if(nameConflicts) {
           return {
             success: false,
-            error: en.category_name_already_exists
+            error: en.name_already_exists
           }
         }
         if(slugConflicts) {
           return {
             success: false,
-            error: en.category_slug_already_exists
+            error: en.slug_already_exists
           }
         }
       }
@@ -389,20 +389,20 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
         if(nameConflicts && slugConflicts) {
           return {
             success: false,
-            error: en.category_name_and_slug_already_exist
+            error: en.name_and_slug_already_exists
           }
         }
 
         if(nameConflicts) {
           return {
             success: false,
-            error: en.category_name_already_exists
+            error: en.name_already_exists
           }
         }
         if(slugConflicts) {
           return {
             success: false,
-            error: en.category_slug_already_exists
+            error: en.slug_already_exists
           }
         }
       }

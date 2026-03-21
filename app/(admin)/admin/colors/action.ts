@@ -87,7 +87,7 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
       if(existingColor.deletedAt === null) {
         return {
           success: false,
-          error: en.color_name_already_exist,
+          error: en.name_already_exists,
         }
       }
       
@@ -248,7 +248,7 @@ export async function updateColorById(id: string, data: ColorSchema):Promise<Api
     })
 
     if(nameConflict && nameConflict.deletedAt === null) {
-      return { success: false, error: en.color_name_already_exist };
+      return { success: false, error: en.name_already_exists };
     }
 
     if(nameConflict && nameConflict.deletedAt !== null) {
