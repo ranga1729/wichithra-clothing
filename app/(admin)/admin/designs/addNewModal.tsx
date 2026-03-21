@@ -12,6 +12,9 @@ import { createDesign } from "./action";
 import toast from "react-hot-toast";
 import { LoaderCircle } from "lucide-react";
 import { en } from "@/lib/i18n/en";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import SaveButton from "@/components/SaveButton";
+import CancelButton from "@/components/CancelButton";
 
 interface Props {
   isModalOpen: boolean;
@@ -19,7 +22,7 @@ interface Props {
 }
 
 export default function AddNewModal(props: Props) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const {
     register, handleSubmit,
@@ -35,30 +38,50 @@ export default function AddNewModal(props: Props) {
     },
   });
 
-  const onSubmit = async (data: DesignSchema) => {
-    try {
-      setIsSubmitting(true);
-      const newDesign = getValues();
-      const result = await createDesign(newDesign);
+  // const onSubmit = async (data: DesignSchema) => {
+  //   try {
+  //     setIsSubmitting(true);
+  //     const newDesign = getValues();
+  //     const result = await createDesign(newDesign);
 
-      if (result.success) {
-        toast.success(en.design_created_successfully);
-        reset();
-        props.onOpenChange(false);
-      } else {
-        toast.error(result.error || en.failed_to_create_design);
-      }
-    } catch (error) {
-      toast.error(en.failed_to_create_design);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  //     if (result.success) {
+  //       toast.success(en.design_created_successfully);
+  //       reset();
+  //       props.onOpenChange(false);
+  //     } else {
+  //       toast.error(result.error || en.failed_to_create_design);
+  //     }
+  //   } catch (error) {
+  //     toast.error(en.failed_to_create_design);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   const handleCancel = () => {
     props.onOpenChange(false);
     reset();
   }
+
+  // react queries
+  const {mutate: createNewColor, isPending } = useMutation({
+    mutationFn: (data: DesignSchema) => createDesign(data),
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ['designs'] });
+        toast.success(en.design_created_successfully);
+        reset();
+        props.onOpenChange(false);
+      } else {
+        toast.error(response.error || en.failed_to_create_design);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.failed_to_create_design);
+    }
+  });
+
+  const onSubmit = (data: DesignSchema) => createNewColor(data);
 
   return (
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
@@ -80,7 +103,7 @@ export default function AddNewModal(props: Props) {
                     id="new-name"
                     placeholder="Name"
                     {...register("name")}
-                    disabled={isSubmitting}
+                    disabled={isPending}
                   />
                   {errors.name && (
                     <span className="text-sm text-red-500">
@@ -96,7 +119,7 @@ export default function AddNewModal(props: Props) {
                     id="new-slug"
                     placeholder="Slug"
                     {...register("slug")}
-                    disabled={isSubmitting}
+                    disabled={isPending}
                   />
                   {errors.slug && (
                     <span className="text-sm text-red-500">
@@ -113,25 +136,14 @@ export default function AddNewModal(props: Props) {
                 id="new-description"
                 placeholder="Type a description for this new design"
                 {...register("description")}
-                disabled={isSubmitting}
+                disabled={isPending}
               />
             </Field>
           </FieldGroup>
 
           <DialogFooter className="mt-6">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? <>
-                  <LoaderCircle className="animate-spin w-8 h-8" /> {en.saving}
-                </> : "Save Design"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
-              {en.cancel}
-            </Button>
+            <SaveButton isPending={isPending} />
+            <CancelButton onClick={handleCancel} />
           </DialogFooter>
         </form>
       </DialogContent>

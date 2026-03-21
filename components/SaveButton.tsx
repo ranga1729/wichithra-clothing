@@ -3,14 +3,15 @@ import { Button } from "./ui/button"
 import { LoaderCircle } from "lucide-react"
 
 interface Props {
-  isPending : boolean
+  isPending : boolean,
+  disabled?: boolean,
 }
 
 const SaveButton = (props: Props) => {
   return (
     <Button 
       type="submit" 
-      disabled={props.isPending} 
+      disabled={props.isPending || props.disabled} 
       className="
         bg-green-600 hover:bg-green-700 hover:text-neutral-100
         dark:bg-green-600 dark:hover:bg-green-700 dark:text-neutral-100 dark:hover:text-neutral-100

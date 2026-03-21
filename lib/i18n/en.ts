@@ -92,9 +92,7 @@ export const en = {
   category_created_successfully: "Category created successfully",
   category_doesnt_exist: "Category doesn't exist",
   Failed_to_delete_category: "Failed to delete category",
-  category_name_and_slug_already_exist: "Category name and slug already exists",
-  category_name_already_exists: "Category name already exists",
-  category_slug_already_exists: "Category slug already exists",
+
   category_deleted_image_not_exist: 'Category deleted. Image was not found on the server.',
   category_deleted: "Category deleted successfully",
   no_size_guide_for_this_category: "No size guide for this category",
@@ -115,7 +113,7 @@ export const en = {
   design_deleted_successfully: "Design deleted successfully",
   design_delete_failed: "Design delete failed",
   design_update_failed: "Design update failed",
-  design_update_successfully: "Design update successfully",
+  design_updated_successfully: "Design update successfully",
   design_created_successfully: "Design created successfully",
   failed_to_create_design: "Failed to create design",
   design_doesnt_exist: "Design doesn't exist",
@@ -127,7 +125,6 @@ export const en = {
   color_deleted_successfully: "Color deleted successfully",
   color_update_failed: "Color update failed",
   color_updated_successfully: "Color updated successfully",
-  color_name_already_exist: "Color name already exist",
 
   product_doesnt_exist: "Product doesn't exist",
   product_update_failed: "Product update failed",
@@ -136,4 +133,8 @@ export const en = {
   error_updating: "Error updating",
   error_creating: "Error creating",
   failed_to_fetch_data: "Failed to fetch data",
+
+  name_already_exists: "Name already exists",
+  slug_already_exists: "Slug already exists",
+  name_and_slug_already_exists: "Name and slug already exists"
 }

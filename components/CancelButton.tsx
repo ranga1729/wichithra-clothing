@@ -1,9 +1,11 @@
 import { en } from "@/lib/i18n/en";
 import { Button } from "./ui/button";
+import { isPageStatic } from "next/dist/build/utils";
 
 interface Props {
   onClick: () => void,
-  disabled: boolean,
+  isPending?: boolean,
+  disabled?: boolean,
 }
 
 const CancelButton = (props: Props) => {
@@ -12,7 +14,7 @@ const CancelButton = (props: Props) => {
       type="button"
       variant="outline"
       onClick={props.onClick}
-      disabled={props.disabled}
+      disabled={props.disabled || props.isPending}
       className="
         bg-red-600 text-neutral-100 hover:bg-red-700 hover:text-neutral-100
         dark:bg-red-600 dark:text-neutral-100 dark:hover:bg-red-700 dark:hover:hover:text-neutral-100

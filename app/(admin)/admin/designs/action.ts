@@ -1,6 +1,6 @@
 'use server'
 
-import { prisma } from "@/lib/prisma";
+import { notDeleted, prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
 import { DesignFilter } from "@/types/filter-types";
 import { Paginator, Sorter } from "@/types/table-types";
@@ -15,6 +15,7 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
     const skip = pageIndex * pageSize;
 
     const whereClause: any = {
+      ...notDeleted,
       ...(filter.name && {
         name: {
           contains: filter.name as string,
@@ -76,6 +77,57 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
 export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse> {
   try {
     const validatedData = designSchema.parse(newDesign);
+
+    const existingDesings = await prisma.design.findMany({
+      where: {
+        OR: [
+          {name: newDesign.name},
+          {slug: newDesign.slug}
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        deletedAt: true
+      }
+    });
+
+    if(existingDesings.length > 0) {
+      const activeConflicts = existingDesings.filter((design) => design.deletedAt === null);
+
+      if(activeConflicts.length > 0) {
+        const nameConflicts = activeConflicts.find((design) => design.name === validatedData.name);
+        const slugConflicts = activeConflicts.find((design) => design.slug === validatedData.slug);
+
+        if(nameConflicts && slugConflicts) {
+          return {
+            success: false,
+            error: en.name_and_slug_already_exists
+          }
+        }
+        if(nameConflicts) {
+          return {
+            success: false,
+            error: en.name_already_exists
+          }
+        }
+        if(slugConflicts) {
+          return {
+            success: false,
+            error: en.slug_already_exists
+          }
+        }
+      }
+
+      const softDeletedId = existingDesings.map((design) => design.id);
+
+      await prisma.design.deleteMany({
+        where: {
+          id: {in: softDeletedId}
+        }
+      })
+    }
 
     const design = await prisma.design.create({
       data: {
@@ -170,12 +222,12 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
   }
 }
 
-export async function updateDesign(id: string, updatedDesign: DesignSchema): Promise<ApiResponse> {
+export async function updateDesignById(id: string, updatedDesign: DesignSchema): Promise<ApiResponse> {
   try {
     const validatedData = designSchema.parse(updatedDesign);
 
     const existingDesign = await prisma.design.findUnique({
-      where: { id: id },
+      where: { id: id, },
       select: {
         id: true,
       }
@@ -186,6 +238,58 @@ export async function updateDesign(id: string, updatedDesign: DesignSchema): Pro
         success: false,
         error: en.design_doesnt_exist
       };
+    }
+
+    const conflicts = await prisma.design.findMany({
+      where: {
+        OR: [
+          {name: updatedDesign.name},
+          {slug: updatedDesign.slug}
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        deletedAt: true
+      }
+    });
+
+    if(conflicts.length > 0) {
+      const activeConflicts = conflicts.filter((design) => design.deletedAt === null);
+
+      if(activeConflicts.length > 0 ) {
+        const nameConflicts = activeConflicts.find((design) => design.name === validatedData.name);
+        const slugConflicts = activeConflicts.find((design) => design.slug === validatedData.slug);
+
+        if(nameConflicts && slugConflicts) {
+          return {
+            success: false,
+            error: en.name_and_slug_already_exists
+          }
+        }
+
+        if(nameConflicts) {
+          return {
+            success: false,
+            error: en.name_already_exists
+          }
+        }
+        if(slugConflicts) {
+          return {
+            success: false,
+            error: en.slug_already_exists
+          }
+        }
+      }
+
+      const softDeletedId = conflicts.map((design) => design.id);
+
+      await prisma.design.deleteMany({
+        where: {
+          id: {in: softDeletedId}
+        }
+      })
     }
 
     const design = await prisma.design.update({
@@ -208,7 +312,7 @@ export async function updateDesign(id: string, updatedDesign: DesignSchema): Pro
 
     return {
       success: true,
-      message: en.design_update_successfully,
+      message: en.design_updated_successfully,
       data: { design: design }
     };
   } catch (error) {
