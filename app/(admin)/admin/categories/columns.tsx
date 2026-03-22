@@ -3,7 +3,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { Category } from "@/generated/prisma/client"
 import { Paginator } from "@/types/table-types"
 import { ColumnDef } from "@tanstack/react-table"
-import { Ellipsis, Pencil, ToggleLeft, ToggleRight, Trash } from "lucide-react"
+import { Copy, Ellipsis, Pencil, ToggleLeft, ToggleRight, Trash } from "lucide-react"
+import toast from "react-hot-toast"
 
 type ColumnProps = {
   onEdit?: (category: Category) => void
@@ -41,12 +42,34 @@ export const getColumns = ({
   {
     accessorKey: "sizeGuide",
     id: "sizeGuide",
-    header: () => { return <div className="text-center">Size Guide</div> },
-    cell: ({row}) => {
-      return row.original.sizeGuide ? <div>
-        {row.original.sizeGuide.toString()}
-      </div> : (<p className="text-center"> - </p>)
-    }
+    header: () => <div className="text-center">Size Guide</div>,
+    cell: ({ row }) => {
+      if (!row.original.sizeGuide) return <p className="text-center">-</p>;
+
+      const url = row.original.sizeGuide.toString();
+
+      const handleCopy = () => {
+        navigator.clipboard.writeText(url);
+        toast.success("Link copied!");
+      };
+
+      return (
+        <div className="flex items-center gap-3 max-w-[400px]">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 shrink-0 border p-3 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:active:bg-neutral-500 bg-neutral-200 hover:bg-neutral-300 active:bg-neutral-100"
+            onClick={handleCopy}
+          >
+            <Copy className="h-3.5 w-3.5 " />
+          </Button>
+          <span className="truncate text-sm text-muted-foreground flex-1 min-w-0">
+            {url}
+          </span>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "isActive",
@@ -97,24 +120,24 @@ export const getColumns = ({
               <DropdownMenuGroup>
                 <DropdownMenuItem onClick={() => onEdit && onEdit(row.original)} >
                   <Button variant="ghost" size={'sm'} >
-                    <Pencil />
+                    <Pencil height={10} width={10} />
                   </Button> Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onDelete && onDelete(row.original)} >
                   <Button variant="ghost" size={'sm'} >
-                    <Trash color="red" />
+                    <Trash color="red" height={10} width={10} />
                   </Button> Delete
                 </DropdownMenuItem>
                 {
                   row.original.isActive ? 
                   <DropdownMenuItem onClick={() => toggleActiveStatus && toggleActiveStatus(row.original)} >
                     <Button variant="ghost" size={'sm'} >
-                      <ToggleLeft color="red" size={'sm'} />
+                      <ToggleLeft color="red" height={10} width={10} />
                     </Button> Deactivate
                   </DropdownMenuItem> :
                   <DropdownMenuItem onClick={() => toggleActiveStatus && toggleActiveStatus(row.original)} >
                     <Button variant="ghost" size={'sm'} >
-                      <ToggleRight color="green" size={'sm'} />
+                      <ToggleRight color="green" height={10} width={10} />
                     </Button> Active
                   </DropdownMenuItem>
                 }

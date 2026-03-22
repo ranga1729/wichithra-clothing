@@ -6,15 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { categorySchema, CategorySchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { createCategory } from "./action";
 import toast from "react-hot-toast";
-import { LoaderCircle } from "lucide-react";
 import { en } from "@/lib/i18n/en";
 import SaveButton from "@/components/SaveButton";
 import CancelButton from "@/components/CancelButton";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteImage, uploadTempFile } from "@/components/providers/supabase/storage";
 
 interface Props {
   isModalOpen: boolean;
@@ -24,6 +24,8 @@ interface Props {
 export default function AddNewModal(props: Props) {
   const queryClient = useQueryClient();
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isFileUploading, setIsFileUploading] = useState(false);
+  const tempUploadPathRef = useRef<string|null>(null);
 
   const {
     register, handleSubmit,
@@ -41,28 +43,48 @@ export default function AddNewModal(props: Props) {
     },
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setValue("sizeGuide", file, { shouldValidate: true });
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFilePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if(!file) return;
+
+    if(tempUploadPathRef.current) {
+      await deleteImage(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image))
+      tempUploadPathRef.current = null;
+    }
+
+    setIsFileUploading(true);
+    try {
+      const{ path, url } = await uploadTempFile(file);
+      tempUploadPathRef.current = path;
+      setValue("sizeGuide", url, {shouldValidate: true});
+      setFilePreview(url);
+    } catch(error:any) {
+      toast.error(error.message || en.failed_to_upload_image)
+    } finally {
+      setIsFileUploading(false);
     }
   };
 
-  const handleRemoveFile = () => {
-    setFilePreview(null);
-    setValue("sizeGuide", undefined);
+  const handleRemoveFile = async () => {
+    if(!tempUploadPathRef.current) return;
+    try {
+      await deleteImage(tempUploadPathRef.current);
+      tempUploadPathRef.current = null;
+      setValue("sizeGuide", undefined);
+      setFilePreview(null);
+    } catch(error:any) {
+      toast.error(error.message || en.failed_to_remove_image);
+    }
   };
 
-  const handleCancel = () => {
+  const handleClose = () => {
+    if (tempUploadPathRef.current) {
+      deleteImage(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
+      tempUploadPathRef.current = null;
+    }
     props.onOpenChange(false);
     reset();
+    setFilePreview(null);
   }
 
   // react query
@@ -70,9 +92,9 @@ export default function AddNewModal(props: Props) {
     mutationFn: (data: CategorySchema) => createCategory(data),
     onSuccess: (response) => {
       if (response.success) {
-        console.log(response.message)
         queryClient.invalidateQueries({ queryKey: ['categories'] });
         toast.success(en.category_created_successfully);
+        tempUploadPathRef.current = null;
         reset();
         props.onOpenChange(false);
       } else {
@@ -170,8 +192,9 @@ export default function AddNewModal(props: Props) {
                       accept="image/png,image/jpeg,image/webp"
                       className="cursor-pointer"
                       onChange={handleFileChange}
-                      disabled={isPending}
+                      disabled={isPending || isFileUploading}
                     />
+                    {isFileUploading && <span className="text-sm text-muted-foreground">Uploading...</span>}
                     {errors.sizeGuide && (
                       <span className="text-sm text-red-500">
                         {errors.sizeGuide.message as string}
@@ -204,7 +227,7 @@ export default function AddNewModal(props: Props) {
 
           <DialogFooter className="mt-6">
             <SaveButton isPending={isPending} />
-            <CancelButton disabled={isPending} onClick={handleCancel} />
+            <CancelButton disabled={isPending} onClick={handleClose} />
           </DialogFooter>
         </form>
       </DialogContent>

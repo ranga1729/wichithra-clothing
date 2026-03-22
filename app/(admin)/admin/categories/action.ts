@@ -1,15 +1,15 @@
 'use server'
 
-import { notDeleted, prisma } from "@/lib/prisma";
+import { includingDeleted, notDeleted, prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
 import { CategoryFilter } from "@/types/filter-types";
 import { Paginator, Sorter } from "@/types/table-types";
 import { promises as fs } from 'fs';
-import { writeFile, mkdir } from "fs/promises";
-import path, { join } from "path";
+import path from "path";
 import { CategorySchema, categorySchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
+import { SUPABASE_BUCKET, SUPABASE_FOLDERS, moveTempToPermanent, deleteImage } from "@/components/providers/supabase/storage";
 
 export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter):Promise<ApiResponse> {
   try {
@@ -87,6 +87,7 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
 
     const existingCategories = await prisma.category.findMany({
       where: {
+        ...includingDeleted,
         OR : [
           {name: newCategory.name},
           {slug: newCategory.slug}
@@ -143,6 +144,7 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
         slug: validatedData.slug,
         description: validatedData.description,
         sortOrder: validatedData.sortOrder,
+        sizeGuide: validatedData.sizeGuide,
       }
     });
 
@@ -153,36 +155,32 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
       };
     }
 
-    if (validatedData.sizeGuide && validatedData.sizeGuide.size > 0) {
-      const fileExtension = validatedData.sizeGuide.name.split(".").pop();
-      const fileName = `${category.id}.${fileExtension}`;
+    if (validatedData.sizeGuide) {
+      const url = new URL(validatedData.sizeGuide);
+      const tempPath = url.pathname
+        .split(`/object/public/${SUPABASE_BUCKET}/`)[1];
 
-      const uploadDir = join(process.cwd(), "public", "uploads", "size-guides");
+      try{ 
+        const { publicUrl } = await moveTempToPermanent(
+          tempPath,
+          SUPABASE_FOLDERS.SIZE_GUIDES,
+          category.id
+        );
 
-      await mkdir(uploadDir, { recursive: true });
+        const updatedCategory = await prisma.category.update({
+          where: { id: category.id },
+          data: { sizeGuide: publicUrl },
+        });
 
-      const bytes = await validatedData.sizeGuide.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      const filePath = join(uploadDir, fileName);
-      await writeFile(filePath, buffer);
-
-      sizeGuidePath = `/uploads/size-guides/${fileName}`;
-
-      const updatedCategory = await prisma.category.update({
-        where: {
-          id: category.id
-        },
-        data : {
-          sizeGuide: sizeGuidePath,
+        if(!updatedCategory) {
+          await deleteImage(`${SUPABASE_FOLDERS.SIZE_GUIDES}/${category.id}.${tempPath.split(".").pop()}`).catch(() => null);
+          await prisma.category.delete({ where: { id: category.id } }).catch(() => null);
+          return { success: false, error: en.category_create_and_failed_adding_sizeguide };
         }
-      })
-
-      if(!updatedCategory) {
-        return {
-          success: false,
-          error: en.category_create_and_failed_adding_sizeguide,
-        };
+      } catch {
+        await deleteImage(tempPath).catch(() => null);
+        await prisma.category.delete({ where: { id: category.id } }).catch(() => null);
+        return { success: false, error: en.category_create_and_failed_adding_sizeguide };
       }
     }
 
@@ -281,181 +279,101 @@ export async function deleteCategoryById(id: string):Promise<ApiResponse> {
   }
 }
 
-export async function fetchSizeGuide(id: string):Promise<ApiResponse> {
-  try {
-    const category = await prisma.category.findUnique({
-      where: {id : id},
-      select: {
-        sizeGuide: true,
-      }
-    })
-
-    if(!category) {
-      return {
-        success: false,
-        error: en.category_doesnt_exist
-      }
-    }
-
-    if(!category.sizeGuide) {
-      return {
-        success: false,
-        error: en.no_size_guide_for_this_category
-      }
-    }
-
-    const url = new URL(category.sizeGuide, 'http://localhost');
-    const relativePath = url.pathname;
-    
-    const filePath = path.join(process.cwd(), 'public', relativePath);
-
-    const sizeGuide = await fs.readFile(filePath);
-    
-    const base64Image = sizeGuide.toString('base64');
-    const mimeType = getMimeType(filePath);
-
-    if(!sizeGuide) {
-      return {
-        success: false,
-        error: en.file_doesnt_exist_or_unable_to_fetch
-      }
-    }
-
-    return {
-      success: true,
-      data: {
-        sizeGuide: `data:${mimeType};base64,${base64Image}`
-      }
-    }
-  } catch(error) {
-    console.error(en.error_fetching_sizeguide + ": ", error);
-    
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-    
-    return {
-      success: false,
-      error: en.failed_to_fetch_sizeguide,
-    };
-  }
-}
-
-export async function updateCategory(id: string, updatedData: CategorySchema): Promise<ApiResponse> {
+export async function updateCategoryById(id: string, updatedData: CategorySchema): Promise<ApiResponse> {
   try {
     const validatedData = categorySchema.parse(updatedData);
 
     const existingCategory = await prisma.category.findUnique({
-      where: { id: id },
-      select: {
-        id: true,
-        sizeGuide: true,
-      }
+      where: { id, ...notDeleted },
+      select: { id: true, sizeGuide: true },
     });
 
     if (!existingCategory) {
-      return {
-        success: false,
-        error: en.category_doesnt_exist
-      };
+      return { success: false, error: en.category_doesnt_exist };
     }
 
     const conflicts = await prisma.category.findMany({
       where: {
-        OR : [
-          {name: updatedData.name},
-          {slug: updatedData.slug}
-        ]
+        ...includingDeleted,
+        id: { not: id },
+        OR: [
+          { name: updatedData.name }, 
+          { slug: updatedData.slug }
+        ],
       },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        deletedAt: true
-      }
+      select: { 
+        id: true, 
+        name: true, 
+        slug: true, 
+        deletedAt: true 
+      },
     });
 
-    if(conflicts.length > 0) {
-      //non soft-deleted conflicts
+    if (conflicts.length > 0) {
       const activeConflicts = conflicts.filter((cat) => cat.deletedAt === null);
 
-      if(activeConflicts.length > 0) {
-        const nameConflicts = activeConflicts.find((cat) => cat.name === validatedData.name);
-        const slugConflicts = activeConflicts.find((cat) => cat.slug === validatedData.slug);
-
-        if(nameConflicts && slugConflicts) {
-          return {
-            success: false,
-            error: en.name_and_slug_already_exists
-          }
-        }
-
-        if(nameConflicts) {
-          return {
-            success: false,
-            error: en.name_already_exists
-          }
-        }
-        if(slugConflicts) {
-          return {
-            success: false,
-            error: en.slug_already_exists
-          }
-        }
+      if (activeConflicts.length > 0) {
+        const nameConflict = activeConflicts.find((cat) => cat.name === validatedData.name);
+        const slugConflict = activeConflicts.find((cat) => cat.slug === validatedData.slug);
+        
+        if (nameConflict && slugConflict) return { success: false, error: en.name_and_slug_already_exists };
+        if (nameConflict) return { success: false, error: en.name_already_exists };
+        if (slugConflict) return { success: false, error: en.slug_already_exists };
       }
 
-      const softDeletedId = conflicts.map((cat) => cat.id);
-      
       await prisma.category.deleteMany({
-        where: {
-          id: {in: softDeletedId}
-        }
-      })
+        where: { id: { in: conflicts.map((c) => c.id) } },
+      });
     }
 
-    let sizeGuidePath: string | undefined = existingCategory.sizeGuide || undefined;
-    let shouldDeleteOldImage = false;
+    let finalSizeGuideUrl: string | null = existingCategory.sizeGuide;
 
-    if (validatedData.sizeGuide && validatedData.sizeGuide.size > 0) {
-      if (existingCategory.sizeGuide) {
-        shouldDeleteOldImage = true;
+    const incomingUrl = validatedData.sizeGuide || "";
+    const isNewTempUpload = incomingUrl.includes(`/${SUPABASE_FOLDERS.TEMP}/`);
+    const imageWasCleared = !incomingUrl && existingCategory.sizeGuide;
+
+    if (isNewTempUpload) {
+      const url = new URL(incomingUrl);
+      const tempPath = url.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+      
+      if (!tempPath) {
+        console.error("Path extraction failed. URL:", incomingUrl, "Bucket constant:", SUPABASE_BUCKET);
+        return { success: false, error: en.data_updatated_but_failed_to_update_image };
       }
 
-      const fileExtension = validatedData.sizeGuide.name.split(".").pop();
-      const fileName = `${existingCategory.id}.${fileExtension}`;
-
-      const uploadDir = join(process.cwd(), "public", "uploads", "size-guides");
-
-      await mkdir(uploadDir, { recursive: true });
-
-      const bytes = await validatedData.sizeGuide.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      const filePath = join(uploadDir, fileName);
-      await writeFile(filePath, buffer);
-
-      sizeGuidePath = `/uploads/size-guides/${fileName}`;
-
-      // Delete old image if it exists and has a different extension
-      if (shouldDeleteOldImage && existingCategory.sizeGuide) {
-        const oldImagePath = path.join(
-          process.cwd(),
-          "public",
-          existingCategory.sizeGuide
+      try {
+        const { publicUrl } = await moveTempToPermanent(
+          tempPath,
+          SUPABASE_FOLDERS.SIZE_GUIDES,
+          existingCategory.id
         );
 
-        // Only delete if the old file path is different from the new one
-        const newImagePath = join(process.cwd(), "public", sizeGuidePath);
-        if (oldImagePath !== newImagePath) {
-          await fs.unlink(oldImagePath);
-        }
-      }
-    }
+        finalSizeGuideUrl = publicUrl;
 
-    // Update category in database
+        // Delete the old permanent image only after the new one is in place
+        // (move already overwrites via upsert:true — but if the extension changed,
+        //  the old file would be orphaned, so delete it explicitly)
+        if (existingCategory.sizeGuide && existingCategory.sizeGuide !== publicUrl) {
+          const oldUrl = new URL(existingCategory.sizeGuide);
+          const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+          if (oldPath) await deleteImage(oldPath).catch(() => null);
+        }
+      } catch {
+        await deleteImage(tempPath).catch(() => null);
+        return { 
+          success: false, 
+          error: en.data_updatated_but_failed_to_update_image 
+        };
+      }
+    } else if (imageWasCleared) {
+      // User explicitly removed the image — delete it from storage
+      const oldUrl = new URL(existingCategory.sizeGuide!);
+      const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+      if (oldPath) await deleteImage(oldPath).catch(() => null);
+      finalSizeGuideUrl = null;
+    }
+    // if the image was unchanged, it stays the same
+
     const updatedCategory = await prisma.category.update({
       where: { id: existingCategory.id },
       data: {
@@ -463,38 +381,21 @@ export async function updateCategory(id: string, updatedData: CategorySchema): P
         slug: validatedData.slug,
         description: validatedData.description,
         sortOrder: validatedData.sortOrder,
-        sizeGuide: sizeGuidePath,
-      }
+        sizeGuide: finalSizeGuideUrl,
+      },
     });
 
     if (!updatedCategory) {
-      return {
-        success: false,
-        error: en.failed_to_update_category,
-      };
+      return { success: false, error: en.failed_to_update_category };
     }
 
     revalidatePath("/admin/categories");
+    return { success: true, message: en.category_updated_successfully, data: { updatedCategory } };
 
-    return {
-      success: true,
-      message: en.category_updated_successfully,
-      data: { updatedCategory }
-    };
   } catch (error) {
-    console.error( en.failed_to_update_category + ": ", error);
-    
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-    
-    return {
-      success: false,
-      error: en.failed_to_update_category,
-    };
+    console.error(en.failed_to_update_category + ": ", error);
+    if (error instanceof Error) return { success: false, error: error.message };
+    return { success: false, error: en.failed_to_update_category };
   }
 }
 

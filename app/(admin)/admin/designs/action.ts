@@ -242,10 +242,11 @@ export async function updateDesignById(id: string, updatedDesign: DesignSchema):
 
     const conflicts = await prisma.design.findMany({
       where: {
+        id: {not: id},
         OR: [
           {name: updatedDesign.name},
           {slug: updatedDesign.slug}
-        ]
+        ],
       },
       select: {
         id: true,

@@ -133,6 +133,10 @@ export const en = {
   error_updating: "Error updating",
   error_creating: "Error creating",
   failed_to_fetch_data: "Failed to fetch data",
+  failed_to_upload_image: "Failed to upload image",
+  failed_to_remove_image: "Failed to remove image",
+  failed_to_update_image: "Failed to update image",
+  data_updatated_but_failed_to_update_image: "Data updated but failed to update the image",
 
   name_already_exists: "Name already exists",
   slug_already_exists: "Slug already exists",

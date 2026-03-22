@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldGroup } from "@/components/ui/field";
@@ -6,14 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CategorySchema, categorySchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { fetchSizeGuide, updateCategory } from "./action";
+import { updateCategoryById } from "./action";
 import toast from "react-hot-toast";
 import { LoaderCircle } from "lucide-react";
 import { en } from "@/lib/i18n/en";
 import { Category } from "@/generated/prisma/client";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteTempFile, uploadTempFile } from "@/components/providers/supabase/storage";
 
 interface Props {
   isModalOpen: boolean;
@@ -24,6 +27,10 @@ interface Props {
 export default function EditModal(props: Props) {
   const queryClient = useQueryClient();
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isFileLoading, setIsFileLoading] = useState(false);
+
+  // Tracks a newly uploaded temp file path — null if no new file was uploaded
+  const tempUploadPathRef = useRef<string | null>(null);
 
   const {
     register, handleSubmit,
@@ -43,56 +50,19 @@ export default function EditModal(props: Props) {
 
   const currentFormData = watch();
 
-  const hasChanges = useMemo(() => {
-    if (!props.selectedCategory) return false;
-
-    const nameChanged = currentFormData.name !== props.selectedCategory.name;
-    const slugChanged = currentFormData.slug !== props.selectedCategory.slug;
-    const descriptionChanged = currentFormData.description !== props.selectedCategory.description;
-    const sortOrderChanged = currentFormData.sortOrder !== props.selectedCategory.sortOrder;
-    const fileChanged = currentFormData.sizeGuide instanceof File;
-
-    return nameChanged || slugChanged || descriptionChanged || sortOrderChanged || fileChanged;
-  }, [currentFormData, props.selectedCategory]);
-
-  const onSubmit = (data: CategorySchema) => {
-    if (!hasChanges) {
-      toast.error(en.no_changes_detected);
-      return;
-    }
-    editCategory(data);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setValue("sizeGuide", file, { shouldValidate: true });
-      const reader = new FileReader();
-      reader.onloadend = () => setFilePreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRemoveFile = () => {
-    setFilePreview(null);
-    setValue("sizeGuide", undefined, { shouldValidate: true });
-  };
-
-  const handleClose = () => {
-    props.onOpenChange(false);
-    reset();
-    setFilePreview(null);
-  };
-
   useEffect(() => {
     if (props.selectedCategory && props.isModalOpen) {
       setValue("name", props.selectedCategory.name);
       setValue("slug", props.selectedCategory.slug);
       setValue("description", props.selectedCategory.description || "");
       setValue("sortOrder", props.selectedCategory.sortOrder || 0);
-    }
-  }, [props.selectedCategory, props.isModalOpen]);
+      setValue("sizeGuide", props.selectedCategory.sizeGuide || undefined);
 
+      setFilePreview(props.selectedCategory.sizeGuide || null);
+    }
+  }, [props.selectedCategory?.id,props.selectedCategory?.sizeGuide, props.isModalOpen]);
+
+  // Clean up form state when modal closes (but NOT storage — handleClose does that)
   useEffect(() => {
     if (!props.isModalOpen) {
       reset();
@@ -100,31 +70,77 @@ export default function EditModal(props: Props) {
     }
   }, [props.isModalOpen, reset]);
 
-  // react queries
-  const { isFetching: isLoadingSizeGuide } = useQuery({
-    queryKey: ["sizeGuide", props.selectedCategory?.id],
-    queryFn: async () => {
-      const result = await fetchSizeGuide(props.selectedCategory!.id);
-      if (!result.success) {
-        toast.error(result.error || en.error_fetching_sizeguide);
-        return null;
+  const hasChanges = useMemo(() => {
+    if (!props.selectedCategory) return false;
+    return (
+      currentFormData.name !== props.selectedCategory.name ||
+      currentFormData.slug !== props.selectedCategory.slug ||
+      currentFormData.description !== (props.selectedCategory.description || "") ||
+      currentFormData.sortOrder !== (props.selectedCategory.sortOrder || 0) ||
+      currentFormData.sizeGuide !== (props.selectedCategory.sizeGuide || "")
+    );
+  }, [currentFormData, props.selectedCategory]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (tempUploadPathRef.current) {
+      await deleteTempFile(tempUploadPathRef.current).catch(() => null);
+      tempUploadPathRef.current = null;
+    }
+
+    setIsFileLoading(true);
+    try {
+      const { path, url } = await uploadTempFile(file);
+      tempUploadPathRef.current = path;
+      setValue("sizeGuide", url, { shouldValidate: true });
+      setFilePreview(url);
+    } catch (error: any) {
+      toast.error(error.message || en.failed_to_upload_image);
+    } finally {
+      setIsFileLoading(false);
+    }
+  };
+
+  const handleRemoveFile = async () => {
+    if (tempUploadPathRef.current) {
+      try {
+        await deleteTempFile(tempUploadPathRef.current);
+        tempUploadPathRef.current = null;
+      } catch (error: any) {
+        toast.error(error.message || en.failed_to_remove_image);
+        return;
       }
+    }
+    
+    setValue("sizeGuide", "", { shouldValidate: true });
+    setFilePreview(null);
+  };
 
-      if(result.success && result.data) setFilePreview(result.data)
+  const handleClose = () => {
+    if (tempUploadPathRef.current) {
+      deleteTempFile(tempUploadPathRef.current).catch(() => null);
+      tempUploadPathRef.current = null;
+    }
+    props.onOpenChange(false);
+    reset();
+    setFilePreview(null);
+  };
 
-      return result.data.sizeGuide as string;
-    },
-    enabled: !!props.selectedCategory?.id && !!props.selectedCategory?.sizeGuide && props.isModalOpen,
-    staleTime: Infinity, // image won't change unless user uploads a new one
-  });
+  useEffect(() => {
+    console.log("image: ", filePreview)
+  }, [props.selectedCategory])
 
-  const { mutate: editCategory, isPending } = useMutation({
-    mutationFn: (data: CategorySchema) => updateCategory(props.selectedCategory!.id, data),
+  // react queries
+  const { mutate: updateCategory, isPending } = useMutation({
+    mutationFn: (data: CategorySchema) => updateCategoryById(props.selectedCategory!.id, data),
     onSuccess: (response) => {
       if (response.success) {
+        tempUploadPathRef.current = null;
+        handleClose();
         queryClient.invalidateQueries({ queryKey: ["categories"] });
         toast.success(en.category_updated_successfully);
-        handleClose();
       } else {
         toast.error(response.error || en.category_update_failed);
       }
@@ -134,6 +150,14 @@ export default function EditModal(props: Props) {
     },
   });
 
+  const onSubmit = (data: CategorySchema) => updateCategory(data);
+
+  const isBusy = isPending || isFileLoading;
+
+  const isExistingImage =
+    filePreview !== null &&
+    filePreview === props.selectedCategory?.sizeGuide &&
+    tempUploadPathRef.current === null;
 
   return (
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
@@ -149,29 +173,15 @@ export default function EditModal(props: Props) {
               <Field className="flex flex-col gap-2 flex-1">
                 <Label htmlFor="edit-name">{en.name}</Label>
                 <div className="flex flex-col">
-                  <Input
-                    id="edit-name"
-                    placeholder="Name"
-                    {...register("name")}
-                    disabled={isPending || isLoadingSizeGuide}
-                  />
-                  {errors.name && (
-                    <span className="text-sm text-red-500">{errors.name.message as string}</span>
-                  )}
+                  <Input id="edit-name" placeholder="Name" {...register("name")} disabled={isBusy} />
+                  {errors.name && <span className="text-sm text-red-500">{errors.name.message}</span>}
                 </div>
               </Field>
               <Field className="flex flex-col gap-2 flex-1">
                 <Label htmlFor="edit-slug">{en.slug}</Label>
                 <div className="flex flex-col">
-                  <Input
-                    id="edit-slug"
-                    placeholder="Slug"
-                    {...register("slug")}
-                    disabled={isPending || isLoadingSizeGuide}
-                  />
-                  {errors.slug && (
-                    <span className="text-sm text-red-500">{errors.slug.message as string}</span>
-                  )}
+                  <Input id="edit-slug" placeholder="Slug" {...register("slug")} disabled={isBusy} />
+                  {errors.slug && <span className="text-sm text-red-500">{errors.slug.message}</span>}
                 </div>
               </Field>
             </FieldGroup>
@@ -182,7 +192,7 @@ export default function EditModal(props: Props) {
                 id="edit-description"
                 placeholder="Type a description for this category"
                 {...register("description")}
-                disabled={isPending || isLoadingSizeGuide}
+                disabled={isBusy}
               />
             </Field>
 
@@ -195,11 +205,9 @@ export default function EditModal(props: Props) {
                       id="edit-sortOrder"
                       type="number"
                       {...register("sortOrder", { valueAsNumber: true })}
-                      disabled={isPending || isLoadingSizeGuide}
+                      disabled={isBusy}
                     />
-                    {errors.sortOrder && (
-                      <span className="text-sm text-red-500">{errors.sortOrder.message as string}</span>
-                    )}
+                    {errors.sortOrder && <span className="text-sm text-red-500">{errors.sortOrder.message}</span>}
                   </div>
                 </Field>
                 <Field className="flex flex-col gap-2 flex-3">
@@ -211,8 +219,11 @@ export default function EditModal(props: Props) {
                       accept="image/png,image/jpeg,image/webp"
                       className="cursor-pointer"
                       onChange={handleFileChange}
-                      disabled={isPending || isLoadingSizeGuide}
+                      disabled={isBusy}
                     />
+                    {isFileLoading && (
+                      <span className="text-sm text-muted-foreground">Uploading...</span>
+                    )}
                     {errors.sizeGuide && (
                       <span className="text-sm text-red-500">{errors.sizeGuide.message as string}</span>
                     )}
@@ -220,27 +231,32 @@ export default function EditModal(props: Props) {
                 </Field>
               </FieldGroup>
 
-              {isLoadingSizeGuide && (
+              {isFileLoading && (
                 <div className="flex items-center justify-center mt-2 p-4 border rounded-lg">
                   <LoaderCircle className="animate-spin w-6 h-6 mr-2" />
                   <span>{en.loading}</span>
                 </div>
               )}
 
-              {filePreview && !isLoadingSizeGuide && (
+              {filePreview && !isFileLoading && (
                 <div className="relative mt-2 border rounded-lg p-2">
                   <img
                     src={filePreview}
                     alt="Size guide preview"
                     className="max-h-40 mx-auto rounded"
                   />
+                  {isExistingImage && (
+                    <span className="absolute top-2 left-2 text-xs bg-black/50 text-white rounded px-2 py-0.5">
+                      Current image
+                    </span>
+                  )}
                   <Button
                     type="button"
                     variant="destructive"
                     size="sm"
                     className="absolute top-2 right-2"
                     onClick={handleRemoveFile}
-                    disabled={isPending}
+                    disabled={isBusy}
                   >
                     {en.remove}
                   </Button>
@@ -250,7 +266,7 @@ export default function EditModal(props: Props) {
           </FieldGroup>
 
           <DialogFooter className="mt-6">
-            <Button type="submit" disabled={isPending || !hasChanges || isLoadingSizeGuide}>
+            <Button type="submit" disabled={isBusy || !hasChanges} >
               {isPending ? (
                 <>
                   <LoaderCircle className="animate-spin w-4 h-4 mr-2" />
@@ -260,12 +276,7 @@ export default function EditModal(props: Props) {
                 "Save Category"
               )}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isPending}
-            >
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isBusy}>
               {en.cancel}
             </Button>
           </DialogFooter>

@@ -24,13 +24,10 @@ export const categorySchema = z.object({
     .int("Must be an integer")
     .min(0, "Must be zero or greater"),
   sizeGuide: z  
-    .instanceof(File)
-    .refine((file) => file.size <= 5000000, "Max file size if 5MB")
-    .refine(
-      (file) => ['image/jpeg', 'image/png', 'image/webp'].includes(file.type),
-      "Only .jpg, .png, and .webp formats are supported"
-    )
+    .url()
     .optional()
+    .or(z.literal(""))
+    .transform((val) => val === "" ? undefined : val),
 })
 
 export const designSchema = z.object({
@@ -224,7 +221,7 @@ export const basicProductInfoSchema = z.object({
   careInstructions: z.string().nullable(),
 });
 
-export type CategorySchema = z.infer<typeof categorySchema>
+export type CategorySchema = z.input<typeof categorySchema>
 export type DesignSchema = z.infer<typeof designSchema>
 export type ColorSchema = z.infer<typeof colorSchema>
 

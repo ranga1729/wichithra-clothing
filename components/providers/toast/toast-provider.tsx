@@ -34,11 +34,6 @@ export function ToastProvider() {
             secondary: "#ef4444",
           },
         },
-        loading: {
-          style: {
-            background: "#3b82f6",
-          },
-        },
       }}
     />
   )

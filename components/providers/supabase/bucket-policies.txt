@@ -1,0 +1,24 @@
+-- 1. Anyone can read any file in the bucket (public storefront)
+create policy "Public read - all files"
+on storage.objects for select
+using ( bucket_id = 'wichithra-images' );
+
+-- 2. Anyone can upload to the temp folder only (browser client used for temp uploads)
+create policy "Anon insert - temp folder only"
+on storage.objects for insert
+with check (
+  bucket_id = 'wichithra-images'
+  and (storage.foldername(name))[1] = 'temp'
+);
+
+-- 3. Anyone can delete from the temp folder only (remove button uses browser client)
+create policy "Anon delete - temp folder only"
+on storage.objects for delete
+using (
+  bucket_id = 'wichithra-images'
+  and (storage.foldername(name))[1] = 'temp'
+);
+
+-- NOTE: insert/update/delete for all other folders (size-guides, etc.)
+-- are handled exclusively by the admin client (service role key),
+-- which bypasses RLS entirely — no policy needed for those.
