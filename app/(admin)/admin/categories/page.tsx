@@ -80,7 +80,7 @@ export default function CategoryPage() {
       filter
     }],
     queryFn: async () => {
-      const response = await getCategories(paginator, filter, sorter);
+      const response = await getCategories(paginator, filter, sorter)
       if(!response.success) {
         throw new Error(response.error || en.failed_to_fetch_data);
       }
@@ -141,7 +141,7 @@ export default function CategoryPage() {
               </div>
 
               <div className="flex flex-col gap-2 w-60">
-                <Label htmlFor="sort"> {en.slug} </Label>
+                <Label htmlFor="sort"> {en.sort} </Label>
                 <SortDropDown
                   id="sort"
                   sortColumnOptions={SortColumns}

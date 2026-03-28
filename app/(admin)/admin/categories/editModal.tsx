@@ -128,10 +128,6 @@ export default function EditModal(props: Props) {
     setFilePreview(null);
   };
 
-  useEffect(() => {
-    console.log("image: ", filePreview)
-  }, [props.selectedCategory])
-
   // react queries
   const { mutate: updateCategory, isPending } = useMutation({
     mutationFn: (data: CategorySchema) => updateCategoryById(props.selectedCategory!.id, data),

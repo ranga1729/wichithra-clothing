@@ -2,32 +2,42 @@
 
 import { ProductStatus } from "@/generated/prisma/enums";
 import { en } from "@/lib/i18n/en";
-import { prisma } from "@/lib/prisma";
+import { notDeleted, prisma } from "@/lib/prisma";
 import { basicProductInfoSchema, BasicProductInfoSchema, productSchema, ProductSchema, ProductStatusSchema } from "@/schemas/admin-schemas";
 import { ApiResponse } from "@/types/auth-types";
+import { ProductFilter } from "@/types/filter-types";
+import { Paginator } from "@/types/table-types";
 import { revalidatePath } from "next/cache";
-import test from "node:test";
 
-export async function getProducts():Promise<ApiResponse> {
+export async function getProducts(paginator: Paginator, filter: ProductFilter):Promise<ApiResponse> {
   try {
-    // const pageSize = Math.max(1, paginator.pageSize);
-    // const pageIndex = Math.max(0, paginator.pageIndex);
-    // const skip = pageIndex * pageSize;
+    const pageSize = Math.max(1, paginator.pageSize);
+    const pageIndex = Math.max(0, paginator.pageIndex);
+    const skip = pageIndex * pageSize;
 
-    // const whereClause: any = {
-    //   ...(filter.name && {
-    //     name: {
-    //       contains: filter.name as string,
-    //       mode: 'insensitive'
-    //     }
-    //   }),
-    //   ...(filter.slug && {
-    //     slug: {
-    //       contains: filter.slug as string,
-    //       mode: 'insensitive'
-    //     }
-    //   })
-    // }
+    const whereClause: any = {
+      ...notDeleted,
+      ...(filter.name && {
+        name: {
+          contains: filter.name as string,
+          mode: 'insensitive'
+        }
+      }),
+      ...(filter.slug && {
+        slug: {
+          contains: filter.slug as string,
+          mode: 'insensitive'
+        }
+      }),
+      ...(filter.category && {
+        category: {
+          slug: filter.category
+        }
+      }),
+      ...(filter.mainColor && {
+        mainColorId: filter.mainColor // UUIDs must be exact matches
+      }),
+    }
 
     // const validSortOrder = ['asc', 'desc'].includes(sorter.sortOrder as string) ? sorter.sortOrder as string : 'asc';
     // const sortableColumns = ["name", "slug", "sortOrder"];
@@ -58,17 +68,17 @@ export async function getProducts():Promise<ApiResponse> {
         },
         
       },
-      // where: whereClause,
-      // orderBy: orderBy,
-      // skip: skip,
-      // take: pageSize
+      where: whereClause,
+      skip: skip,
+      take: pageSize,
+      orderBy: {createdAt: 'desc'},
     })
+
+    const totalRecords = await prisma.product.count({
+      where: whereClause
+    });
 
     const serializedProducts = JSON.parse(JSON.stringify(products));
-
-    const totalRecords = await prisma.category.count({
-      //where: whereClause
-    })
 
     if(!products) {
       return {
@@ -504,20 +514,6 @@ export async function changeProductSizes(productId: string, newSizes: string[]):
         })
       )
     ])
-
-    // const updatedProduct = await prisma.product.update({
-    //   where: { id: existingProduct.id },
-    //   data: {
-    //     status: validatedStatus as ProductStatus
-    //   }
-    // });
-
-    // if (!updatedProduct) {
-    //   return {
-    //     success: false,
-    //     error: en.product_update_failed,
-    //   };
-    // }
 
     revalidatePath(`/admin/products/${productId}`);
 

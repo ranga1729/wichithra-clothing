@@ -211,8 +211,6 @@ export default function ProductDetailPage() {
   }
 
   const ProductSizeChanger = async (newSizes: string[]) => {
-    console.log("productId", product?.id);
-    console.log("NewSizes", newSizes);
     
     try {
       setIsLoading(true);

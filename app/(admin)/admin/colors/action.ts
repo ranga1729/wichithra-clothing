@@ -300,3 +300,48 @@ export async function updateColorById(id: string, data: ColorSchema):Promise<Api
     };
  }
 }
+
+export async function getColorSelectorData():Promise<ApiResponse> {
+  try {
+    const colors = await prisma.color.findMany({
+      where: {
+        ...notDeleted,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        hexCode: true,
+      },
+      orderBy: {
+        name: 'asc',
+      }
+    })
+
+    if(!colors) {
+      return {
+        success: false,
+        error: en.failed_to_get_category_selector_data,
+      }
+    }
+
+    return {
+      success: true,
+      data: colors
+    }
+  } catch(error) {
+    console.error("Error updating product:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: en.product_update_failed,
+    };
+  }
+}

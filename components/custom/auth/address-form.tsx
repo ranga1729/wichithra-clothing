@@ -125,7 +125,7 @@ export const AddressForm = (props:Props) => {
                   <div>
                     <CustomSelect 
                       placeholder={"Select your Province"} 
-                      options={provinces} 
+                      optionsObject={provinces}
                       value={field.value}
                       onValueChange={field.onChange}
                       ariaInvalid={errors.province ? "true" : "false"}

@@ -12,3 +12,10 @@ export interface ColorFilter {
   name?: string,
   hexCode?: string,
 }
+
+export interface ProductFilter {
+  name?: string,
+  slug?: string,
+  category?: string,
+  mainColor?: string,
+}

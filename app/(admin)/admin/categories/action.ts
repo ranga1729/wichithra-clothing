@@ -450,6 +450,51 @@ export async function toggleActiveStatusById(id: string): Promise<ApiResponse> {
   }
 }
 
+export async function getCategorySelectorData():Promise<ApiResponse> {
+  try {
+    const categories = await prisma.category.findMany({
+      where: {
+        ...notDeleted,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+      orderBy: {
+        name: 'asc',
+      }
+    })
+
+    if(!categories) {
+      return {
+        success: false,
+        error: en.failed_to_get_category_selector_data,
+      }
+    }
+
+    return {
+      success: true,
+      data: categories
+    }
+  } catch(error) {
+    console.error("Error updating product:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: en.product_update_failed,
+    };
+  }
+}
+
 
 function getMimeType(filePath: string): string {
   const ext = path.extname(filePath).toLowerCase();

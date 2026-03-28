@@ -38,6 +38,8 @@ export const en = {
   sort: "Sort",
   description: "Description",
   sort_order: "Sort order",
+  category: "Category",
+  main_color: "Main Color",
   size_guide_image: "Size guide image",
   hexCode : "HexCode",
   preview: "Preview",
@@ -92,6 +94,7 @@ export const en = {
   category_created_successfully: "Category created successfully",
   category_doesnt_exist: "Category doesn't exist",
   Failed_to_delete_category: "Failed to delete category",
+  failed_to_get_category_selector_data: "Failed to get category selector data",
 
   category_deleted_image_not_exist: 'Category deleted. Image was not found on the server.',
   category_deleted: "Category deleted successfully",
@@ -137,6 +140,9 @@ export const en = {
   failed_to_remove_image: "Failed to remove image",
   failed_to_update_image: "Failed to update image",
   data_updatated_but_failed_to_update_image: "Data updated but failed to update the image",
+
+  failed_to_load_color_filter_data: "Failed to load color filter data",
+  failed_to_load_category_filter_data: "Failed to load category filter data",
 
   name_already_exists: "Name already exists",
   slug_already_exists: "Slug already exists",
