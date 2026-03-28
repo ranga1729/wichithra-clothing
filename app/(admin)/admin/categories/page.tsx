@@ -17,6 +17,7 @@ import { Category } from "@/generated/prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ResetFilterButton from "@/components/ResetFilterButton";
 import AddNewButton from "@/components/AddNewButton";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const InitialSorter:Sorter = {
   sortColumn: "name",
@@ -44,6 +45,9 @@ export default function CategoryPage() {
   const [isAddNewModalOpen, setIsAddNewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category>();
+
+  const debouncedFilter = useDebounce(filter, 500);
+  const debouncedSorter = useDebounce(sorter, 500);
 
   const handleReset = () => {
     setFilter(InitiaFilter);
@@ -75,12 +79,11 @@ export default function CategoryPage() {
     queryKey: ['categories', 'list', {
       pageSize: paginator.pageSize, 
       pageIndex: paginator.pageIndex,
-      sortColumn: sorter.sortColumn,
-      sortOrder: sorter.sortOrder,
-      filter
+      sorter: debouncedSorter,
+      filter : debouncedFilter
     }],
     queryFn: async () => {
-      const response = await getCategories(paginator, filter, sorter)
+      const response = await getCategories(paginator, debouncedFilter, debouncedSorter)
       if(!response.success) {
         throw new Error(response.error || en.failed_to_fetch_data);
       }

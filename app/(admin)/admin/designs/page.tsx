@@ -17,6 +17,7 @@ import { Design } from "@/generated/prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ResetFilterButton from "@/components/ResetFilterButton";
 import AddNewButton from "@/components/AddNewButton";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const InitialSorter:Sorter = {
   sortColumn: "name",
@@ -43,6 +44,9 @@ export default function DesignPage() {
   const [isAddNewModalOpen, setIsAddNewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDesign, setSelectedDesign] = useState<Design>();
+
+  const debouncedFilter = useDebounce(filter, 500);
+  const debouncedSorter = useDebounce(sorter, 500);
 
   const handleReset = () => {
     setFilter(InitiaFilter);
@@ -74,9 +78,10 @@ export default function DesignPage() {
     queryKey: ['designs', 'lists', {
       pageSize: paginator.pageSize, 
       pageIndex: paginator.pageIndex,
-      filter
+      sorter: debouncedSorter,
+      filter: debouncedFilter
     }],
-    queryFn: () => getDesign(paginator, filter, sorter),
+    queryFn: () => getDesign(paginator, debouncedFilter, debouncedSorter,),
     placeholderData: (prevData) => prevData,
   })
 

@@ -17,6 +17,7 @@ import { deleteColorById, getColors } from "./action";
 import toast from "react-hot-toast";
 import ResetFilterButton from "@/components/ResetFilterButton";
 import AddNewButton from "@/components/AddNewButton";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const InitiaFilter:ColorFilter = {
  name : "",
@@ -33,6 +34,8 @@ export default function ColorsPage() {
   const [isAddNewModalOpen, setIsAddNewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState<Color>();
+
+  const debouncedFilter = useDebounce(filter, 500);
 
   const onEdit = (color: Color) => {
     setSelectedColor(color)
@@ -61,9 +64,9 @@ export default function ColorsPage() {
     queryKey: ['colors', 'list', {
       pageSize: paginator.pageSize, 
       pageIndex: paginator.pageIndex,
-      filter
+      filter: debouncedFilter
     }],
-    queryFn: () => getColors(paginator, filter),
+    queryFn: () => getColors(paginator, debouncedFilter),
     placeholderData: (prevData) => prevData,
   })
 
