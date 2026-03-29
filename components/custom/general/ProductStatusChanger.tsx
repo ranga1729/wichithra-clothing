@@ -11,11 +11,25 @@ interface Props {
 }
 
 const ProductStatusChanger = (props: Props) => {
+
+  const statusStyles: Record<ProductStatus, string> = {
+    AVAILABLE: "bg-green-400/5 border-green-500 dark:bg-green-500/10",
+    OUTOFSTOCK: "bg-amber-700/5 border-amber-700 dark:bg-amber-700/10", // Brown-ish
+    DISCONTINUED: "bg-red-400/5 border-red-500 dark:bg-red-500/10",
+    DRAFT: "bg-yellow-400/5 border-yellow-500 dark:bg-yellow-500/10",
+  };
+
+  const currentStyle = statusStyles[props.productStatus] || "border-border";
+
   return <FieldLabel htmlFor="status-card">
-    <Field orientation="responsive" 
-      className={
-        props.isLoading ? "opacity-50 pointer-events-none select-none" : "opacity-100"
-      }>
+    <Field 
+      orientation="responsive" 
+      className={`
+        transition-colors duration-200 border rounded-md
+        ${currentStyle}
+        ${props.isLoading ? "opacity-50 pointer-events-none select-none" : "opacity-100"}
+      `}
+      >
     <FieldContent>
       <FieldTitle> {en.product_status} </FieldTitle>
       <FieldDescription>
@@ -23,8 +37,12 @@ const ProductStatusChanger = (props: Props) => {
       </FieldDescription>
     </FieldContent>
 
-      <Select value={props.productStatus ?? ""} onValueChange={(value) => props.changer(value as ProductStatus)}>
-        <SelectTrigger className="w-full max-w-48">
+      <Select 
+        value={props.productStatus ?? ""} 
+        onValueChange={(value) => props.changer(value as ProductStatus)}
+        disabled={props.isLoading}
+      >
+        <SelectTrigger className={`w-full max-w-48 bg-background ${currentStyle}`}>
           <SelectValue placeholder="Select Status" />
         </SelectTrigger>
         <SelectContent>

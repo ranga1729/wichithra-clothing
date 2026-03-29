@@ -71,7 +71,7 @@ export async function getProducts(paginator: Paginator, filter: ProductFilter):P
       where: whereClause,
       skip: skip,
       take: pageSize,
-      orderBy: {createdAt: 'desc'},
+      orderBy: {name: 'asc'},
     })
 
     const totalRecords = await prisma.product.count({

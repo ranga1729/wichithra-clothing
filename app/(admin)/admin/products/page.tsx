@@ -118,10 +118,6 @@ export default function ProductsPage() {
     }
   }, [error, isError])
 
-  useEffect(() => {
-    console.log("test: ", filter)
-  }, [filter])
-
   return (
     <div className="flex flex-col gap-3">
       <form className="flex flex-col gap-3">

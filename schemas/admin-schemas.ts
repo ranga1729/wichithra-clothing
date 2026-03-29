@@ -211,10 +211,11 @@ export const basicProductInfoSchema = z.object({
       z.number().min(0, "Price must be 0 or more")
     ),
   discountPercentage: z
-    .preprocess(
-      (val) => (val === "" ? undefined : Number(val)),
-      z.number().min(0).max(100)
-    ),
+    .coerce
+    .number()
+    .min(0)
+    .max(100)
+    .default(0),
   description: z.string().nullable(),
   brand: z.string().nullable(),
   material: z.string().nullable(),

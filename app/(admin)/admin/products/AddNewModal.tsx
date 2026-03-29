@@ -153,7 +153,7 @@ export default function AddNewModal(props: Props) {
                   </div>
                   <Slider 
                     id="discount-percentage-handle"
-                    value={[currentFormData.discountPercentage!]}
+                    value={[currentFormData.discountPercentage]}
                     min={0}
                     max={100}
                     step={1}
