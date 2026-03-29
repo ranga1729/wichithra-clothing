@@ -19,6 +19,8 @@ import toast from "react-hot-toast";
 import { getColorSelectorData } from "../colors/action";
 import { getCategorySelectorData } from "../categories/action";
 import { useDebounce } from "@/hooks/useDebounce";
+import AddNewButton from "@/components/AddNewButton";
+import AddNewModal from "./AddNewModal";
 
 const initiaFilter:ProductFilter = {
   name: "",
@@ -33,6 +35,15 @@ export default function ProductsPage() {
   
   const [paginator, setPaginator] = useState<Paginator>(initialPaginator)
   const [filter, setFilter] = useState<ProductFilter>(initiaFilter)
+
+  //implement add new prodcut
+  // focus on add new basic of the products, if they are added then others are ok
+  // check edit modals' mapping before that
+
+  // create a add new modal which allows add basic info only. 
+  // then let the admin edit the product data for further customizations.
+  // dont let add images as well
+  const [isAddNewModalOpen, setIsAddNewModalOpen] = useState(false);
 
   const debouncedFilter = useDebounce(filter, 500);
 
@@ -161,7 +172,7 @@ export default function ProductsPage() {
         
         <div className="flex flex-row items-center justify-between">
           <ResetFilterButton onClick={handleReset} />
-          {/* <AddNewButton onClick={() => setIsAddNewModalOpen(true)} /> */}
+          <AddNewButton onClick={() => setIsAddNewModalOpen(true)} />
         </div>
       </form>
       
@@ -180,6 +191,8 @@ export default function ProductsPage() {
         initialPageSize={10}
         onPaginationChange={setPaginator}
       />
+
+      <AddNewModal isModalOpen={isAddNewModalOpen} onOpenChange={setIsAddNewModalOpen} />
     </div>
   )
 }

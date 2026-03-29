@@ -408,7 +408,7 @@ export default function ProductDetailPage() {
           <FieldGroup className="flex items-end justify-center">
             <div className="flex flex-row gap-3">
               <Button className="w-30" variant={"default"} disabled={hasDataChanged()} onClick={handleSubmit}>Save</Button>
-              <Button className="w-30" variant={"default"} onClick={handleReset}> Reset</Button>
+              <Button className="w-30" variant={"default"} disabled={hasDataChanged()} onClick={handleReset}> Reset</Button>
             </div>
           </FieldGroup>
         </FieldGroup>

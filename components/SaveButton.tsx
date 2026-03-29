@@ -3,19 +3,21 @@ import { Button } from "./ui/button"
 import { LoaderCircle } from "lucide-react"
 
 interface Props {
-  isPending : boolean,
+  isPending? : boolean,
   disabled?: boolean,
+  onclick?: () => void
 }
 
 const SaveButton = (props: Props) => {
   return (
     <Button 
-      type="submit" 
+      type={props.onclick ? "button" : "submit"} 
       disabled={props.isPending || props.disabled} 
       className="
         bg-green-600 hover:bg-green-700 hover:text-neutral-100
         dark:bg-green-600 dark:hover:bg-green-700 dark:text-neutral-100 dark:hover:text-neutral-100
       "
+      onClick={props.onclick ?? props.onclick}
     >
       {props.isPending ? <>
         <LoaderCircle className="animate-spin w-8 h-8" /> {en.saving}
