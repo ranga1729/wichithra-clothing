@@ -13,3 +13,5 @@ export function getTotalPages(paginator: Paginator): number {
   }
   return 0;
 }
+
+export const formatLabel = (str:string) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();

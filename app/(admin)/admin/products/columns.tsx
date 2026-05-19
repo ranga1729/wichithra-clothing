@@ -49,6 +49,32 @@ export const getColumns = ({
     }
   },
   {
+    id: "gender",
+    header: () => { return <div className="text-center">Gender</div> },
+    cell: ({row}) => {
+      const gender = row.original.gender;
+      const formattedGender = gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase();
+      return (
+        <div className="text-left">
+          {formattedGender}
+        </div>
+      )
+    }
+  },
+  {
+    id: "ageGroup",
+    header: () => { return <div className="text-center">Age Group</div> },
+    cell: ({row}) => {
+      const ageGroup = row.original.ageGroup;
+      const formattedAgeGroup = ageGroup.charAt(0).toUpperCase() + ageGroup.slice(1).toLowerCase();
+      return (
+        <div className="text-left">
+          {formattedAgeGroup}
+        </div>
+      )
+    }
+  },
+  {
     id: "maincolor",
     header: () => { return <div className="text-center">Main Color</div> },
     cell: ({row}) => {

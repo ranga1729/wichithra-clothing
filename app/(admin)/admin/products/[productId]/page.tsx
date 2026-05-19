@@ -1,8 +1,8 @@
 'use client'
 
-import { basicProductInfoSchema, BasicProductInfoSchema, productSchema, ProductSchema } from "@/schemas/admin-schemas";
+import { AgeGroupSchema, basicProductInfoSchema, BasicProductInfoSchema, GenderSchema, productSchema, ProductSchema } from "@/schemas/admin-schemas";
 import { useParams } from "next/navigation"
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { changeBasicInfo, changeProductSizes, changeProductStatus, getProductById, getProducts, toggleActiveStatus, toggleFeaturedStatus } from "../action";
 import toast from "react-hot-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -26,6 +26,9 @@ import ProductStatusChanger from "@/components/custom/general/ProductStatusChang
 import { ProductStatus } from "@/generated/prisma/enums";
 import { Slider } from "@/components/ui/slider";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatLabel } from "@/lib/utils";
+import { getCategorySelectorData } from "../../categories/action";
 
 export default function ProductDetailPage() {  
   const params = useParams();
@@ -40,8 +43,8 @@ export default function ProductDetailPage() {
       if(!response.success) {
         throw new Error(response.error || en.failed_to_fetch_data);
       }
-      console.log(response.data.product)
-      return response.data.product
+      console.log("product:", response.data.product)
+      return response.data.product;
     },
     placeholderData: (prevdata) => prevdata
   })
@@ -51,12 +54,15 @@ export default function ProductDetailPage() {
     setValue, watch,
     formState: { errors },
   } = useForm<BasicProductInfoSchema>({
-    resolver: zodResolver(basicProductInfoSchema),
+    resolver: zodResolver(basicProductInfoSchema) as any,
     mode: "onChange",
     defaultValues: {
       id: product?.id,
       name: product?.name || "",
       slug: product?.slug || "",
+      ageGroup: product?.ageGroup || "",
+      gender: product?.gender || "",
+      category: product?.category || undefined,
       brand: product?.brand || "",
       material: product?.material || "",
       careInstructions: product?.careInstructions || "",
@@ -74,6 +80,9 @@ export default function ProductDetailPage() {
       setValue("name", product.name);
       setValue("slug", product.slug);
       setValue("brand", product.brand);
+      setValue("gender", product.gender);
+      setValue("ageGroup", product.ageGroup);
+      setValue("category", product.category);
       setValue("material", product.material);
       setValue("careInstructions", product.careInstructions);
       setValue("description", product.description);
@@ -90,6 +99,10 @@ export default function ProductDetailPage() {
     loadCategoryData();
   }
 
+  useEffect(() => {
+    console.log( "currentFormData: ", currentFormData)
+  }, [currentFormData])
+
   const hasDataChanged = () => {
     if(
       currentFormData.name != product?.name ||
@@ -99,11 +112,23 @@ export default function ProductDetailPage() {
       currentFormData.careInstructions != product.careInstructions ||
       currentFormData.description != product.description ||
       Number(currentFormData.basePrice) != product?.basePrice ||
-      Number(currentFormData.discountPercentage) != product.discountPercentage
+      Number(currentFormData.discountPercentage) != product.discountPercentage,
+      currentFormData.ageGroup != product?.ageGroup,
+      currentFormData.gender != product?.gender,
+      currentFormData.category != product?.category
     ) {
       return false;
     }
     return true;
+  }
+
+  const handleSelectorChange = (name: keyof BasicProductInfoSchema, value: string) => {
+    setValue(name, value as any)
+  }
+
+  const handleCategoryChange = (val: string) => {
+    const selected = categorySelectorData?.find((c: any) => c.slug === val)
+    if (selected) setValue("category", { id: selected.id, name: selected.name, slug: selected.slug })
   }
 
   // react queries
@@ -182,22 +207,17 @@ export default function ProductDetailPage() {
     },
   });
 
-  // const ProductSizeChanger = async (newSizes: string[]) => {
-  //   try {
-  //     const response = await changeProductSizes(product!.id, newSizes);
-
-  //     if(!response.success && response.message) {
-  //       toast.error(response.message);
-  //     }
-      
-  //     if(response.success) {
-  //       toast.success(response.message!);
-  //     }
-
-  //   } catch(error:any) {
-  //     toast.error(error.message)
-  //   }
-  // }
+  const { data : categorySelectorData } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const response = await getCategorySelectorData()
+      if(!response.success) {
+        toast.error(response.error ?? en.failed_to_load_category_filter_data)
+      }
+      return response.data
+    },
+    placeholderData: (prevdata) => prevdata
+  })
 
   useEffect(() => {
     if (isError && error) {
@@ -276,40 +296,63 @@ export default function ProductDetailPage() {
                   )}
                 </div>
               </Field>
-              <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-brand"> {en.brand} </Label>
-                <div className="flex flex-col">
-                  <Input
-                    id="edit-brand"
-                    placeholder={en.brand}
-                    {...register("brand")}
-                    disabled= {isPending}
-                  />
-                  {errors.brand && (
-                    <span className="text-sm text-red-500">
-                      {errors.brand.message as string}
-                    </span>
-                  )}
-                </div>
-              </Field>
             </FieldGroup>
+            
             <FieldGroup className="flex flex-row flex-wrap gap-4">
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-material"> {en.material} </Label>
-                <div className="flex flex-col">
-                  <Input
-                    id="edit-material"
-                    placeholder={en.material}
-                    {...register("material")}
-                    disabled= {isPending}
-                  />
-                  {errors.material && (
-                    <span className="text-sm text-red-500">
-                      {errors.material.message as string}
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="category"> {en.category} </Label>
+                <Select value={currentFormData.category?.slug} onValueChange={(val) => handleCategoryChange(val)}>
+                  <SelectTrigger id="category" className="w-40">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {categorySelectorData && categorySelectorData.map((category:any) => (
+                        <SelectItem key={category.id} value={category.slug}>
+                          {formatLabel(category.name)}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </Field>
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="gender">{en.gender}</Label>
+                <Select value={currentFormData.gender} onValueChange={(val) => handleSelectorChange("gender", val)}>
+                  <SelectTrigger id="gender" className="w-40">
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {GenderSchema.options.map((gender) => (
+                        <SelectItem key={gender} value={gender}>
+                          {formatLabel(gender)}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>   
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="ageGroup">{en.ageGroup}</Label>
+                <Select value={currentFormData.ageGroup} onValueChange={(val) => handleSelectorChange("ageGroup", val)}>
+                  <SelectTrigger id="ageGroup" className="w-40">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {AgeGroupSchema.options.map((group) => (
+                        <SelectItem key={group} value={group}>
+                          {formatLabel(group)}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>        
+            </FieldGroup>
+
+            <FieldGroup className="flex flex-row flex-wrap gap-4">
               <Field className="flex flex-col gap-2 flex-1">
                 <Label htmlFor="edit-baseprice"> {en.base_price} </Label>
                 <div className="flex flex-col">
@@ -344,6 +387,40 @@ export default function ProductDetailPage() {
                     className="mx-auto w-full max-w-xs border border-neutral-500 rounded-2xl"
                     onValueChange={(value) => setValue("discountPercentage", value[0])}
                   />
+              </Field>
+            </FieldGroup>
+            <FieldGroup className="flex flex-row flex-wrap gap-4">
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="edit-brand"> {en.brand} </Label>
+                <div className="flex flex-col">
+                  <Input
+                    id="edit-brand"
+                    placeholder={en.brand}
+                    {...register("brand")}
+                    disabled= {isPending}
+                  />
+                  {errors.brand && (
+                    <span className="text-sm text-red-500">
+                      {errors.brand.message as string}
+                    </span>
+                  )}
+                </div>
+              </Field>
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="edit-material"> {en.material} </Label>
+                <div className="flex flex-col">
+                  <Input
+                    id="edit-material"
+                    placeholder={en.material}
+                    {...register("material")}
+                    disabled= {isPending}
+                  />
+                  {errors.material && (
+                    <span className="text-sm text-red-500">
+                      {errors.material.message as string}
+                    </span>
+                  )}
+                </div>
               </Field>
             </FieldGroup>
             <FieldGroup className="flex lg:flex-row sm:flex-col">

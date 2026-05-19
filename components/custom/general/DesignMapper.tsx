@@ -1,14 +1,34 @@
+'use client'
+
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductDesignSchema } from "@/schemas/admin-schemas";
 import { Plus, Trash2 } from "lucide-react";
+import { useMemo } from "react";
 
 interface Props {
   designs?: ProductDesignSchema[];
 }
 
+// take all the designs to the drop down menu
+// let create new product-design map using "+" icon
+//make this editable
+// 
+
 const DesignMapper = (props: Props) => {
+
+  const hasDataChanged = useMemo(() => {
+    return true
+  }, [])
+
+  const handleSave = () => {
+    console.log("Change design changes")
+  }
+
+  const handleReset = () => {
+    console.log("Reset design changes")
+  }
+
   return (
     <Card className="w-full max-w-70">
       <CardHeader className="flex flex-col items-center justify-between">
@@ -17,35 +37,6 @@ const DesignMapper = (props: Props) => {
           <CardAction>
             <Button variant="outline"> <Plus /> </Button>
           </CardAction>
-        </div>
-        <div className="flex flex-row gap-2 items-center justify-between  w-full">
-          <div className="flex-1"> Category </div>
-          <Select>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder={"Select category"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value={"test-0"}>
-                  {"Test-0"}
-                </SelectItem>
-
-                <SelectItem value={"test-1"}>
-                  {"Test-1"}
-                </SelectItem>
-                <SelectItem value={"test-2"}>
-                  {"Test-2"}
-                </SelectItem>
-                {/* {
-                  props.colors && Object.values(props.colors).map((color) => (
-                    <SelectItem key={color.id} value={color.color.id}>
-                      {color.color.name}
-                    </SelectItem>
-                  ))
-                } */}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-0">
@@ -62,6 +53,11 @@ const DesignMapper = (props: Props) => {
           }
         </div>
       </CardContent>
+      <CardFooter className="flex flex-row items-center justify-end gap-2">
+
+        <Button disabled={hasDataChanged} onClick={handleSave}>Save</Button>
+        <Button disabled={hasDataChanged} onClick={handleReset}>Reset</Button>
+      </CardFooter>
       
     </Card>
   )

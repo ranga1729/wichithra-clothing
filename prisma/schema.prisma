@@ -151,7 +151,6 @@ model Color {
   // Relationships
   products      Product[]      @relation("ProductMainColor")
   productColors ProductColor[]
-  inventory     Inventory[]
   productImages ProductImage[]
 
   @@index([deletedAt])
@@ -169,7 +168,6 @@ model Size {
 
   // Relationships
   productSizes ProductSize[]
-  inventory Inventory[]
 
   @@index([deletedAt])
   @@map("sizes")
@@ -181,11 +179,14 @@ model Product {
   slug               String          @unique @db.VarChar(200)
   description        String?         @db.Text
   categoryId         String          @db.Uuid
-  brand              String?         @db.VarChar(100)
+  sizeGuide          String?         @db.VarChar(500) // overrides Category.sizeGuide when set
+  gender             GenderTarget    @default(UNISEX)
+  ageGroup           AgeGroup        @default(ADULT)
+  brand              String?         @db.VarChar(100) @default("Wichithra")
   material           String?         @db.VarChar(200)
   careInstructions   String?         @db.Text
-  basePrice          Decimal         @db.Decimal(10, 2)
-  discountPercentage Decimal?        @default(0) @db.Decimal(5, 2)
+  basePrice          Decimal         @db.Decimal(10, 2) @default(0)
+  discountPercentage Decimal         @db.Decimal(5, 2) @default(0)
   mainColorId        String?         @db.Uuid
   isFeatured         Boolean         @default(false)
   isActive           Boolean         @default(true)
@@ -203,12 +204,13 @@ model Product {
   productColors  ProductColor[]
   productImages  ProductImage[]
   productSizes   ProductSize[]
-  inventory      Inventory[]
 
   @@index([categoryId])
   @@index([isActive])
   @@index([isFeatured])
   @@index([deletedAt])
+  @@index([gender])
+  @@index([ageGroup])
   @@map("products")
 }
 
@@ -222,6 +224,7 @@ model ProductSize {
   // Relationships
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   size    Size    @relation(fields: [sizeId], references: [id])
+  inventory Inventory[]
 
   @@unique([productId, sizeId])
   @@index([productId])
@@ -254,6 +257,7 @@ model ProductColor {
   // Relationships
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   color   Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  inventory Inventory[]
 
   @@unique([productId, colorId])
   @@map("product_colors")
@@ -279,9 +283,8 @@ model ProductImage {
 
 model Inventory {
   id                 String   @id @default(uuid()) @db.Uuid
-  productId          String   @db.Uuid
-  colorId            String   @db.Uuid
-  sizeId             String   @db.Uuid
+  productSizeId      String   @db.Uuid
+  productColorId     String   @db.Uuid
   sku                String   @unique @db.VarChar(100)
   quantity           Int      @default(0)
   reservedQuantity   Int?     @default(0)
@@ -292,13 +295,11 @@ model Inventory {
   updatedAt          DateTime @updatedAt @db.Timestamptz(6)
 
   // Relationships
-  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-  color          Color           @relation(fields: [colorId], references: [id])
-  size           Size            @relation(fields: [sizeId], references: [id])
+  productSize    ProductSize    @relation(fields: [productSizeId], references: [id])
+  productColor   ProductColor   @relation(fields: [productColorId], references: [id])
   stockMovements StockMovement[]
 
-  @@unique([productId, colorId, sizeId])
-  @@index([productId])
+  @@unique([productSizeId, productColorId])
   @@index([sku])
   @@index([quantity, lowStockThreshold])
   @@index([deletedAt])
@@ -352,4 +353,25 @@ enum StockMovementType {
   RELEASED //reserved item freed up(cart expires or removes items), cancelled orders returnign inventory
   // Customer's cart expired, so the 2 reserved black t-shirts are released back to available stock.
   @@map("stock_movement_type")
+}
+
+enum GenderTarget {
+  MALE
+  FEMALE
+  UNISEX
+  BOYS
+  GIRLS
+  KIDS
+
+  @@map("gender_target")
+}
+
+enum AgeGroup {
+  INFANT
+  TODDLER
+  KIDS
+  TEEN
+  ADULT
+
+  @@map("age_group")
 }

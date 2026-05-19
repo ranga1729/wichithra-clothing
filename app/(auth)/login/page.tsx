@@ -33,7 +33,7 @@ export default function Login() {
         const result = await loginUser(data);
 
         if(result.success) {
-          toast.success(result.message)
+          toast.success(result.message!)
           router.push("/")
         } else {
           toast.error(result.message || en.registration_failed);

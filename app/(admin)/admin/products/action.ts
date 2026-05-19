@@ -2,7 +2,7 @@
 
 import { ProductStatus } from "@/generated/prisma/enums";
 import { en } from "@/lib/i18n/en";
-import { notDeleted, prisma } from "@/lib/prisma";
+import { includingDeleted, notDeleted, prisma } from "@/lib/prisma";
 import { basicProductInfoSchema, BasicProductInfoSchema, productSchema, ProductSchema, ProductStatusSchema } from "@/schemas/admin-schemas";
 import { ApiResponse } from "@/types/auth-types";
 import { ProductFilter } from "@/types/filter-types";
@@ -59,6 +59,8 @@ export async function getProducts(paginator: Paginator, filter: ProductFilter):P
             name: true,
           }
         },
+        gender: true,
+        ageGroup: true,
         mainColor: {
           select: {
             id: true,
@@ -66,8 +68,8 @@ export async function getProducts(paginator: Paginator, filter: ProductFilter):P
             hexCode: true,
           }
         },
-        
       },
+
       where: whereClause,
       skip: skip,
       take: pageSize,
@@ -114,6 +116,8 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
         id: true,
         name: true,
         slug: true,
+        ageGroup: true,
+        gender: true,
         description: true,
         brand: true,
         material: true,
@@ -128,6 +132,7 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
           select: {
             id: true,
             name: true,
+            slug:true,
           }
         },
         mainColor: {
@@ -265,6 +270,9 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
         description: validatedData.description,
         basePrice: validatedData.basePrice,
         discountPercentage: validatedData.discountPercentage,
+        gender: validatedData.gender,
+        ageGroup: validatedData.ageGroup,
+        categoryId: validatedData.category.id
       }
     });
 
@@ -524,6 +532,101 @@ export async function changeProductSizes(productId: string, newSizes: string[]):
 
   } catch(error) {
     console.error("Error updating product:", error);
+    
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+    
+    return {
+      success: false,
+      error: en.product_update_failed,
+    };
+  }
+}
+
+export async function createNewProduct(data: BasicProductInfoSchema):Promise<ApiResponse> {
+  try {
+    const validatedData = basicProductInfoSchema.parse(data);
+    console.log(validatedData)
+
+    const existingProducts = await prisma.product.findMany({
+      where: {
+        ...includingDeleted,
+        OR : [
+          {name: data.name},
+          {slug: data.slug}
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        deletedAt: true
+      }
+    });
+
+    if(existingProducts.length > 0) {
+      //non soft-deleted conflicts
+      const activeConflicts = existingProducts.filter((cat) => cat.deletedAt === null);
+
+      if(activeConflicts.length > 0) {
+        const nameConflicts = activeConflicts.find((cat) => cat.name === validatedData.name);
+        const slugConflicts = activeConflicts.find((cat) => cat.slug === validatedData.slug);
+
+        if(nameConflicts && slugConflicts) {
+          return {
+            success: false,
+            error: en.name_and_slug_already_exists
+          }
+        }
+        if(nameConflicts) {
+          return {
+            success: false,
+            error: en.name_already_exists
+          }
+        }
+        if(slugConflicts) {
+          return {
+            success: false,
+            error: en.slug_already_exists
+          }
+        }
+      }
+
+      const softDeletedId = existingProducts.map((cat) => cat.id);
+      
+      await prisma.product.deleteMany({
+        where: {
+          id: {in: softDeletedId}
+        }
+      })
+    }
+
+    const product = await prisma.product.create({
+      data: {
+        name: validatedData.name,
+        slug: validatedData.slug,
+        brand: validatedData.brand,
+        material: validatedData.material,
+        basePrice: validatedData.basePrice,
+        discountPercentage: validatedData.discountPercentage,
+        careInstructions: validatedData.careInstructions,
+        description: validatedData.description,
+        gender: validatedData.gender,
+        ageGroup: validatedData.ageGroup,
+        categoryId: validatedData.category.id,
+      }
+    });
+
+    return {
+      success: true,
+      data: validatedData
+    }
+  } catch(error) {
+    console.error("Error creating product:", error);
     
     if (error instanceof Error) {
       return {

@@ -83,6 +83,7 @@ export default function ProductsPage() {
       if(!response.success) {
         throw new Error(response.error || en.failed_to_fetch_data);
       }
+      console.log("data: ", response.data);
       return response.data
     },
     placeholderData: (prevdata) => prevdata

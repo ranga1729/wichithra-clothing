@@ -109,7 +109,7 @@ export const CustomerForm = (props:Props) => {
             <FieldLabel htmlFor="mobilePhoneNumber"> {en.contact_mobile_required} </FieldLabel>
             <div className="flex flex-col gap-0">
               <div className="flex flex-row items-center">
-                <Item className="p-1 text-center font-semibold h-9" variant={"default"} > {en.common.country_code} </Item>
+                <Item className="p-1 text-center font-semibold h-9" variant={"default"} > {en.country_code} </Item>
                 <Input 
                   id="mobilePhoneNumber" type="text" size={50} 
                   placeholder="771234567"
@@ -128,7 +128,7 @@ export const CustomerForm = (props:Props) => {
             <FieldLabel htmlFor="homePhoneNumber"> {en.contact_home} </FieldLabel>
             <div className="flex flex-col gap-0">
               <div className="flex flex-row items-center">
-                <Item className="p-1 text-center font-semibold h-9" variant={"default"}> {en.common.country_code} </Item>
+                <Item className="p-1 text-center font-semibold h-9" variant={"default"}> {en.country_code} </Item>
                 <Input 
                   id="homePhoneNumber" type="text"
                   placeholder="112345678"

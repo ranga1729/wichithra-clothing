@@ -1,6 +1,6 @@
 'use client'
 
-import { basicProductInfoSchema, BasicProductInfoSchema } from "@/schemas/admin-schemas";
+import { AgeGroupSchema, basicProductInfoSchema, BasicProductInfoSchema, GenderSchema } from "@/schemas/admin-schemas";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import SaveButton from "@/components/SaveButton";
 import CancelButton from "@/components/CancelButton";
 import { Textarea } from "@/components/ui/textarea";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createNewProduct } from "./action";
+import toast from "react-hot-toast";
+import { AgeGroup, GenderTarget } from "@/generated/prisma/enums";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getCategorySelectorData } from "../categories/action";
+import { formatLabel } from "@/lib/utils";
 
 interface Props {
   isModalOpen: boolean;
@@ -19,18 +26,21 @@ interface Props {
 }
 
 export default function AddNewModal(props: Props) {
+  const queryClient = useQueryClient();
 
   const {
-    register,
+    register, reset,
     setValue, watch, handleSubmit,
     formState: { errors },
   } = useForm<BasicProductInfoSchema>({
-    resolver: zodResolver(basicProductInfoSchema),
+    resolver: zodResolver(basicProductInfoSchema) as any,
     mode: "onChange",
     defaultValues: {
       name: "",
       slug: "",
       brand: "",
+      gender: GenderTarget.UNISEX,
+      ageGroup: AgeGroup.ADULT,
       material: "",
       careInstructions: "",
       description: "",
@@ -41,9 +51,46 @@ export default function AddNewModal(props: Props) {
 
   const currentFormData = watch();
 
-  const onSubmit = () => {
-    console.log("test: ", currentFormData)
-  }
+  const handleSelectorChange = (name: keyof BasicProductInfoSchema, value: string) => {
+    setValue(name, value as any);
+  };
+
+  const handleCategoryChange = (val: string) => {
+    const selected = categorySelectorData?.find((c: any) => c.slug === val);
+    if (selected) setValue("category", { id: selected.id, name: selected.name, slug: selected.slug });
+  };
+
+  const { data: categorySelectorData } = useQuery({
+    queryKey: ["categorySelectorData"],
+    queryFn: async () => {
+      const response = await getCategorySelectorData();
+      if (!response.success) {
+        toast.error(response.error ?? en.failed_to_load_category_filter_data);
+      }
+      return response.data;
+    },
+    placeholderData: (prevdata) => prevdata,
+  });
+
+  //react queries
+  const { mutate: createProduct, isPending } = useMutation({
+    mutationFn: (data: BasicProductInfoSchema) => createNewProduct(data),
+    onSuccess: (response) => {
+      if(response.success) {
+        queryClient.invalidateQueries({ queryKey: ["products"]});
+        toast.success(en.product_created_successfully);
+        reset();
+        props.onOpenChange(false);
+      } else {
+        toast.error(response.error || en.failed_to_create_product);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.failed_to_create_product);
+    }
+  }) 
+
+  const onSubmit = (data: BasicProductInfoSchema) => createProduct(data)
   
   return (
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
@@ -65,7 +112,7 @@ export default function AddNewModal(props: Props) {
                     id="edit-name"
                     placeholder={en.name}
                     {...register("name")}
-                    //disabled= {isLoading}
+                    disabled= {isPending}
                   />
                   {errors.name && (
                     <span className="text-sm text-red-500">
@@ -81,7 +128,7 @@ export default function AddNewModal(props: Props) {
                     id="edit-slug"
                     placeholder={en.slug}
                     {...register("slug")}
-                    //disabled= {isLoading}
+                    disabled= {isPending}
                   />
                   {errors.slug && (
                     <span className="text-sm text-red-500">
@@ -99,7 +146,7 @@ export default function AddNewModal(props: Props) {
                     id="edit-brand"
                     placeholder={en.brand}
                     {...register("brand")}
-                    //disabled= {isLoading}
+                    disabled= {isPending}
                   />
                   {errors.brand && (
                     <span className="text-sm text-red-500">
@@ -115,7 +162,7 @@ export default function AddNewModal(props: Props) {
                     id="edit-material"
                     placeholder={en.material}
                     {...register("material")}
-                    //disabled= {isLoading}
+                    disabled= {isPending}
                   />
                   {errors.material && (
                     <span className="text-sm text-red-500">
@@ -123,6 +170,59 @@ export default function AddNewModal(props: Props) {
                     </span>
                   )}
                 </div>
+              </Field>
+            </FieldGroup>
+            <FieldGroup className="flex flex-row flex-wrap gap-4">
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="category"> {en.category} </Label>
+                <Select value={currentFormData.category?.slug} onValueChange={(val) => handleCategoryChange(val)}>
+                  <SelectTrigger id="category" className="w-40">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {categorySelectorData && categorySelectorData.map((category: any) => (
+                        <SelectItem key={category.id} value={category.slug}>
+                          {formatLabel(category.name)}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="gender">{en.gender}</Label>
+                <Select value={currentFormData.gender} onValueChange={(val) => handleSelectorChange("gender", val)}>
+                  <SelectTrigger id="gender" className="w-40">
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {GenderSchema.options.map((gender) => (
+                        <SelectItem key={gender} value={gender}>
+                          {formatLabel(gender)}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="ageGroup">{en.ageGroup}</Label>
+                <Select value={currentFormData.ageGroup} onValueChange={(val) => handleSelectorChange("ageGroup", val)}>
+                  <SelectTrigger id="ageGroup" className="w-40">
+                    <SelectValue placeholder="Select age group" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {AgeGroupSchema.options.map((group) => (
+                        <SelectItem key={group} value={group}>
+                          {formatLabel(group)}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </Field>
             </FieldGroup>
             <FieldGroup className="flex flex-row flex-wrap gap-4">
@@ -135,7 +235,7 @@ export default function AddNewModal(props: Props) {
                     step={0.01}
                     placeholder={en.base_price}
                     {...register("basePrice", {valueAsNumber: true})}
-                    //disabled={isLoading}
+                    disabled={isPending}
                   />
                   {errors.basePrice && (
                     <span className="text-sm text-red-500">
@@ -153,7 +253,7 @@ export default function AddNewModal(props: Props) {
                   </div>
                   <Slider 
                     id="discount-percentage-handle"
-                    value={[currentFormData.discountPercentage]}
+                    value={[currentFormData.discountPercentage as number]}
                     min={0}
                     max={100}
                     step={1}
@@ -170,7 +270,7 @@ export default function AddNewModal(props: Props) {
                   id="edit-careinstructions"
                   placeholder="Care instruction for this product"
                   {...register("careInstructions")}
-                  //disabled= {isLoading}
+                  disabled= {isPending}
                 />
                 {errors.careInstructions && (
                   <span className="text-sm text-red-500">
@@ -186,7 +286,7 @@ export default function AddNewModal(props: Props) {
                   id="edit-description"
                   placeholder="Description of this product"
                   {...register("description")}
-                  //disabled= {isLoading}
+                  disabled= {isPending}
                 />
                 {errors.description && (
                   <span className="text-sm text-red-500">
@@ -197,12 +297,12 @@ export default function AddNewModal(props: Props) {
             </Field>
           </FieldGroup>
           </FieldGroup>
-        </form>
-        
-        <DialogFooter className="mt-6">
-            <SaveButton onclick={onSubmit} />
-            <CancelButton onClick={() => props.onOpenChange(false)} />
+
+          <DialogFooter className="mt-6">
+            <SaveButton isPending={isPending} />
+            <CancelButton onClick={() => props.onOpenChange(false)} isPending={isPending} />
           </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

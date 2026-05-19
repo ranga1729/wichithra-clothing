@@ -39,6 +39,8 @@ export const en = {
   description: "Description",
   sort_order: "Sort order",
   category: "Category",
+  gender: "Target Gender",
+  ageGroup: "Age group",
   main_color: "Main Color",
   size_guide_image: "Size guide image",
   hexCode : "HexCode",
@@ -132,6 +134,8 @@ export const en = {
   product_doesnt_exist: "Product doesn't exist",
   product_update_failed: "Product update failed",
   product_updated_successfully: "Color updated successfully",
+  product_created_successfully: "Color created successfully",
+  failed_to_create_product: "Failed to create product",
 
   error_updating: "Error updating",
   error_creating: "Error creating",

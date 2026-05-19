@@ -78,7 +78,7 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
       role: user.role.name
     });
 
-    (await cookies()).set( en.common.token_name, token, {
+    (await cookies()).set( en.token_name, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",

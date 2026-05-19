@@ -1,9 +1,11 @@
-import { ProductStatus } from "@/generated/prisma/enums";
+import { AgeGroup, GenderTarget, ProductStatus } from "@/generated/prisma/enums";
 import * as z from "zod"
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
  
 export const ProductStatusSchema = z.enum(ProductStatus);
+export const AgeGroupSchema = z.enum(AgeGroup)
+export const GenderSchema = z.enum(GenderTarget)
 
 export const categorySchema = z.object({
   name: z
@@ -64,6 +66,11 @@ const categorySelectSchema = z.object({
     .string("Enter a valid name")
     .min(1, "Name is required")
     .max(100, "Name can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  slug: z
+    .string("Enter a valid slug")
+    .min(1, "Slug is required")
+    .max(100, "Slug can not exceed 100 characters")
     .transform((val) => val.trim()),
 });
 
@@ -175,6 +182,8 @@ export const simpleProductSchema = z.object({
     .min(1, "Slug is required")
     .max(100, "Slug can not exceed 100 characters")
     .transform((val) => val.trim()),
+  gender: GenderSchema,
+  ageGroup: AgeGroupSchema,
   basePrice: z
     .coerce
     .number()
@@ -194,7 +203,7 @@ export const simpleProductSchema = z.object({
 })
 
 export const basicProductInfoSchema = z.object({
-  id: z.uuid(),
+  id: z.uuid().optional(),
   name: z
     .string("Enter a valid name")
     .min(1, "Name is required")
@@ -205,11 +214,15 @@ export const basicProductInfoSchema = z.object({
     .min(1, "Slug is required")
     .max(100, "Slug can not exceed 100 characters")
     .transform((val) => val.trim()),
+  category: categorySelectSchema,
+  gender: GenderSchema,
+  ageGroup: AgeGroupSchema,
   basePrice: z
     .preprocess(
       (val) => (val === "" ? undefined : Number(val)),
       z.number().min(0, "Price must be 0 or more")
-    ),
+    )
+    .default(0),
   discountPercentage: z
     .coerce
     .number()
@@ -232,4 +245,4 @@ export type SimpleProductSchema = z.infer<typeof simpleProductSchema>
 export type ProductColorSchema = z.infer<typeof productColorSchema>
 export type ProductSizeSchema = z.infer<typeof productSizeSchema>
 export type ProductDesignSchema = z.infer<typeof productDesignSchema>
-export type BasicProductInfoSchema = z.input<typeof basicProductInfoSchema>;
+export type BasicProductInfoSchema = z.infer<typeof basicProductInfoSchema>;
