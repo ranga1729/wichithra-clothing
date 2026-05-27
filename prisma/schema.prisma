@@ -25,10 +25,12 @@ model User {
   addresses    Address[]
   phoneNumbers PhoneNumber[]
   stockMovements StockMovement[]
+  auditLogs AuditLog[]
 
   @@index([roleId])
   @@index([deletedAt])
   @@map("users")
+  productReviews ProductReview[]
 }
 
 model Role {
@@ -210,6 +212,7 @@ model Product {
   productImages  ProductImage[]
   productSizes   ProductSize[]
   inventory Inventory[]
+  productTags ProductTag[]
 
   @@index([categoryId])
   @@index([isActive])
@@ -218,6 +221,7 @@ model Product {
   @@index([gender])
   @@index([ageGroup])
   @@map("products")
+  productReviews ProductReview[]
 }
 
 model ProductSize {
@@ -295,9 +299,46 @@ model ProductImage {
   @@map("product_images")
 }
 
+model ProductReview {
+  id                String   @id @default(uuid()) @db.Uuid
+  productId         String   @db.Uuid
+  userId            String   @db.Uuid
+  rating            Int      // 1–5
+  title             String?  @db.VarChar(200)
+  body              String?  @db.Text
+  isVerifiedPurchase Boolean @default(false)
+  isApproved        Boolean  @default(false)
+  helpfulCount      Int      @default(0)
+  createdAt         DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relationships
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id])
+  reviewImages ReviewImage[]
+
+  @@unique([productId, userId])  // one review per user per product
+  @@index([productId])
+  @@index([isApproved])
+  @@map("product_reviews")
+}
+
+model ReviewImage {
+  id        String   @id @default(uuid()) @db.Uuid
+  reviewId  String   @db.Uuid
+  imageUrl  String   @db.VarChar(500)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relationships
+  review ProductReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@map("review_images")
+}
+
 model Inventory {
   id                 String   @id @default(uuid()) @db.Uuid
-  productId      String   @db.Uuid
+  productId          String   @db.Uuid
   productSizeId      String   @db.Uuid
   productColorId     String   @db.Uuid
   sku                String   @unique @db.VarChar(100)
@@ -340,6 +381,52 @@ model StockMovement {
 
   @@index([inventoryId])
   @@map("stock_movements")
+}
+
+model Tag {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(50)
+  slug      String   @unique @db.VarChar(50)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relationships
+  productTags ProductTag[]
+
+  @@map("tags")
+}
+
+model ProductTag {
+  id        String   @id @default(uuid()) @db.Uuid
+  productId String   @db.Uuid
+  tagId     String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relationships
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, tagId])
+  @@map("product_tags")
+}
+
+model AuditLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid
+  action        String   @db.VarChar(100) // "CREATE", "UPDATE", "DELETE", "LOGIN"
+  entity        String   @db.VarChar(100) // "Product", "Order", "User"
+  entityId      String?  @db.Uuid
+  oldValues     Json?
+  newValues     Json?
+  description   String?  @db.VarChar(500)
+  ipAddress     String?  @db.VarChar(45)  // IPv6 max length
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@map("audit_logs")
 }
 
 //ENUMS
