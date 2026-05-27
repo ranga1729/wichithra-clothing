@@ -4,10 +4,10 @@ import TableWithPagination, { TableWithPaginationRef } from "@/components/custom
 import { initialPaginator, Paginator } from "@/types/table-types";
 import { useEffect, useRef, useState } from "react";
 import { getColumns } from "./columns";
-import { getProducts } from "./action";
+import { getProducts, toggleActiveStatus } from "./action";
 import { SimpleProductSchema } from "@/schemas/admin-schemas";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProductFilter } from "@/types/filter-types";
 import ResetFilterButton from "@/components/ResetFilterButton";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ import { getCategorySelectorData } from "../categories/action";
 import { useDebounce } from "@/hooks/useDebounce";
 import AddNewButton from "@/components/AddNewButton";
 import AddNewModal from "./AddNewModal";
+import { Product } from "@/generated/prisma/client";
 
 const initiaFilter:ProductFilter = {
   name: "",
@@ -35,6 +36,7 @@ export default function ProductsPage() {
   
   const [paginator, setPaginator] = useState<Paginator>(initialPaginator)
   const [filter, setFilter] = useState<ProductFilter>(initiaFilter)
+  const queryClient = useQueryClient();
 
   //implement add new prodcut
   // focus on add new basic of the products, if they are added then others are ok
@@ -113,6 +115,21 @@ export default function ProductsPage() {
     placeholderData: (prevdata) => prevdata
   })
 
+  const { mutate: toggleStatus } = useMutation({
+    mutationFn: (id: string) => toggleActiveStatus(id),
+    onSuccess: (response) => {
+      if (response.success) {
+        queryClient.invalidateQueries({ queryKey: ['products'] });
+        toast.success(response.message || en.active_status_toggled);
+      } else {
+        toast.error(response.error || en.failed_to_toggle_active_status);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.failed_to_toggle_active_status)
+    }
+  });
+
   useEffect(() => {
     if (isError && error) {
       toast.error(error.message);
@@ -178,7 +195,7 @@ export default function ProductsPage() {
         columns={getColumns({
           onEdit: onEdit,
           // onDelete: onDelete,
-          // toggleActiveStatus: toggleActiveStatus
+          toggleActiveStatus: (category: SimpleProductSchema) => toggleStatus(category.id),
           onView: onEdit,
           paginator:paginator
         })}
