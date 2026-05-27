@@ -24,6 +24,7 @@ model User {
   role         Role     @relation(fields: [roleId], references: [id])
   addresses    Address[]
   phoneNumbers PhoneNumber[]
+  stockMovements StockMovement[]
 
   @@index([roleId])
   @@index([deletedAt])
@@ -51,7 +52,7 @@ model Address {
   userId       String   @db.Uuid
   houseNo      String  @db.VarChar(20)
   addressLine1 String   @db.VarChar(255)
-  addressLine2 String  @db.VarChar(255)
+  addressLine2 String?  @db.VarChar(255)
   city         String   @db.VarChar(100)
   province     String   @db.VarChar(100)
   zipcode      String   @db.VarChar(20)
@@ -130,6 +131,7 @@ model CategoryDesign {
   id         String   @id @default(uuid()) @db.Uuid
   categoryId String   @db.Uuid
   designId   String   @db.Uuid
+  deletedAt  DateTime? @db.Timestamptz(6)
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
 
   // Relationships
@@ -137,6 +139,7 @@ model CategoryDesign {
   design   Design   @relation(fields: [designId], references: [id], onDelete: Cascade)
 
   @@unique([categoryId, designId])
+  @@index([deletedAt])
   @@map("category_designs")
 }
 
@@ -147,6 +150,7 @@ model Color {
   isActive  Boolean  @default(true)
   deletedAt DateTime? @db.Timestamptz(6)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   // Relationships
   products      Product[]      @relation("ProductMainColor")
@@ -165,6 +169,7 @@ model Size {
   isActive     Boolean  @default(true)
   deletedAt    DateTime? @db.Timestamptz(6)
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
 
   // Relationships
   productSizes ProductSize[]
@@ -189,7 +194,7 @@ model Product {
   discountPercentage Decimal         @db.Decimal(5, 2) @default(0)
   mainColorId        String?         @db.Uuid
   isFeatured         Boolean         @default(false)
-  isActive           Boolean         @default(false)
+  isActive           Boolean         @default(true)
   status             ProductStatus   @default(DRAFT)
   metaTitle          String?         @db.VarChar(200)
   metaDescription    String?         @db.Text
@@ -220,7 +225,9 @@ model ProductSize {
   productId String   @db.Uuid
   sizeId    String   @db.Uuid
   isActive  Boolean  @default(true) // Can temporarily disable a size for a product
+  deletedAt DateTime? @db.Timestamptz(6)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   // Relationships
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -236,6 +243,7 @@ model ProductDesign {
   id        String   @id @default(uuid()) @db.Uuid
   productId String   @db.Uuid
   designId  String   @db.Uuid
+  deletedAt DateTime? @db.Timestamptz(6)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   // Relationships
@@ -243,6 +251,7 @@ model ProductDesign {
   design  Design  @relation(fields: [designId], references: [id], onDelete: Cascade)
 
   @@unique([productId, designId])
+  @@index([deletedAt])
   @@map("product_designs")
 }
 
@@ -250,10 +259,10 @@ model ProductColor {
   id               String   @id @default(uuid()) @db.Uuid
   productId        String   @db.Uuid
   colorId          String   @db.Uuid
-  isMainColor      Boolean  @default(false)
   additionalPrice  Decimal? @default(0) @db.Decimal(10, 2)
-  colorImageUrl    String?  @db.VarChar(500)
+  deletedAt        DateTime? @db.Timestamptz(6)
   createdAt        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(6)
 
   // Relationships
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -261,6 +270,7 @@ model ProductColor {
   inventory Inventory[]
 
   @@unique([productId, colorId])
+  @@index([deletedAt])
   @@map("product_colors")
 }
 
@@ -272,13 +282,16 @@ model ProductImage {
   altText   String?  @db.VarChar(200)
   isPrimary Boolean  @default(false)
   sortOrder Int      @default(0)
+  deletedAt DateTime? @db.Timestamptz(6)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   // Relationships
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   color   Color?  @relation(fields: [colorId], references: [id])
 
   @@index([productId])
+  @@index([deletedAt])
   @@map("product_images")
 }
 
@@ -289,7 +302,7 @@ model Inventory {
   productColorId     String   @db.Uuid
   sku                String   @unique @db.VarChar(100)
   quantity           Int      @default(0)
-  reservedQuantity   Int?     @default(0)
+  reservedQuantity   Int      @default(0)
   lowStockThreshold  Int?     @default(5)
   costPrice          Decimal? @db.Decimal(10, 2)
   deletedAt          DateTime? @db.Timestamptz(6)
@@ -302,7 +315,7 @@ model Inventory {
   productColor   ProductColor   @relation(fields: [productColorId], references: [id])
   stockMovements StockMovement[]
 
-  @@unique([productId, productSizeId, productColorId])  // tighter constraint
+  @@unique([productSizeId, productColorId])
   @@index([productId])
   @@index([sku])
   @@index([quantity, lowStockThreshold])
@@ -314,15 +327,16 @@ model StockMovement {
   id           String              @id @default(uuid()) @db.Uuid
   inventoryId  String              @db.Uuid
   movementType StockMovementType
-  quantity     Int
-  reason       String?             @db.VarChar(100)
+  quantity     Int                 @default(0)
+  reason       String?             @db.VarChar(500)
   referenceId  String?             @db.Uuid //for billing references
   notes        String?             @db.Text
   createdBy    String?             @db.Uuid
   createdAt    DateTime            @default(now()) @db.Timestamptz(6)
 
   // Relationships
-  inventory Inventory @relation(fields: [inventoryId], references: [id])
+  inventory    Inventory @relation(fields: [inventoryId], references: [id])
+  createdByUser User?   @relation(fields: [createdBy], references: [id])
 
   @@index([inventoryId])
   @@map("stock_movements")
@@ -332,11 +346,15 @@ model StockMovement {
 enum PhoneType {
   MOBILE
   HOME
+
+  @@map("phone_type")
 }
 
 enum AddressType {
   DELIVERY
   BILLING
+
+  @@map("address_type")
 }
 
 enum ProductStatus {

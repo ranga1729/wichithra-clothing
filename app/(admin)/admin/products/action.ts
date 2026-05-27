@@ -160,8 +160,6 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
             id: true,
             productId: true,
             colorId: true,
-            isMainColor: true,
-            colorImageUrl: true,
             color: {
               select: {
                 id: true,

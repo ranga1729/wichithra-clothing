@@ -30,7 +30,7 @@ export const en = {
   house_number_required: "House No. *",
   zipcode_required: "Zip Code *",
   address_line_1_required: "Addresss Line - 1 *",
-  address_line_2_required: "Addresss Line - 2 *",
+  address_line_2_required: "Address Line - 2 (Optional)",
   nearest_city_required: "Nearest City *",
   province_required: "Province *",
   name: "Name",

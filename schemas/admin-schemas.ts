@@ -104,8 +104,7 @@ const productColorSchema = z.object({
   id: z.uuid(),
   productId: z.uuid(),
   colorId: z.uuid(),
-  isMainColor: z.boolean(),
-  colorImageUrl: z.string().nullable(),
+  additionalPrice: z.coerce.number().nullable(),
   color: colorSelectSchema,
 });
 
@@ -256,8 +255,7 @@ export const inventorySchema = z.object({
     .number()
     .int("Reserved quantity must be an integer")
     .min(0, "Reserved quantity must be 0 or more")
-    .default(0)
-    .optional(),
+    .default(0),
   lowStockThreshold: z
     .coerce
     .number()
@@ -277,7 +275,7 @@ export const simpleInventorySchema = z.object({
   id: z.uuid(),
   sku: z.string(),
   quantity: z.number().int(),
-  reservedQuantity: z.number().int().nullable(),
+  reservedQuantity: z.number().int(),
   lowStockThreshold: z.number().int().nullable(),
   costPrice: z.coerce.number().nullable(),
   productSize: z.object({

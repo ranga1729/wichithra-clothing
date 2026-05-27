@@ -63,8 +63,9 @@ export const addressDataSchema = z.object({
     .transform((val) => val.trim()),
   addressLine2: z
     .string()
-    .min(2, "Address Line-2 is required.")
-    .transform((val) => val.trim()),
+    .optional()
+    .or(z.literal(""))
+    .transform((val) => val === "" ? undefined : val?.trim()),
   city: z
     .string()
     .min(2, "City is required.")

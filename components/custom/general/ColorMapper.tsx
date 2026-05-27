@@ -1,21 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProductColorSchema } from "@/schemas/admin-schemas";
 import { Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface Props {
   colors?: ProductColorSchema[];
 }
 
 const ColorMapper = (props:Props) => {
-  const [mainColor, setMainColor] = useState<ProductColorSchema>();
-
-  useEffect(() => {
-    setMainColor(props.colors?.find(color => color.isMainColor = true))
-  }, [props.colors])
-
   return (
     <Card className="w-full max-w-90">
       <CardHeader className="flex flex-col items-center justify-between">
@@ -24,25 +16,6 @@ const ColorMapper = (props:Props) => {
           <CardAction>
             <Button variant="outline"> <Plus /> </Button>
           </CardAction>
-        </div>
-        <div className="flex flex-row gap-2 items-center justify-between  w-full">
-          <div className="flex-1"> Main Color</div>
-          <Select>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder={mainColor?.color.name ?? "Select Status"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {
-                  props.colors && Object.values(props.colors).map((color) => (
-                    <SelectItem key={color.id} value={color.color.id}>
-                      {color.color.name}
-                    </SelectItem>
-                  ))
-                }
-              </SelectGroup>
-            </SelectContent>
-          </Select>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-0">
@@ -54,9 +27,6 @@ const ColorMapper = (props:Props) => {
                   <div className="rounded-full border w-5 h-5 " style={{ backgroundColor: "#" + color.color.hexCode }}> </div>
                   <div> {color.color.name} </div>
                 </div>
-                {
-                  color.isMainColor? <p className="text-green-500">(Main)</p> : <></>
-                }
                 <Button size={"sm"} variant="ghost" className="hover:bg-red-50"> <Trash2 stroke="red" /> </Button>
               </div>
             ))

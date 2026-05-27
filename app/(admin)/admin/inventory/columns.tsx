@@ -71,14 +71,14 @@ export const getColumns = ({
     id: "reservedQuantity",
     header: () => <div className="text-center">Reserved</div>,
     cell: ({ row }) => (
-      <div className="text-right">{row.original.reservedQuantity ?? 0}</div>
+      <div className="text-right">{row.original.reservedQuantity}</div>
     ),
   },
   {
     id: "available",
     header: () => <div className="text-center">Available</div>,
     cell: ({ row }) => {
-      const available = row.original.quantity - (row.original.reservedQuantity ?? 0)
+      const available = row.original.quantity - row.original.reservedQuantity
       return <div className="text-right">{available}</div>
     },
   },
@@ -106,7 +106,7 @@ export const getColumns = ({
     header: () => <div className="text-center">Stock Status</div>,
     cell: ({ row }) => {
       const { quantity, reservedQuantity, lowStockThreshold } = row.original
-      const available = quantity - (reservedQuantity ?? 0)
+      const available = quantity - reservedQuantity
       const threshold = lowStockThreshold ?? 5
 
       let label: string
