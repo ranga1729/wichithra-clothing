@@ -235,6 +235,72 @@ export const basicProductInfoSchema = z.object({
   careInstructions: z.string().nullable(),
 });
 
+// ─── Inventory ───────────────────────────────────────────────────────────────
+
+export const inventorySchema = z.object({
+  productSizeId: z.uuid("Invalid product size"),
+  productColorId: z.uuid("Invalid product color"),
+  sku: z
+    .string("Enter a valid SKU")
+    .min(1, "SKU is required")
+    .max(100, "SKU can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  quantity: z
+    .coerce
+    .number()
+    .int("Quantity must be an integer")
+    .min(0, "Quantity must be 0 or more")
+    .default(0),
+  reservedQuantity: z
+    .coerce
+    .number()
+    .int("Reserved quantity must be an integer")
+    .min(0, "Reserved quantity must be 0 or more")
+    .default(0)
+    .optional(),
+  lowStockThreshold: z
+    .coerce
+    .number()
+    .int("Low stock threshold must be an integer")
+    .min(0, "Low stock threshold must be 0 or more")
+    .default(5)
+    .optional(),
+  costPrice: z
+    .coerce
+    .number()
+    .min(0, "Cost price must be 0 or more")
+    .nullable()
+    .optional(),
+});
+
+export const simpleInventorySchema = z.object({
+  id: z.uuid(),
+  sku: z.string(),
+  quantity: z.number().int(),
+  reservedQuantity: z.number().int().nullable(),
+  lowStockThreshold: z.number().int().nullable(),
+  costPrice: z.coerce.number().nullable(),
+  productSize: z.object({
+    id: z.uuid(),
+    product: z.object({
+      id: z.uuid(),
+      name: z.string(),
+    }),
+    size: z.object({
+      id: z.uuid(),
+      name: z.string(),
+    }),
+  }),
+  productColor: z.object({
+    id: z.uuid(),
+    color: z.object({
+      id: z.uuid(),
+      name: z.string(),
+      hexCode: z.string(),
+    }),
+  }),
+});
+
 export type CategorySchema = z.input<typeof categorySchema>
 export type DesignSchema = z.infer<typeof designSchema>
 export type ColorSchema = z.infer<typeof colorSchema>
@@ -246,3 +312,6 @@ export type ProductColorSchema = z.infer<typeof productColorSchema>
 export type ProductSizeSchema = z.infer<typeof productSizeSchema>
 export type ProductDesignSchema = z.infer<typeof productDesignSchema>
 export type BasicProductInfoSchema = z.infer<typeof basicProductInfoSchema>;
+
+export type InventorySchema = z.infer<typeof inventorySchema>
+export type SimpleInventorySchema = z.infer<typeof simpleInventorySchema>

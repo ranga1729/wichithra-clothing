@@ -189,7 +189,7 @@ model Product {
   discountPercentage Decimal         @db.Decimal(5, 2) @default(0)
   mainColorId        String?         @db.Uuid
   isFeatured         Boolean         @default(false)
-  isActive           Boolean         @default(true)
+  isActive           Boolean         @default(false)
   status             ProductStatus   @default(DRAFT)
   metaTitle          String?         @db.VarChar(200)
   metaDescription    String?         @db.Text
@@ -204,6 +204,7 @@ model Product {
   productColors  ProductColor[]
   productImages  ProductImage[]
   productSizes   ProductSize[]
+  inventory Inventory[]
 
   @@index([categoryId])
   @@index([isActive])
@@ -283,6 +284,7 @@ model ProductImage {
 
 model Inventory {
   id                 String   @id @default(uuid()) @db.Uuid
+  productId      String   @db.Uuid
   productSizeId      String   @db.Uuid
   productColorId     String   @db.Uuid
   sku                String   @unique @db.VarChar(100)
@@ -295,11 +297,13 @@ model Inventory {
   updatedAt          DateTime @updatedAt @db.Timestamptz(6)
 
   // Relationships
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
   productSize    ProductSize    @relation(fields: [productSizeId], references: [id])
   productColor   ProductColor   @relation(fields: [productColorId], references: [id])
   stockMovements StockMovement[]
 
-  @@unique([productSizeId, productColorId])
+  @@unique([productId, productSizeId, productColorId])  // tighter constraint
+  @@index([productId])
   @@index([sku])
   @@index([quantity, lowStockThreshold])
   @@index([deletedAt])
@@ -312,7 +316,7 @@ model StockMovement {
   movementType StockMovementType
   quantity     Int
   reason       String?             @db.VarChar(100)
-  referenceId  String?             @db.Uuid
+  referenceId  String?             @db.Uuid //for billing references
   notes        String?             @db.Text
   createdBy    String?             @db.Uuid
   createdAt    DateTime            @default(now()) @db.Timestamptz(6)

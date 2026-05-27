@@ -150,5 +150,8 @@ export const en = {
 
   name_already_exists: "Name already exists",
   slug_already_exists: "Slug already exists",
-  name_and_slug_already_exists: "Name and slug already exists"
+  name_and_slug_already_exists: "Name and slug already exists",
+
+  inventory_data_retrieval_failed: "Failed to fetch inventory data",
+  failed_to_load_inventory_filter_data: "Failed to load inventory filter data",
 }
