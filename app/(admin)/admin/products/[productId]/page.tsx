@@ -3,7 +3,7 @@
 import { AgeGroupSchema, basicProductInfoSchema, BasicProductInfoSchema, GenderSchema, productSchema, ProductSchema } from "@/schemas/admin-schemas";
 import { useParams } from "next/navigation"
 import { useEffect } from "react";
-import { changeBasicInfo, changeProductStatus, getProductById, getProducts, toggleActiveStatus, toggleFeaturedStatus } from "../action";
+import { changeBasicInfo, changeProductStatus, getProductById, getProducts, toggleFeaturedStatus } from "../action";
 import toast from "react-hot-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,7 +20,6 @@ import DesignMapper from "@/components/custom/general/DesignMapper";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import IsActiveToggler from "@/components/custom/general/IsActiveToggler";
 import IsFeaturedToggler from "@/components/custom/general/IsFeaturedToggler";
 import ProductStatusChanger from "@/components/custom/general/ProductStatusChanger";
 import { ProductStatus } from "@/generated/prisma/enums";
@@ -43,7 +42,6 @@ export default function ProductDetailPage() {
       if(!response.success) {
         throw new Error(response.error || en.failed_to_fetch_data);
       }
-      console.log("product:", response.data.product)
       return response.data.product;
     },
     placeholderData: (prevdata) => prevdata
@@ -93,10 +91,6 @@ export default function ProductDetailPage() {
     loadCategoryData();
   }
 
-  useEffect(() => {
-    console.log( "currentFormData: ", currentFormData)
-  }, [currentFormData])
-
   const hasDataChanged = () => {
     if(
       currentFormData.name != product?.name ||
@@ -125,20 +119,20 @@ export default function ProductDetailPage() {
   }
 
   // react queries
-  const { mutate: activeStatusToggler } = useMutation({
-    mutationFn: (id: string) => toggleActiveStatus(id),
-    onSuccess: (response) => {
-      if (response.success) {
-        queryClient.invalidateQueries({ queryKey: ["products"] });
-        toast.success(en.product_updated_successfully);
-      } else {
-        toast.error(response.error || en.product_update_failed);
-      }
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || en.category_update_failed);
-    },
-  });
+  // const { mutate: activeStatusToggler } = useMutation({
+  //   mutationFn: (id: string) => toggleActiveStatus(id),
+  //   onSuccess: (response) => {
+  //     if (response.success) {
+  //       queryClient.invalidateQueries({ queryKey: ["products"] });
+  //       toast.success(en.product_updated_successfully);
+  //     } else {
+  //       toast.error(response.error || en.product_update_failed);
+  //     }
+  //   },
+  //   onError: (error: Error) => {
+  //     toast.error(error.message || en.category_update_failed);
+  //   },
+  // });
 
   const { mutate: featuredStatustoggler } = useMutation({
     mutationFn: (id: string) => toggleFeaturedStatus(id),
@@ -429,7 +423,6 @@ export default function ProductDetailPage() {
           <Separator className="bg-neutral-400" />
 
           <FieldGroup className="flex lg:flex-row">
-            <IsActiveToggler isActive={product?.isActive} isLoading={isPending} toggler={() => activeStatusToggler(product!.id)} />
             <IsFeaturedToggler isFeatured={product?.isFeatured} isLoading={isPending} toggler={() => featuredStatustoggler(product!.id)} />
             <ProductStatusChanger productStatus={product?.status as ProductStatus} isLoading={isPending} changer={productStatusChanger} />
           </FieldGroup>

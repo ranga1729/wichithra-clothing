@@ -177,7 +177,6 @@ model Product {
   careInstructions   String?       @db.Text
   discountPercentage Decimal       @db.Decimal(5, 2) @default(0) // display-only, for strikethrough pricing
   isFeatured         Boolean       @default(false)
-  isActive           Boolean       @default(true)
   status             ProductStatus @default(DRAFT)
   metaTitle          String?       @db.VarChar(200)
   metaDescription    String?       @db.Text
@@ -194,7 +193,6 @@ model Product {
   productReviews ProductReview[]
 
   @@index([categoryId])
-  @@index([isActive])
   @@index([isFeatured])
   @@index([deletedAt])
   @@index([gender])

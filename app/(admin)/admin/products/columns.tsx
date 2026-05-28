@@ -3,13 +3,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { SimpleProductSchema } from "@/schemas/admin-schemas"
 import { Paginator } from "@/types/table-types"
 import { ColumnDef } from "@tanstack/react-table"
-import { Ellipsis, Eye, Pencil, ToggleLeft, ToggleRight, Trash } from "lucide-react"
+import { Ellipsis, Eye, Pencil, Trash } from "lucide-react"
 
 type ColumnProps = {
   onEdit?: (product: SimpleProductSchema) => void
   onView?: (product: SimpleProductSchema) => void
   onDelete?: (product: SimpleProductSchema) => void
-  toggleActiveStatus?: (product: SimpleProductSchema) => void
   paginator?: Paginator
 }
 
@@ -17,7 +16,6 @@ export const getColumns = ({
   onView,
   onEdit,
   onDelete,
-  toggleActiveStatus,
   paginator
 }: ColumnProps): ColumnDef<SimpleProductSchema>[] => [
   {
@@ -34,6 +32,19 @@ export const getColumns = ({
     accessorKey: "slug",
     id: "slug",
     header: () => { return <div className="text-center">Slug</div> },
+  },
+  {
+    accessorKey: "description",
+    id: "description",
+    header: () => { return <div className="text-center">Description</div> },
+    cell: ({ row }) => {
+      const desc = row.original.description;
+      return (
+        <div className="max-w-48 truncate text-neutral-500 text-sm">
+          {desc ?? <span className="text-neutral-300">—</span>}
+        </div>
+      );
+    },
   },
   {
     id: "categoryName",
@@ -105,25 +116,6 @@ export const getColumns = ({
     },
   },
   {
-    id: "isActive",
-    header: () => { return <div className="text-center">Is Active</div> },
-    cell: ({ row }) => {
-      const value = row.original.isActive;
-      const text = value.toString()
-      return (
-        <div className="flex flex-row items-center justify-center">
-        <p className={`border border-neutral-400 flex w-fit items-center justify-center rounded-full px-3 py-1 text-xs font-medium ${
-            value
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}>
-          {text.charAt(0).toUpperCase() + text.slice(1)}
-        </p>
-        </div>
-      )
-    },
-  },
-  {
     id: "status",
     header: () => { return <div className="text-center">Status</div> },
     cell: ({ row }) => {
@@ -166,19 +158,6 @@ export const getColumns = ({
                     <Trash color="red" />
                   </Button> Delete
                 </DropdownMenuItem>
-                {
-                  row.original.isActive ? 
-                  <DropdownMenuItem onClick={() => toggleActiveStatus && toggleActiveStatus(row.original)} >
-                    <Button variant="ghost" size={'sm'} >
-                      <ToggleLeft color="red" size={'sm'} />
-                    </Button> Deactivate
-                  </DropdownMenuItem> :
-                  <DropdownMenuItem onClick={() => toggleActiveStatus && toggleActiveStatus(row.original)} >
-                    <Button variant="ghost" size={'sm'} >
-                      <ToggleRight color="green" size={'sm'} />
-                    </Button> Active
-                  </DropdownMenuItem>
-                }
               </DropdownMenuGroup>
             </DropdownMenuContent>
             

@@ -183,6 +183,7 @@ export const simpleProductSchema = z.object({
     .min(1, "Slug is required")
     .max(100, "Slug can not exceed 100 characters")
     .transform((val) => val.trim()),
+  description: z.string().nullable(),
   gender: GenderSchema,
   ageGroup: AgeGroupSchema,
   discountPercentage: z
@@ -192,7 +193,6 @@ export const simpleProductSchema = z.object({
     .max(100)
     .default(0),
   isFeatured: z.boolean(),
-  isActive: z.boolean(),
   status: z.enum(ProductStatus),
   category: categorySelectSchema,
 })

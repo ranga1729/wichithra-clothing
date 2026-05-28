@@ -48,9 +48,9 @@ export async function getProducts(paginator: Paginator, filter: ProductFilter):P
         id: true,
         name: true,
         slug: true,
+        description: true,
         discountPercentage: true,
         isFeatured: true,
-        isActive: true,
         status: true,
         category: {
           select: {
@@ -103,6 +103,8 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
   try {
     await requireRole(["admin", "super-admin"]);
 
+    console.log("id:", productId)
+
     const selectedProduct = await prisma.product.findUnique({
       where: {
         id: productId,
@@ -119,7 +121,6 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
         careInstructions: true,
         discountPercentage: true,
         isFeatured: true,
-        isActive: true,
         status: true,
 
         category: {
@@ -192,6 +193,8 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
       },
     });
 
+    console.log(selectedProduct)
+
     const serializedProducts = JSON.parse(JSON.stringify(selectedProduct));
 
     if(!selectedProduct) {
@@ -211,6 +214,7 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
 
   } catch(error:any) {
     if (error instanceof AuthError) throw error;
+    console.log(error)
     return { 
       success: false,
       error: error.message || en.data_retrieval_failed 
@@ -293,63 +297,63 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
   }
 }
 
-export async function toggleActiveStatus(id: string):Promise<ApiResponse> {
-  try {
-    await requireRole(["admin", "super-admin"]);
+// export async function toggleActiveStatus(id: string):Promise<ApiResponse> {
+//   try {
+//     await requireRole(["admin", "super-admin"]);
 
-    const existingProduct = await prisma.product.findUnique({
-      where: {id : id},
-      select: {
-        id: true,
-        isActive: true,
-      }
-    })
+//     const existingProduct = await prisma.product.findUnique({
+//       where: {id : id},
+//       select: {
+//         id: true,
+//         isActive: true,
+//       }
+//     })
 
-    if(!existingProduct) {
-      return {
-        success: false,
-        error: en.product_doesnt_exist
-      };
-    }
+//     if(!existingProduct) {
+//       return {
+//         success: false,
+//         error: en.product_doesnt_exist
+//       };
+//     }
 
-    const updatedProduct = await prisma.product.update({
-      where: { id: existingProduct.id },
-      data: {
-        isActive : !existingProduct.isActive,
-      }
-    });
+//     const updatedProduct = await prisma.product.update({
+//       where: { id: existingProduct.id },
+//       data: {
+//         isActive : !existingProduct.isActive,
+//       }
+//     });
 
-    if (!updatedProduct) {
-      return {
-        success: false,
-        error: en.product_update_failed,
-      };
-    }
+//     if (!updatedProduct) {
+//       return {
+//         success: false,
+//         error: en.product_update_failed,
+//       };
+//     }
 
-    revalidatePath(`/admin/products/${updatedProduct.id}`);
+//     revalidatePath(`/admin/products/${updatedProduct.id}`);
 
-    return {
-      success: true,
-      message: en.product_updated_successfully,
-    };
+//     return {
+//       success: true,
+//       message: en.product_updated_successfully,
+//     };
 
-  } catch(error) {
-    if (error instanceof AuthError) throw error;
-    console.error("Error updating product:", error);
+//   } catch(error) {
+//     if (error instanceof AuthError) throw error;
+//     console.error("Error updating product:", error);
     
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
+//     if (error instanceof Error) {
+//       return {
+//         success: false,
+//         error: error.message,
+//       };
+//     }
     
-    return {
-      success: false,
-      error: en.product_update_failed,
-    };
-  }
-}
+//     return {
+//       success: false,
+//       error: en.product_update_failed,
+//     };
+//   }
+// }
 
 export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
   try {
