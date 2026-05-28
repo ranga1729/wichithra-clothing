@@ -7,9 +7,12 @@ import { Paginator, Sorter } from "@/types/table-types";
 import { DesignSchema, designSchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
+import { AuthError, requireRole } from "@/lib/server-auth-guard";
 
 export async function getDesign(paginator: Paginator, filter: DesignFilter, sorter: Sorter):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const pageSize = Math.max(1, paginator.pageSize);
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
@@ -67,6 +70,7 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
     };
 
   } catch(error:any) {
+    if (error instanceof AuthError) throw error;
     return { 
       success: false,
       error: error.message || en.data_retrieval_failed 
@@ -76,6 +80,8 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
 
 export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const validatedData = designSchema.parse(newDesign);
 
     const existingDesings = await prisma.design.findMany({
@@ -151,6 +157,7 @@ export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse>
       message: en.design_created_successfully,
     };
   } catch (error:any) {
+    if (error instanceof AuthError) throw error;
     console.error("Error creating design:", error.message);
     
     if (error instanceof Error) {
@@ -169,6 +176,8 @@ export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse>
 
 export async function deleteDesign(id: string):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const design = await prisma.design.findUnique({
       where: {id : id},
       select: {
@@ -206,6 +215,7 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
       message: en.design_deleted_successfully
     }
   } catch(error:any) {
+    if (error instanceof AuthError) throw error;
     console.error("Error deleting design:", error.message);
     
     if (error instanceof Error) {
@@ -224,6 +234,8 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
 
 export async function updateDesignById(id: string, updatedDesign: DesignSchema): Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+    
     const validatedData = designSchema.parse(updatedDesign);
 
     const existingDesign = await prisma.design.findUnique({
@@ -317,6 +329,7 @@ export async function updateDesignById(id: string, updatedDesign: DesignSchema):
       data: { design: design }
     };
   } catch (error) {
+    if (error instanceof AuthError) throw error;
     console.error("Error updating design:", error);
     
     if (error instanceof Error) {

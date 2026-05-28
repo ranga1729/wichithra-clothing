@@ -10,9 +10,12 @@ import { CategorySchema, categorySchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
 import { SUPABASE_BUCKET, SUPABASE_FOLDERS, moveTempToPermanent, deleteImage } from "@/components/providers/supabase/storage";
+import { AuthError, requireRole } from "@/lib/server-auth-guard";
 
 export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const pageSize = Math.max(1, paginator.pageSize);
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
@@ -73,6 +76,7 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
     };
 
   } catch(error:any) {
+    if (error instanceof AuthError) throw error;
     return { 
       success: false,
       error: error.message || en.data_retrieval_failed 
@@ -82,6 +86,8 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
 
 export async function createCategory(newCategory: CategorySchema):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const validatedData = categorySchema.parse(newCategory);
     let sizeGuidePath: string | undefined = undefined;
 
@@ -191,6 +197,7 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
       message: en.category_created_successfully,
     };
   } catch (error) {
+    if (error instanceof AuthError) throw error;
     console.error(en.failed_to_create_category + ": ", error);
     
     if (error instanceof Error) {
@@ -209,6 +216,8 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
 
 export async function deleteCategoryById(id: string):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const category = await prisma.category.findUnique({
       where: {id : id, ...notDeleted},
       select: {
@@ -263,6 +272,7 @@ export async function deleteCategoryById(id: string):Promise<ApiResponse> {
       message: en.category_deleted
     }
   } catch(error) {
+    if (error instanceof AuthError) throw error;
     console.error(en.Failed_to_delete_category + ": ", error);
     
     if (error instanceof Error) {
@@ -281,6 +291,8 @@ export async function deleteCategoryById(id: string):Promise<ApiResponse> {
 
 export async function updateCategoryById(id: string, updatedData: CategorySchema): Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const validatedData = categorySchema.parse(updatedData);
 
     const existingCategory = await prisma.category.findUnique({
@@ -393,6 +405,7 @@ export async function updateCategoryById(id: string, updatedData: CategorySchema
     return { success: true, message: en.category_updated_successfully, data: { updatedCategory } };
 
   } catch (error) {
+    if (error instanceof AuthError) throw error;
     console.error(en.failed_to_update_category + ": ", error);
     if (error instanceof Error) return { success: false, error: error.message };
     return { success: false, error: en.failed_to_update_category };
@@ -401,6 +414,8 @@ export async function updateCategoryById(id: string, updatedData: CategorySchema
 
 export async function toggleActiveStatusById(id: string): Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const existingCategory = await prisma.category.findUnique({
       where: { id: id, ...notDeleted},
       select: {
@@ -441,6 +456,7 @@ export async function toggleActiveStatusById(id: string): Promise<ApiResponse> {
     };
 
   } catch(error) {
+    if (error instanceof AuthError) throw error;
     console.error( en.failed_to_update_category + ": ", error);
 
     return {
@@ -452,6 +468,8 @@ export async function toggleActiveStatusById(id: string): Promise<ApiResponse> {
 
 export async function getCategorySelectorData():Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+    
     const categories = await prisma.category.findMany({
       where: {
         ...notDeleted,
@@ -479,6 +497,7 @@ export async function getCategorySelectorData():Promise<ApiResponse> {
       data: categories
     }
   } catch(error) {
+    if (error instanceof AuthError) throw error;
     console.error("Error updating product:", error);
     
     if (error instanceof Error) {

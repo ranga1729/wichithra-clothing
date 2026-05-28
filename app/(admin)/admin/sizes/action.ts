@@ -3,10 +3,12 @@
 import { en } from "@/lib/i18n/en";
 import { prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
-import { Paginator } from "@/types/table-types";
+import { AuthError, requireRole } from "@/lib/server-auth-guard";
 
 export async function getSizes():Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+    
     const sizes = await prisma.size.findMany({
       select: {
         id: true,
@@ -35,6 +37,7 @@ export async function getSizes():Promise<ApiResponse> {
     };
 
   } catch(error:any) {
+    if (error instanceof AuthError) throw error;
     return { 
       success: false,
       error: error.message || en.data_retrieval_failed 

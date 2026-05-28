@@ -7,9 +7,12 @@ import { ApiResponse } from "@/types/auth-types";
 import { ColorFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { revalidatePath } from "next/cache";
+import { AuthError, requireRole } from "@/lib/server-auth-guard";
 
 export async function getColors(paginator: Paginator, filter: ColorFilter):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const pageSize = Math.max(1, paginator.pageSize);
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
@@ -61,6 +64,7 @@ export async function getColors(paginator: Paginator, filter: ColorFilter):Promi
     };
 
   } catch(error:any) {
+    if (error instanceof AuthError) throw error;
     return { 
       success: false,
       error: error.message || en.data_retrieval_failed 
@@ -70,6 +74,7 @@ export async function getColors(paginator: Paginator, filter: ColorFilter):Promi
 
 export async function createColor(data: ColorSchema):Promise<ApiResponse> {
   try{ 
+    await requireRole(["admin", "super-admin"]);
     const validatedData = colorSchema.parse(data);
 
     const existingColor = await prisma.color.findUnique({
@@ -138,6 +143,7 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
       message: en.color_created_successfully,
     };
   } catch(error: any) {
+    if (error instanceof AuthError) throw error;
     console.error("Error creating color:", error.message);
     
     if (error instanceof Error) {
@@ -156,6 +162,8 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
 
 export async function deleteColorById(id: string):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const color = await prisma.color.findUnique({
       where: { id: id , ...notDeleted},
       select: {
@@ -195,6 +203,7 @@ export async function deleteColorById(id: string):Promise<ApiResponse> {
       message: en.color_deleted_successfully
     }
   } catch(error:any) {
+    if (error instanceof AuthError) throw error;
     console.error("Error deleting color:", error.message);
     
     if (error instanceof Error) {
@@ -213,6 +222,8 @@ export async function deleteColorById(id: string):Promise<ApiResponse> {
 
 export async function updateColorById(id: string, data: ColorSchema):Promise<ApiResponse> {
  try {
+  await requireRole(["admin", "super-admin"]);
+
   const validatedData = colorSchema.parse(data);
  
   const color = await prisma.color.findUnique({
@@ -285,6 +296,7 @@ export async function updateColorById(id: string, data: ColorSchema):Promise<Api
   }
 
  } catch(error: any) {
+  if (error instanceof AuthError) throw error;
   console.error("Error updating color:", error.message);
     
     if (error instanceof Error) {
@@ -303,6 +315,8 @@ export async function updateColorById(id: string, data: ColorSchema):Promise<Api
 
 export async function getColorSelectorData():Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+    
     const colors = await prisma.color.findMany({
       where: {
         ...notDeleted,
@@ -330,6 +344,7 @@ export async function getColorSelectorData():Promise<ApiResponse> {
       data: colors
     }
   } catch(error) {
+    if (error instanceof AuthError) throw error;
     console.error("Error updating product:", error);
     
     if (error instanceof Error) {

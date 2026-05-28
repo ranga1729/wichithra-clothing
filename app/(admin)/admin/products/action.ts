@@ -8,9 +8,12 @@ import { ApiResponse } from "@/types/auth-types";
 import { ProductFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { revalidatePath } from "next/cache";
+import { AuthError, requireRole } from "@/lib/server-auth-guard";
 
 export async function getProducts(paginator: Paginator, filter: ProductFilter):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const pageSize = Math.max(1, paginator.pageSize);
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
@@ -99,6 +102,7 @@ export async function getProducts(paginator: Paginator, filter: ProductFilter):P
     };
 
   } catch(error:any) {
+    if (error instanceof AuthError) throw error;
     return { 
       success: false,
       error: error.message || en.data_retrieval_failed 
@@ -108,6 +112,8 @@ export async function getProducts(paginator: Paginator, filter: ProductFilter):P
 
 export async function getProductById(productId: string):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const selectedProduct = await prisma.product.findUnique({
       where: {
         id: productId,
@@ -224,6 +230,7 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
     };
 
   } catch(error:any) {
+    if (error instanceof AuthError) throw error;
     return { 
       success: false,
       error: error.message || en.data_retrieval_failed 
@@ -233,6 +240,8 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
 
 export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const validatedData = basicProductInfoSchema.parse(data);
 
     const existingProduct = await prisma.product.findUnique({
@@ -289,6 +298,7 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
     };
 
   } catch(error) {
+    if (error instanceof AuthError) throw error;
     console.error("Error updating product:", error);
     
     if (error instanceof Error) {
@@ -307,6 +317,8 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
 
 export async function toggleActiveStatus(id: string):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const existingProduct = await prisma.product.findUnique({
       where: {id : id},
       select: {
@@ -344,6 +356,7 @@ export async function toggleActiveStatus(id: string):Promise<ApiResponse> {
     };
 
   } catch(error) {
+    if (error instanceof AuthError) throw error;
     console.error("Error updating product:", error);
     
     if (error instanceof Error) {
@@ -362,6 +375,8 @@ export async function toggleActiveStatus(id: string):Promise<ApiResponse> {
 
 export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const existingProduct = await prisma.product.findUnique({
       where: {id : id},
       select: {
@@ -399,6 +414,7 @@ export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
     };
 
   } catch(error) {
+    if (error instanceof AuthError) throw error;
     console.error("Error updating product:", error);
     
     if (error instanceof Error) {
@@ -417,6 +433,8 @@ export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
 
 export async function changeProductStatus(id: string, newStatus: ProductStatus):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const validation = ProductStatusSchema.safeParse(newStatus);
 
     if (!validation.success) {
@@ -465,6 +483,7 @@ export async function changeProductStatus(id: string, newStatus: ProductStatus):
     };
 
   } catch(error) {
+    if (error instanceof AuthError) throw error;
     console.error("Error updating product:", error);
     
     if (error instanceof Error) {
@@ -482,7 +501,9 @@ export async function changeProductStatus(id: string, newStatus: ProductStatus):
 }
 
 export async function changeProductSizes(productId: string, newSizes: string[]):Promise<ApiResponse> {
-  try {    
+  try {
+    await requireRole(["admin", "super-admin"]);
+
     const existingProduct = await prisma.product.findUnique({
       where: {id : productId},
       select: {
@@ -529,6 +550,7 @@ export async function changeProductSizes(productId: string, newSizes: string[]):
     };
 
   } catch(error) {
+    if (error instanceof AuthError) throw error;
     console.error("Error updating product:", error);
     
     if (error instanceof Error) {
@@ -547,6 +569,8 @@ export async function changeProductSizes(productId: string, newSizes: string[]):
 
 export async function createNewProduct(data: BasicProductInfoSchema):Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+
     const validatedData = basicProductInfoSchema.parse(data);
     console.log(validatedData)
 
@@ -619,11 +643,22 @@ export async function createNewProduct(data: BasicProductInfoSchema):Promise<Api
       }
     });
 
+    if(!product) {
+      return {
+        success: false,
+        message: en.failed_to_create_product
+      }
+    } 
+
+    revalidatePath("/admin/products");
+
     return {
       success: true,
       data: validatedData
     }
+
   } catch(error) {
+    if (error instanceof AuthError) throw error;
     console.error("Error creating product:", error);
     
     if (error instanceof Error) {

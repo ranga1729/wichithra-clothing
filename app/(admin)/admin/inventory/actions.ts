@@ -5,9 +5,12 @@ import { notDeleted, prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
 import { InventoryFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
+import { AuthError, requireRole } from "@/lib/server-auth-guard";
 
 export async function getInventory(paginator: Paginator, filter: InventoryFilter): Promise<ApiResponse> {
   try {
+    await requireRole(["admin", "super-admin"]);
+    
     const pageSize = Math.max(1, paginator.pageSize);
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
@@ -93,6 +96,7 @@ export async function getInventory(paginator: Paginator, filter: InventoryFilter
       },
     };
   } catch (error: any) {
+    if (error instanceof AuthError) throw error;
     return {
       success: false,
       error: error.message || en.inventory_data_retrieval_failed,

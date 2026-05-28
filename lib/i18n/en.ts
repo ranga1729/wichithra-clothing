@@ -2,6 +2,10 @@ export const en = {
   token_name: "wichithra-token",
   country_code: "+94",
 
+  unauthorized_not_logged_in: "You must be logged in to perform this action.",
+  unauthorized_invalid_token: "Your session is invalid or has expired. Please log in again.",
+  forbidden_insufficient_permissions: "You are not authorized to perform this action.",
+
   save: "Save",
   cancel: "Cancel",
   delete: "Delete",
