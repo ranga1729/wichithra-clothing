@@ -26,7 +26,7 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
 
     const hashedPassword = await hashPassword(validatedData.password)
 
-    const phoneNumbersToCreate = [
+    const phoneNumbersToCreate: { phoneNumber: string; type: PhoneType }[] = [
       {
         phoneNumber: validatedData.mobilePhoneNumber,
         type: PhoneType.MOBILE
@@ -42,10 +42,10 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
 
     const user = await prisma.user.create({
       data: {
-        email: validatedData.email,
-        passwordHash: hashedPassword,
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
+        email: validatedData.email,
+        passwordHash: hashedPassword,
         phoneNumbers: {
           create: phoneNumbersToCreate,
         },
@@ -69,6 +69,13 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
         role: true,
       }
     })
+
+    if(!user) {
+      return {
+        success: false,
+        message: en.registration_failed,
+      }
+    }
     
     const token = generateToken({
       userId: user.id,

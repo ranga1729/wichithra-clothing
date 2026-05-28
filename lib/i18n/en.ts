@@ -154,4 +154,7 @@ export const en = {
 
   inventory_data_retrieval_failed: "Failed to fetch inventory data",
   failed_to_load_inventory_filter_data: "Failed to load inventory filter data",
+
+  logged_out_successfully: "Logged out successfully",
+  logout_failed: "Logout failed"
 }

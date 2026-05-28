@@ -2,7 +2,6 @@
 
 import { CustomerForm } from "@/components/custom/auth/customer-form";
 import { AddressForm } from "@/components/custom/auth/address-form";
-import { useState } from "react";
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,10 +20,10 @@ import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
 import { ThemeToggler } from "@/components/providers/theme/theme-toggler";
 import { en } from "@/lib/i18n/en";
+import { useMutation } from "@tanstack/react-query";
 
 export default function Register() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   
   const form = useForm<RegistrationForm>({
     resolver: zodResolver(registrationSchema),
@@ -46,37 +45,34 @@ export default function Register() {
     }
   })
 
-  const onSubmit = async () => {
-    const isValid = await form.trigger()
-
-    if(isValid) {
-      const data = form.getValues()
-
-      setIsSubmitting(true);
-
-      try {
-        const result = await registerUser(data);
-
-        if(result.success && result.message) {
-          toast.success(result.message)
-          router.push("/");
-        } else {
-          toast.error(result.message || en.registration_failed);
-        }
-      } catch(error:any) {
-        toast.error(error.message || en.registration_failed);
-      } finally {
-        setIsSubmitting(false);
+  const { mutate: register, isPending } = useMutation({
+    mutationFn: (data: RegistrationForm) => registerUser(data),
+    onSuccess: (result) => {
+      if (result.success && result.message) {
+        toast.success(result.message);
+        router.push("/");
+      } else {
+        toast.error(result.message || en.registration_failed);
       }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.registration_failed);
+    }
+  });
+
+  const onSubmit = async () => {
+    const isValid = await form.trigger();
+    if (isValid) {
+      register(form.getValues());
     } else {
       toast.error(en.fill_all_required_fileds);
     }
   }
 
   return (
-    <div className="flex flex-col gap-5 min-h-svh items-center justify-center px-15 py-10 md:px-30 md:py-5">
+    <div className="flex flex-col gap-5 border bg-neutral-800 min-h-svh items-center justify-center px-15 py-10 md:px-30 md:py-5">
       <Image src={logo} alt={"Logo"} height={80} width={80} />
-      <Card className="w-full">
+      <Card className="max-w-5xl w-5xl">
         <CardHeader className="flex flex-col items-center justify-start" >
           <ThemeToggler />
           <CardTitle className="text-center"> {en.register_title} </CardTitle>
@@ -95,8 +91,8 @@ export default function Register() {
           </FieldGroup>
           <FieldGroup className="flex items-center">
             <Field className="w-1/2">
-              <Button disabled={isSubmitting} size={"lg"} type="button" onClick={onSubmit}> 
-                {isSubmitting ? 
+              <Button disabled={isPending} size={"lg"} type="button" onClick={onSubmit}> 
+                {isPending ? 
                   <>
                     <LoaderCircle className="animate-spin w-8 h-8" /> {en.loading}
                   </> : <>
@@ -105,7 +101,7 @@ export default function Register() {
                 }
               </Button>
               <FieldDescription className="text-center">
-                {en.already_have_an_account} <Link href="login"> {en.signin} </Link>
+                {en.already_have_an_account} <Link href="/auth/login"> {en.signin} </Link>
               </FieldDescription>
             </Field>
           </FieldGroup>

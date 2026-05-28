@@ -8,8 +8,15 @@ const PROTECTED_ROUTES : Record<string, ReadonlyArray<UserRole>> = {
   '/admin': ['admin', 'super-admin'],
 } as const;
 
+const AUTH_ROUTES = ['/login', '/register'];
+
 function getRequiredRoles(pathname: string): ReadonlyArray<UserRole> {
-  return PROTECTED_ROUTES[pathname] || [];
+  for (const route of Object.keys(PROTECTED_ROUTES)) {
+    if (pathname === route || pathname.startsWith(route + '/')) {
+      return PROTECTED_ROUTES[route];
+    }
+  }
+  return [];
 }
 
 export function proxy(request: NextRequest) {
@@ -24,7 +31,7 @@ export function proxy(request: NextRequest) {
   }
 
   if(!token) {
-    const loginUrl = new URL('/login', request.url);
+    const loginUrl = new URL('/auth/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl)
   }
@@ -33,7 +40,7 @@ export function proxy(request: NextRequest) {
     const decoded = jwtDecode<JwtPayload>(token);
 
     if(decoded.exp && decoded.exp * 1000 < Date.now()) {
-      const loginUrl = new URL('/login', request.url);
+      const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
 
       //make the error page/login page read search params send by here. show a toast then.
@@ -52,7 +59,7 @@ export function proxy(request: NextRequest) {
 
     return NextResponse.next();
   } catch(error) {
-    const loginUrl = new URL('/login', request.url);
+    const loginUrl = new URL('/auth/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     loginUrl.searchParams.set('error', 'invalid-token');
     

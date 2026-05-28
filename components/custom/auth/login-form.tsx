@@ -21,12 +21,12 @@ import { en } from "@/lib/i18n/en"
 interface Props {
   form: UseFormReturn<Login_Form>,
   onSubmit: () => void,
+  isPending: boolean
 }
 
 export const LoginForm = (props: Props) => {
   const [passwordVisibility, setPasswordVisibility] = useState<boolean>(false)
-
-  const { register, formState: {errors, isSubmitting} } = props.form
+  const { register, formState: {errors} } = props.form
 
   return (
     <Card className="w-full">
@@ -96,7 +96,7 @@ export const LoginForm = (props: Props) => {
 
             <Field>
               <Button type="button" size={"lg"} onClick={props.onSubmit}>
-                {isSubmitting ? <><LoaderCircle className="animate-spin w-12 h-12"/> {en.loading} </> : <>{en.login}</> } 
+                {props.isPending ? <><LoaderCircle className="animate-spin w-12 h-12"/> {en.loading} </> : <>{en.login}</> } 
               </Button>
             </Field>
 
@@ -113,7 +113,7 @@ export const LoginForm = (props: Props) => {
               </Button> */}
               <FieldDescription className="text-center">
                 {en.dont_have_an_account} {" "}
-                <Link className="underline underline-offset-4" href={"/register"}>
+                <Link className="underline underline-offset-4" href={"/auth/register"}>
                   {en.signup}
                 </Link>
               </FieldDescription>

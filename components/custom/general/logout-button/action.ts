@@ -1,13 +1,9 @@
 'use server'
 
+import { en } from "@/lib/i18n/en";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 const TOKEN_NAME = process.env.TOKEN_NAME!;
-
-interface Props {
-  redirectUrl?: string;
-}
 
 export async function logoutAction() {
   try {
@@ -16,12 +12,12 @@ export async function logoutAction() {
 
     return {
       success: true,
-      message: "Logged out successfully"
+      message: en.logged_out_successfully
     }
   } catch(error) {
     return {
       success: false,
-      message: "Logout failed"
+      message: en.logout_failed
     }
   }
 }

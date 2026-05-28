@@ -14,6 +14,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useMutation } from "@tanstack/react-query";
+import { en } from "@/lib/i18n/en";
 
 interface Props {
   redirectTo?: string;
@@ -21,22 +23,22 @@ interface Props {
 
 export default function Logout() {
   const [open, setOpen] = useState<boolean>(false);
-  const [isPending, startTransition] = useTransition()
   const router = useRouter();
 
-  const handleLogout = () => {
-    startTransition(async () => {
-      const result = await logoutAction();
-
-      if(result.success) {
-        toast.success(result.message);
-        setOpen(false);
-        router.push('/login');
+  const {mutate: logout, isPending} = useMutation({
+    mutationFn: () => logoutAction(),
+    onSuccess: (result) => {
+      if (result.success && result.message) {
+        toast.success(result.message || en.logged_out_successfully);
+        router.push("/auth/login");
       } else {
-        toast.error(result.message)
+        toast.error(result.message || en.logout_failed);
       }
-    })
-  }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.logout_failed);
+    }
+  });
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
@@ -65,7 +67,7 @@ export default function Logout() {
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction 
-            onClick={handleLogout}
+            onClick={() => logout()}
             disabled={isPending}
             className="bg-red-500 hover:bg-red-600 text-neutral-900 hover:text-neutral-100 dark:bg-red-500 dark:hover:bg-red-600 dark:text-neutral-900 dark:hover:text-neutral-100"
           >

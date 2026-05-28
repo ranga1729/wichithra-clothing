@@ -65,6 +65,7 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          role: user.role.name,
         },
         token
       }
