@@ -104,8 +104,7 @@ model Category {
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
   // Relationships
-  products        Product[]
-  categoryDesigns CategoryDesign[]
+  products Product[]
 
   @@index([deletedAt])
   @@map("categories")
@@ -122,41 +121,25 @@ model Design {
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
   // Relationships
-  categoryDesigns CategoryDesign[]
-  productDesigns  ProductDesign[]
+  productDesigns ProductDesign[]
 
   @@index([deletedAt])
   @@map("designs")
 }
 
-model CategoryDesign {
-  id         String   @id @default(uuid()) @db.Uuid
-  categoryId String   @db.Uuid
-  designId   String   @db.Uuid
-  deletedAt  DateTime? @db.Timestamptz(6)
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-
-  // Relationships
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  design   Design   @relation(fields: [designId], references: [id], onDelete: Cascade)
-
-  @@unique([categoryId, designId])
-  @@index([deletedAt])
-  @@map("category_designs")
-}
 
 model Color {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String   @unique @db.VarChar(50)
-  hexCode   String  @db.Char(6)
-  isActive  Boolean  @default(true)
-  deletedAt DateTime? @db.Timestamptz(6)
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  id             String    @id @default(uuid()) @db.Uuid
+  name           String    @unique @db.VarChar(50)
+  hexCode        String?   @db.Char(6)
+  swatchImageUrl String?   @db.VarChar(500)
+  isActive       Boolean   @default(true)
+  deletedAt      DateTime? @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(6)
 
   // Relationships
-  products      Product[]      @relation("ProductMainColor")
-  productColors ProductColor[]
+  variants      ProductVariant[]
   productImages ProductImage[]
 
   @@index([deletedAt])
@@ -164,55 +147,51 @@ model Color {
 }
 
 model Size {
-  id           String   @id @default(uuid()) @db.Uuid
-  name         String   @unique @db.VarChar(10) // 'XS', 'S', 'M', 'L', 'XL', 'XXL', etc.
-  description  String?  @db.VarChar(50) // 'Extra Small', 'Small', 'Medium', etc.
-  sortOrder    Int      @default(0)
-  isActive     Boolean  @default(true)
-  deletedAt    DateTime? @db.Timestamptz(6)
-  createdAt    DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @unique @db.VarChar(10) // 'XS', 'S', 'M', 'L', 'XL', 'XXL', etc.
+  description String?   @db.VarChar(50) // 'Extra Small', 'Small', 'Medium', etc.
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  deletedAt   DateTime? @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
 
   // Relationships
-  productSizes ProductSize[]
+  variants ProductVariant[]
 
   @@index([deletedAt])
   @@map("sizes")
 }
 
 model Product {
-  id                 String          @id @default(uuid()) @db.Uuid
-  name               String          @db.VarChar(200)
-  slug               String          @unique @db.VarChar(200)
-  description        String?         @db.Text
-  categoryId         String          @db.Uuid
-  sizeGuide          String?         @db.VarChar(500) // overrides Category.sizeGuide when set
-  gender             GenderTarget    @default(UNISEX)
-  ageGroup           AgeGroup        @default(ADULT)
-  brand              String?         @db.VarChar(100) @default("Wichithra")
-  material           String?         @db.VarChar(200)
-  careInstructions   String?         @db.Text
-  basePrice          Decimal         @db.Decimal(10, 2) @default(0)
-  discountPercentage Decimal         @db.Decimal(5, 2) @default(0)
-  mainColorId        String?         @db.Uuid
-  isFeatured         Boolean         @default(false)
-  isActive           Boolean         @default(true)
-  status             ProductStatus   @default(DRAFT)
-  metaTitle          String?         @db.VarChar(200)
-  metaDescription    String?         @db.Text
-  deletedAt          DateTime?       @db.Timestamptz(6)
-  createdAt          DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime        @updatedAt @db.Timestamptz(6)
+  id                 String        @id @default(uuid()) @db.Uuid
+  name               String        @db.VarChar(200)
+  slug               String        @unique @db.VarChar(200)
+  description        String?       @db.Text
+  categoryId         String        @db.Uuid
+  sizeGuide          String?       @db.VarChar(500) // overrides Category.sizeGuide when set
+  gender             GenderTarget  @default(UNISEX)
+  ageGroup           AgeGroup      @default(ADULT)
+  brand              String?       @db.VarChar(100) @default("Wichithra")
+  material           String?       @db.VarChar(200)
+  careInstructions   String?       @db.Text
+  discountPercentage Decimal       @db.Decimal(5, 2) @default(0) // display-only, for strikethrough pricing
+  isFeatured         Boolean       @default(false)
+  isActive           Boolean       @default(true)
+  status             ProductStatus @default(DRAFT)
+  metaTitle          String?       @db.VarChar(200)
+  metaDescription    String?       @db.Text
+  deletedAt          DateTime?     @db.Timestamptz(6)
+  createdAt          DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime      @updatedAt @db.Timestamptz(6)
 
   // Relationships
-  category       Category       @relation(fields: [categoryId], references: [id])
-  mainColor      Color?         @relation("ProductMainColor", fields: [mainColorId], references: [id])
+  category       Category         @relation(fields: [categoryId], references: [id])
+  variants       ProductVariant[]
   productDesigns ProductDesign[]
-  productColors  ProductColor[]
   productImages  ProductImage[]
-  productSizes   ProductSize[]
-  inventory Inventory[]
-  productTags ProductTag[]
+  productTags    ProductTag[]
+  productReviews ProductReview[]
 
   @@index([categoryId])
   @@index([isActive])
@@ -221,26 +200,32 @@ model Product {
   @@index([gender])
   @@index([ageGroup])
   @@map("products")
-  productReviews ProductReview[]
 }
 
-model ProductSize {
-  id        String   @id @default(uuid()) @db.Uuid
-  productId String   @db.Uuid
-  sizeId    String   @db.Uuid
-  isActive  Boolean  @default(true) // Can temporarily disable a size for a product
-  deletedAt DateTime? @db.Timestamptz(6)
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+model ProductVariant {
+  id           String    @id @default(uuid()) @db.Uuid
+  productId    String    @db.Uuid
+  colorId      String    @db.Uuid
+  sizeId       String    @db.Uuid
+  sku          String    @unique @db.VarChar(100)
+  costPrice    Decimal?  @db.Decimal(10, 2)
+  sellingPrice Decimal   @db.Decimal(10, 2)
+  isMainColor  Boolean   @default(false) // marks the default color shown on the product listing page
+  isActive     Boolean   @default(true)
+  deletedAt    DateTime? @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime  @updatedAt @db.Timestamptz(6)
 
   // Relationships
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  size    Size    @relation(fields: [sizeId], references: [id])
-  inventory Inventory[]
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color     Color      @relation(fields: [colorId], references: [id])
+  size      Size       @relation(fields: [sizeId], references: [id])
+  inventory Inventory?
 
-  @@unique([productId, sizeId])
+  @@unique([productId, colorId, sizeId])
   @@index([productId])
-  @@map("product_sizes")
+  @@index([deletedAt])
+  @@map("product_variants")
 }
 
 model ProductDesign {
@@ -259,24 +244,6 @@ model ProductDesign {
   @@map("product_designs")
 }
 
-model ProductColor {
-  id               String   @id @default(uuid()) @db.Uuid
-  productId        String   @db.Uuid
-  colorId          String   @db.Uuid
-  additionalPrice  Decimal? @default(0) @db.Decimal(10, 2)
-  deletedAt        DateTime? @db.Timestamptz(6)
-  createdAt        DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt        DateTime @updatedAt @db.Timestamptz(6)
-
-  // Relationships
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  color   Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
-  inventory Inventory[]
-
-  @@unique([productId, colorId])
-  @@index([deletedAt])
-  @@map("product_colors")
-}
 
 model ProductImage {
   id        String   @id @default(uuid()) @db.Uuid
@@ -337,28 +304,19 @@ model ReviewImage {
 }
 
 model Inventory {
-  id                 String   @id @default(uuid()) @db.Uuid
-  productId          String   @db.Uuid
-  productSizeId      String   @db.Uuid
-  productColorId     String   @db.Uuid
-  sku                String   @unique @db.VarChar(100)
-  quantity           Int      @default(0)
-  reservedQuantity   Int      @default(0)
-  lowStockThreshold  Int?     @default(5)
-  costPrice          Decimal? @db.Decimal(10, 2)
-  deletedAt          DateTime? @db.Timestamptz(6)
-  createdAt          DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime @updatedAt @db.Timestamptz(6)
+  id                String    @id @default(uuid()) @db.Uuid
+  variantId         String    @unique @db.Uuid
+  quantity          Int       @default(0)
+  reservedQuantity  Int       @default(0)
+  lowStockThreshold Int?      @default(5)
+  deletedAt         DateTime? @db.Timestamptz(6)
+  createdAt         DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(6)
 
   // Relationships
-  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productSize    ProductSize    @relation(fields: [productSizeId], references: [id])
-  productColor   ProductColor   @relation(fields: [productColorId], references: [id])
+  variant        ProductVariant  @relation(fields: [variantId], references: [id])
   stockMovements StockMovement[]
 
-  @@unique([productSizeId, productColorId])
-  @@index([productId])
-  @@index([sku])
   @@index([quantity, lowStockThreshold])
   @@index([deletedAt])
   @@map("inventory")
