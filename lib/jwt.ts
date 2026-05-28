@@ -1,5 +1,6 @@
+import { JwtPayload } from "@/types/auth-types";
 import * as jwt from "jsonwebtoken"
-import { JwtPayload } from "../../types/auth";
+import { jwtDecode } from "jwt-decode";
 
 const JWT_SECRET = process.env.JWT_SECRET! as jwt.Secret;
 const JWT_EXPIRE_IN = process.env.JWT_EXPIRE_IN || 60*60*24*7;
@@ -29,4 +30,19 @@ export function extractTokenFromHeader(authHeader: string | null): string | null
     return null;
   }
   return authHeader.substring(7)
+}
+
+export function decodeToken(token: string): JwtPayload|null {
+  try {
+    const decoded = jwtDecode<JwtPayload>(token)
+
+    // Check if token is expired
+    if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+      return null;
+    }
+
+    return decoded;
+  } catch(error) {
+    return null;
+  }
 }

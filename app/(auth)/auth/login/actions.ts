@@ -4,8 +4,8 @@ import { en } from "@/lib/i18n/en";
 import { prisma } from "@/lib/prisma";
 import { LoginForm, loginSchema } from "@/schemas/auth-schemas";
 import { ApiResponse, AuthResponse } from "@/types/auth-types";
-import { generateToken } from "@/utils/jwt";
-import { comparePassword } from "@/utils/passwordHashing";
+import { generateToken } from "@/lib/jwt";
+import { comparePassword } from "@/lib/passwordHashing";
 import { cookies } from "next/headers";
 import { ZodError } from "zod";
 
