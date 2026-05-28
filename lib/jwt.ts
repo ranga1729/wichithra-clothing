@@ -3,7 +3,7 @@ import * as jwt from "jsonwebtoken"
 import { jwtDecode } from "jwt-decode";
 
 const JWT_SECRET = process.env.JWT_SECRET! as jwt.Secret;
-const JWT_EXPIRE_IN = process.env.JWT_EXPIRE_IN || 60*60*24*7;
+const JWT_EXPIRE_IN = (process.env.JWT_EXPIRE_IN || 60 * 60 * 24 * 7) as jwt.SignOptions["expiresIn"];
 
 if(!JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined in environment variables")
