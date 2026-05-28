@@ -54,9 +54,17 @@ export const colorSchema = z.object({
     .min(1, "Name is required")
     .max(100, "Name can not exceed 100 characters")
     .transform((val) => val.trim()),
-  hexCode : z
-    .string("Enter a valid color code")
-    .length(6, "Color code must have 6 digits"),
+  hexCode: z
+    .string()
+    .length(6, "Color code must have 6 digits")
+    .optional()
+    .or(z.literal(""))
+    .transform((val) => val === "" ? undefined : val),
+  swatchImageUrl: z
+    .url()
+    .optional()
+    .or(z.literal(""))
+    .transform((val) => val === "" ? undefined : val),
 })
 
 //for products page
@@ -81,7 +89,8 @@ const colorSelectSchema = z.object({
     .min(1, "Name is required")
     .max(100, "Name can not exceed 100 characters")
     .transform((val) => val.trim()),
-  hexCode: z.string().length(6),
+  hexCode: z.string().length(6).nullable(),
+  swatchImageUrl: z.string().nullable().optional(),
 });
 
 const designSelectSchema = z.object({
@@ -100,14 +109,6 @@ const productDesignSchema = z.object({
   design: designSelectSchema
 });
 
-const productColorSchema = z.object({
-  id: z.uuid(),
-  productId: z.uuid(),
-  colorId: z.uuid(),
-  additionalPrice: z.coerce.number().nullable(),
-  color: colorSelectSchema,
-});
-
 const productImageSchema = z.object({
   id: z.uuid(),
   productId: z.uuid(),
@@ -117,17 +118,25 @@ const productImageSchema = z.object({
   sortOrder: z.number().int(),
 });
 
-const productSizeSchema = z.object({
+const variantSizeSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  description: z.string().nullable(),
+  sortOrder: z.number().int(),
+});
+
+const variantSchema = z.object({
   id: z.uuid(),
   productId: z.uuid(),
+  colorId: z.uuid(),
   sizeId: z.uuid(),
+  sku: z.string(),
+  costPrice: z.coerce.number().nullable(),
+  sellingPrice: z.coerce.number(),
+  isMainColor: z.boolean(),
   isActive: z.boolean(),
-  size: z.object({
-    id: z.uuid(),
-    name: z.string(),
-    description: z.string().nullable(),
-    sortOrder: z.number().int(),
-  }),
+  color: colorSelectSchema,
+  size: variantSizeSchema,
 });
 
 export const productSchema = z.object({
@@ -146,11 +155,6 @@ export const productSchema = z.object({
   brand: z.string().nullable(),
   material: z.string().nullable(),
   careInstructions: z.string().nullable(),
-  basePrice: z
-    .coerce
-    .number()
-    .min(0)
-    .default(0),
   discountPercentage: z
     .coerce
     .number()
@@ -162,11 +166,9 @@ export const productSchema = z.object({
   status: z.enum(ProductStatus),
 
   category: categorySelectSchema,
-  mainColor: colorSelectSchema.nullable(),
   productDesigns: z.array(productDesignSchema),
-  productColors: z.array(productColorSchema),
   productImages: z.array(productImageSchema),
-  productSizes: z.array(productSizeSchema),
+  variants: z.array(variantSchema),
 });
 
 export const simpleProductSchema = z.object({
@@ -183,11 +185,6 @@ export const simpleProductSchema = z.object({
     .transform((val) => val.trim()),
   gender: GenderSchema,
   ageGroup: AgeGroupSchema,
-  basePrice: z
-    .coerce
-    .number()
-    .min(0)
-    .default(0),
   discountPercentage: z
     .coerce
     .number()
@@ -198,7 +195,6 @@ export const simpleProductSchema = z.object({
   isActive: z.boolean(),
   status: z.enum(ProductStatus),
   category: categorySelectSchema,
-  mainColor: colorSelectSchema.nullable(),
 })
 
 export const basicProductInfoSchema = z.object({
@@ -216,12 +212,6 @@ export const basicProductInfoSchema = z.object({
   category: categorySelectSchema,
   gender: GenderSchema,
   ageGroup: AgeGroupSchema,
-  basePrice: z
-    .preprocess(
-      (val) => (val === "" ? undefined : Number(val)),
-      z.number().min(0, "Price must be 0 or more")
-    )
-    .default(0),
   discountPercentage: z
     .coerce
     .number()
@@ -237,13 +227,7 @@ export const basicProductInfoSchema = z.object({
 // ─── Inventory ───────────────────────────────────────────────────────────────
 
 export const inventorySchema = z.object({
-  productSizeId: z.uuid("Invalid product size"),
-  productColorId: z.uuid("Invalid product color"),
-  sku: z
-    .string("Enter a valid SKU")
-    .min(1, "SKU is required")
-    .max(100, "SKU can not exceed 100 characters")
-    .transform((val) => val.trim()),
+  variantId: z.uuid("Invalid product variant"),
   quantity: z
     .coerce
     .number()
@@ -263,38 +247,32 @@ export const inventorySchema = z.object({
     .min(0, "Low stock threshold must be 0 or more")
     .default(5)
     .optional(),
-  costPrice: z
-    .coerce
-    .number()
-    .min(0, "Cost price must be 0 or more")
-    .nullable()
-    .optional(),
 });
 
 export const simpleInventorySchema = z.object({
   id: z.uuid(),
-  sku: z.string(),
   quantity: z.number().int(),
   reservedQuantity: z.number().int(),
   lowStockThreshold: z.number().int().nullable(),
-  costPrice: z.coerce.number().nullable(),
-  productSize: z.object({
+  variant: z.object({
     id: z.uuid(),
+    sku: z.string(),
+    costPrice: z.coerce.number().nullable(),
+    sellingPrice: z.coerce.number(),
+    isMainColor: z.boolean(),
     product: z.object({
       id: z.uuid(),
       name: z.string(),
     }),
-    size: z.object({
-      id: z.uuid(),
-      name: z.string(),
-    }),
-  }),
-  productColor: z.object({
-    id: z.uuid(),
     color: z.object({
       id: z.uuid(),
       name: z.string(),
-      hexCode: z.string(),
+      hexCode: z.string().nullable(),
+      swatchImageUrl: z.string().nullable(),
+    }),
+    size: z.object({
+      id: z.uuid(),
+      name: z.string(),
     }),
   }),
 });
@@ -306,8 +284,7 @@ export type ColorSchema = z.infer<typeof colorSchema>
 export type ProductSchema = z.infer<typeof productSchema>
 export type SimpleProductSchema = z.infer<typeof simpleProductSchema>
 
-export type ProductColorSchema = z.infer<typeof productColorSchema>
-export type ProductSizeSchema = z.infer<typeof productSizeSchema>
+export type VariantSchema = z.infer<typeof variantSchema>
 export type ProductDesignSchema = z.infer<typeof productDesignSchema>
 export type BasicProductInfoSchema = z.infer<typeof basicProductInfoSchema>;
 

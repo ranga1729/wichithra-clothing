@@ -14,9 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { en } from "@/lib/i18n/en";
 import CustomSelect from "@/components/custom/general/CustomSelect";
-import CustomColorSelector from "@/components/custom/general/CustomColorSelector";
 import toast from "react-hot-toast";
-import { getColorSelectorData } from "../colors/action";
 import { getCategorySelectorData } from "../categories/action";
 import { useDebounce } from "@/hooks/useDebounce";
 import AddNewButton from "@/components/AddNewButton";
@@ -27,7 +25,6 @@ const initiaFilter:ProductFilter = {
   name: "",
   slug: "",
   category: "",
-  mainColor: "",
 }
 
 export default function ProductsPage() {
@@ -103,17 +100,6 @@ export default function ProductsPage() {
     placeholderData: (prevdata) => prevdata
   })
 
-  const { data : colorSelectorData } = useQuery({
-    queryKey: ['colors'],
-    queryFn: async () => {
-      const response = await getColorSelectorData()
-      if(!response.success) {
-        toast.error(response.error ?? en.failed_to_load_color_filter_data)
-      }
-      return response.data
-    },
-    placeholderData: (prevdata) => prevdata
-  })
 
   const { mutate: toggleStatus } = useMutation({
     mutationFn: (id: string) => toggleActiveStatus(id),
@@ -171,16 +157,6 @@ export default function ProductsPage() {
               value={filter.category}
             >
             </CustomSelect>
-          </div>
-          <div className="grid w-60 max-w-sm items-center gap-2">
-            <Label htmlFor="name"> {en.main_color } </Label>
-            <CustomColorSelector 
-              placeholder={"Main Color"}
-              onValueChange={(val) => handleSelectorChange("mainColor", val)}
-              value={filter.mainColor} 
-              optionsObject={colorSelectorData}            
-            >
-            </CustomColorSelector>
           </div>
         </div>
         

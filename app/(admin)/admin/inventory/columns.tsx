@@ -27,34 +27,34 @@ export const getColumns = ({
     id: "product",
     header: () => <div className="text-center">Product</div>,
     cell: ({ row }) => (
-      <div>{row.original.productSize.product.name}</div>
+      <div>{row.original.variant.product.name}</div>
     ),
   },
   {
     id: "sku",
     header: () => <div className="text-center">SKU</div>,
     cell: ({ row }) => (
-      <div className="font-mono text-xs">{row.original.sku}</div>
+      <div className="font-mono text-xs">{row.original.variant.sku}</div>
     ),
   },
   {
     id: "size",
     header: () => <div className="text-center">Size</div>,
     cell: ({ row }) => (
-      <div className="text-center">{row.original.productSize.size.name}</div>
+      <div className="text-center">{row.original.variant.size.name}</div>
     ),
   },
   {
     id: "color",
     header: () => <div className="text-center">Color</div>,
     cell: ({ row }) => {
-      const { name, hexCode } = row.original.productColor.color
+      const { name, hexCode } = row.original.variant.color
       return (
         <div className="flex flex-row items-center justify-center gap-1">
           {name}
           <div
             className="w-4 h-4 border border-neutral-500 rounded-full"
-            style={{ backgroundColor: `#${hexCode}` }}
+            style={{ backgroundColor: hexCode ? `#${hexCode}` : undefined }}
           />
         </div>
       )
@@ -93,7 +93,7 @@ export const getColumns = ({
     id: "costPrice",
     header: () => <div className="text-center">Cost Price</div>,
     cell: ({ row }) => {
-      const price = row.original.costPrice
+      const price = row.original.variant.costPrice
       return (
         <div className="text-right">
           {price != null ? `${price} LKR` : "—"}

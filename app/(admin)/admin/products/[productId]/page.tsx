@@ -3,7 +3,7 @@
 import { AgeGroupSchema, basicProductInfoSchema, BasicProductInfoSchema, GenderSchema, productSchema, ProductSchema } from "@/schemas/admin-schemas";
 import { useParams } from "next/navigation"
 import { useEffect } from "react";
-import { changeBasicInfo, changeProductSizes, changeProductStatus, getProductById, getProducts, toggleActiveStatus, toggleFeaturedStatus } from "../action";
+import { changeBasicInfo, changeProductStatus, getProductById, getProducts, toggleActiveStatus, toggleFeaturedStatus } from "../action";
 import toast from "react-hot-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
@@ -64,11 +64,6 @@ export default function ProductDetailPage() {
       gender: product?.gender || "",
       category: product?.category || undefined,
       brand: product?.brand || "",
-      material: product?.material || "",
-      careInstructions: product?.careInstructions || "",
-      description: product?.description || "",
-      basePrice: product?.basePrice || 0,
-      discountPercentage: (product?.discountPercentage || 0) as number,
     },
   });
   
@@ -86,7 +81,6 @@ export default function ProductDetailPage() {
       setValue("material", product.material);
       setValue("careInstructions", product.careInstructions);
       setValue("description", product.description);
-      setValue("basePrice", product.basePrice)
       setValue("discountPercentage", product.discountPercentage)
     }
   };
@@ -111,7 +105,6 @@ export default function ProductDetailPage() {
       currentFormData.material != product.material ||
       currentFormData.careInstructions != product.careInstructions ||
       currentFormData.description != product.description ||
-      Number(currentFormData.basePrice) != product?.basePrice ||
       Number(currentFormData.discountPercentage) != product.discountPercentage,
       currentFormData.ageGroup != product?.ageGroup,
       currentFormData.gender != product?.gender,
@@ -179,21 +172,6 @@ export default function ProductDetailPage() {
 
   const { mutate: handleSubmit } = useMutation({
     mutationFn: () => changeBasicInfo(currentFormData),
-    onSuccess: (response) => {
-      if (response.success) {
-        queryClient.invalidateQueries({ queryKey: ["products"] });
-        toast.success(en.product_updated_successfully);
-      } else {
-        toast.error(response.error || en.product_update_failed);
-      }
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || en.category_update_failed);
-    },
-  });
-
-  const { mutate: ProductSizeChanger } = useMutation({
-    mutationFn: (newSizes: string[]) => changeProductSizes(product.id, newSizes),
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -354,24 +332,6 @@ export default function ProductDetailPage() {
 
             <FieldGroup className="flex flex-row flex-wrap gap-4">
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-baseprice"> {en.base_price} </Label>
-                <div className="flex flex-col">
-                  <Input
-                    id="edit-baseprice"
-                    type="number"
-                    step={0.01}
-                    placeholder={en.base_price}
-                    {...register("basePrice", {valueAsNumber: true})}
-                    disabled={isPending}
-                  />
-                  {errors.basePrice && (
-                    <span className="text-sm text-red-500">
-                      {errors.basePrice.message as string}
-                    </span>
-                  )}
-                </div>
-              </Field>
-              <Field className="flex flex-col gap-2 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <Label htmlFor="slider-demo-temperature">{en.discount_precentage}</Label>
                     <span className="text-muted-foreground text-sm">
@@ -480,9 +440,9 @@ export default function ProductDetailPage() {
         <Separator className="bg-neutral-100"/>          
         <h1 className="font-bold text-md text-neutral-600 text-center">Product Mappings</h1>
         <div className="flex flex-row items-start justify-center flex-wrap p-5 rounded-2xl gap-4">
-          <ColorMapper colors={product?.productColors}  />
+          <ColorMapper variants={product?.variants}  />
           <DesignMapper designs={product?.productDesigns} />
-          <SizeMapper productSizes={product?.productSizes} sizeChanger={ProductSizeChanger} />
+          <SizeMapper variants={product?.variants} />
         </div>
       </div> 
     </div>

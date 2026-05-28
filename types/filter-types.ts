@@ -17,7 +17,6 @@ export interface ProductFilter {
   name?: string,
   slug?: string,
   category?: string,
-  mainColor?: string,
 }
 
 export interface InventoryFilter {

@@ -44,7 +44,6 @@ export default function AddNewModal(props: Props) {
       material: "",
       careInstructions: "",
       description: "",
-      basePrice: 0,
       discountPercentage: 0,
     },
   });
@@ -226,24 +225,6 @@ export default function AddNewModal(props: Props) {
               </Field>
             </FieldGroup>
             <FieldGroup className="flex flex-row flex-wrap gap-4">
-              <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="edit-baseprice"> {en.base_price} (LKR) </Label>
-                <div className="flex flex-col">
-                  <Input
-                    id="edit-baseprice"
-                    type="number"
-                    step={0.01}
-                    placeholder={en.base_price}
-                    {...register("basePrice", {valueAsNumber: true})}
-                    disabled={isPending}
-                  />
-                  {errors.basePrice && (
-                    <span className="text-sm text-red-500">
-                      {errors.basePrice.message as string}
-                    </span>
-                  )}
-                </div>
-              </Field>
               <Field className="flex flex-col gap-2 flex-2 items-center justify-center">
                   <div className="flex items-center justify-between gap-2">
                     <Label htmlFor="slider-demo-temperature">{en.discount_precentage}</Label>

@@ -74,30 +74,6 @@ export const getColumns = ({
     }
   },
   {
-    id: "maincolor",
-    header: () => { return <div className="text-center">Main Color</div> },
-    cell: ({row}) => {
-      const colorName = row.original.mainColor?.name
-      const hexCode = row.original.mainColor?.hexCode;
-      return (
-        <div className="flex flex-row gap-1 items-center justify-end">
-          {colorName} <div className="w-4 h-4 border border-neutral-500 rounded-full" style={{backgroundColor: `#${hexCode}`}}></div>
-        </div>
-      )
-    }
-  },
-  {
-    id: "basePrice",
-    header: () => { return <div className="text-center">Base Price</div> },
-    cell: ({row}) => {
-      return (
-        <div className="text-right">
-          {row.original.basePrice?.toString() + " LKR"}
-        </div>
-      )
-    }
-  },
-  {
     accessorKey: "discountPercentage",
     id: "discountPercentage",
     header: () => { return <div className="text-center">Discount %</div> },

@@ -10,7 +10,7 @@ import { AuthError, requireRole } from "@/lib/server-auth-guard";
 export async function getInventory(paginator: Paginator, filter: InventoryFilter): Promise<ApiResponse> {
   try {
     await requireRole(["admin", "super-admin"]);
-    
+
     const pageSize = Math.max(1, paginator.pageSize);
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
@@ -18,13 +18,15 @@ export async function getInventory(paginator: Paginator, filter: InventoryFilter
     const whereClause: any = {
       ...notDeleted,
       ...(filter.sku && {
-        sku: {
-          contains: filter.sku as string,
-          mode: 'insensitive',
+        variant: {
+          sku: {
+            contains: filter.sku as string,
+            mode: 'insensitive',
+          },
         },
       }),
       ...(filter.productName && {
-        productSize: {
+        variant: {
           product: {
             name: {
               contains: filter.productName as string,
@@ -39,18 +41,28 @@ export async function getInventory(paginator: Paginator, filter: InventoryFilter
       where: whereClause,
       select: {
         id: true,
-        sku: true,
         quantity: true,
         reservedQuantity: true,
         lowStockThreshold: true,
-        costPrice: true,
-        productSize: {
+        variant: {
           select: {
             id: true,
+            sku: true,
+            costPrice: true,
+            sellingPrice: true,
+            isMainColor: true,
             product: {
               select: {
                 id: true,
                 name: true,
+              },
+            },
+            color: {
+              select: {
+                id: true,
+                name: true,
+                hexCode: true,
+                swatchImageUrl: true,
               },
             },
             size: {
@@ -61,24 +73,12 @@ export async function getInventory(paginator: Paginator, filter: InventoryFilter
             },
           },
         },
-        productColor: {
-          select: {
-            id: true,
-            color: {
-              select: {
-                id: true,
-                name: true,
-                hexCode: true,
-              },
-            },
-          },
-        },
       },
       skip,
       take: pageSize,
       orderBy: [
-        { productSize: { product: { name: 'asc' } } },
-        { sku: 'asc' },
+        { variant: { product: { name: 'asc' } } },
+        { variant: { sku: 'asc' } },
       ],
     });
 

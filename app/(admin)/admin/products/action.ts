@@ -3,7 +3,7 @@
 import { ProductStatus } from "@/generated/prisma/enums";
 import { en } from "@/lib/i18n/en";
 import { includingDeleted, notDeleted, prisma } from "@/lib/prisma";
-import { basicProductInfoSchema, BasicProductInfoSchema, productSchema, ProductSchema, ProductStatusSchema } from "@/schemas/admin-schemas";
+import { basicProductInfoSchema, BasicProductInfoSchema, ProductStatusSchema } from "@/schemas/admin-schemas";
 import { ApiResponse } from "@/types/auth-types";
 import { ProductFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
@@ -37,9 +37,6 @@ export async function getProducts(paginator: Paginator, filter: ProductFilter):P
           slug: filter.category
         }
       }),
-      ...(filter.mainColor && {
-        mainColorId: filter.mainColor // UUIDs must be exact matches
-      }),
     }
 
     // const validSortOrder = ['asc', 'desc'].includes(sorter.sortOrder as string) ? sorter.sortOrder as string : 'asc';
@@ -51,7 +48,6 @@ export async function getProducts(paginator: Paginator, filter: ProductFilter):P
         id: true,
         name: true,
         slug: true,
-        basePrice: true,
         discountPercentage: true,
         isFeatured: true,
         isActive: true,
@@ -64,13 +60,6 @@ export async function getProducts(paginator: Paginator, filter: ProductFilter):P
         },
         gender: true,
         ageGroup: true,
-        mainColor: {
-          select: {
-            id: true,
-            name: true,
-            hexCode: true,
-          }
-        },
       },
 
       where: whereClause,
@@ -128,7 +117,6 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
         brand: true,
         material: true,
         careInstructions: true,
-        basePrice: true,
         discountPercentage: true,
         isFeatured: true,
         isActive: true,
@@ -138,14 +126,7 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
           select: {
             id: true,
             name: true,
-            slug:true,
-          }
-        },
-        mainColor: {
-          select: {
-            id: true,
-            name: true,
-            hexCode: true,
+            slug: true,
           }
         },
         productDesigns: {
@@ -157,20 +138,6 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
               select: {
                 id: true,
                 name: true,
-              }
-            }
-          }
-        },
-        productColors: {
-          select: {
-            id: true,
-            productId: true,
-            colorId: true,
-            color: {
-              select: {
-                id: true,
-                name: true,
-                hexCode: true,
               }
             }
           }
@@ -188,12 +155,26 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
             sortOrder: 'asc',
           }
         },
-        productSizes: {
+        variants: {
+          where: { deletedAt: null },
           select: {
             id: true,
             productId: true,
+            colorId: true,
             sizeId: true,
+            sku: true,
+            costPrice: true,
+            sellingPrice: true,
+            isMainColor: true,
             isActive: true,
+            color: {
+              select: {
+                id: true,
+                name: true,
+                hexCode: true,
+                swatchImageUrl: true,
+              }
+            },
             size: {
               select: {
                 id: true,
@@ -203,11 +184,10 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
               }
             }
           },
-          orderBy: {
-            size: {
-              sortOrder: 'asc',
-            }
-          }
+          orderBy: [
+            { size: { sortOrder: 'asc' } },
+            { color: { name: 'asc' } },
+          ]
         },
       },
     });
@@ -254,7 +234,6 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
         material: true,
         careInstructions: true,
         description: true,
-        basePrice: true,
         discountPercentage: true,
       }
     })
@@ -275,7 +254,6 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
         material: validatedData.material,
         careInstructions: validatedData.careInstructions,
         description: validatedData.description,
-        basePrice: validatedData.basePrice,
         discountPercentage: validatedData.discountPercentage,
         gender: validatedData.gender,
         ageGroup: validatedData.ageGroup,
@@ -500,73 +478,6 @@ export async function changeProductStatus(id: string, newStatus: ProductStatus):
   }
 }
 
-export async function changeProductSizes(productId: string, newSizes: string[]):Promise<ApiResponse> {
-  try {
-    await requireRole(["admin", "super-admin"]);
-
-    const existingProduct = await prisma.product.findUnique({
-      where: {id : productId},
-      select: {
-        id: true,
-        productSizes: true
-      }
-    })
-
-    if(!existingProduct) {
-      return {
-        success: false,
-        error: en.product_doesnt_exist
-      };
-    }
-
-    const existingSizeIds = existingProduct.productSizes.map(s => s.sizeId);
-
-    const toAdd = newSizes.filter(id => !existingSizeIds.includes(id));
-    const toRemove = existingSizeIds.filter(id => !newSizes.includes(id));
-
-    await prisma.$transaction([
-      prisma.productSize.deleteMany({
-        where: {
-          productId: existingProduct.id,
-          sizeId: {in: toRemove}
-        }
-      }),
-      ...toAdd.map(sizeId => 
-        prisma.productSize.create({
-          data: {
-            productId: existingProduct.id,
-            sizeId,
-            isActive: true
-          }
-        })
-      )
-    ])
-
-    revalidatePath(`/admin/products/${productId}`);
-
-    return {
-      success: true,
-      message: en.product_updated_successfully,
-    };
-
-  } catch(error) {
-    if (error instanceof AuthError) throw error;
-    console.error("Error updating product:", error);
-    
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-    
-    return {
-      success: false,
-      error: en.product_update_failed,
-    };
-  }
-}
-
 export async function createNewProduct(data: BasicProductInfoSchema):Promise<ApiResponse> {
   try {
     await requireRole(["admin", "super-admin"]);
@@ -633,7 +544,6 @@ export async function createNewProduct(data: BasicProductInfoSchema):Promise<Api
         slug: validatedData.slug,
         brand: validatedData.brand,
         material: validatedData.material,
-        basePrice: validatedData.basePrice,
         discountPercentage: validatedData.discountPercentage,
         careInstructions: validatedData.careInstructions,
         description: validatedData.description,
