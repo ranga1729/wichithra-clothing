@@ -102,6 +102,7 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          role: user.role.name
         },
         token
       }
