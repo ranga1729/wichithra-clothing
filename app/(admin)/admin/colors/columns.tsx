@@ -4,6 +4,7 @@ import { Color } from "@/generated/prisma/client"
 import { Paginator } from "@/types/table-types"
 import { ColumnDef } from "@tanstack/react-table"
 import { Ellipsis, Pencil, Trash } from "lucide-react"
+import Link from "next/link"
 
 type ColumnProps = {
   onEdit?: (size: Color) => void
@@ -29,26 +30,51 @@ export const getColumns = ({
   {
     accessorKey: "hexCode",
     id: "hexCode",
-    header: () => { return <div className="text-center">HexCode</div> },
+    header: () => { return <div className="text-center">HexCode/Swatch Url</div> },
     cell: ({ row }) => {
       const hex = row.original.hexCode;
+      const swatchUrl = row.original.swatchImageUrl;
       return (
         <div className="flex flex-row items-center justify-center">
-          <p className={"border border-neutral-300 flex w-fit items-center justify-center rounded-md px-1 py-1 text-xs font-medium bg-neutral-200 text-neutral-800"}>
-            { "#" + hex }
-          </p>
+          {swatchUrl ? (
+            <Link
+              href={swatchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-neutral-300 flex w-fit items-center justify-center rounded-md px-2 py-1 text-xs font-medium bg-neutral-200 text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              URL
+            </Link>
+          ) : hex ? (
+            <p className={"border border-neutral-300 flex w-fit items-center justify-center rounded-md px-1 py-1 text-xs font-medium bg-neutral-200 text-neutral-800"}>
+              {"#" + hex}
+            </p>
+          ) : (
+            <span className="text-neutral-400 text-xs">—</span>
+          )}
         </div>
       )
     },
   },
   {
     id: "preview",
-    header: () => { return <div className="text-center">Preview</div> },
+    header: () => { return <div className="text-center">Color/Swatch Preview</div> },
     cell: ({ row }) => {
-      const hex = row.original.hexCode?.toString();
+      const hex = row.original.hexCode;
+      const swatchUrl = row.original.swatchImageUrl;
       return (
         <div className="flex flex-row items-center justify-center">
-          <div className="border border-neutral-500 rounded-full w-7 h-7" style={{ backgroundColor: "#" + hex }}></div>
+          {swatchUrl ? (
+            <img
+              src={swatchUrl}
+              alt={row.original.name}
+              className="w-15 h-8 rounded-sm border border-neutral-500 object-cover"
+            />
+          ) : hex ? (
+            <div className="border border-neutral-500 rounded-sm w-15 h-8" style={{ backgroundColor: "#" + hex }}></div>
+          ) : (
+            <div className="border border-neutral-300 rounded-full w-7 h-7" />
+          )}
         </div>
       )
     },

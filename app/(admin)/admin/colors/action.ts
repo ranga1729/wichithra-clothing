@@ -33,11 +33,12 @@ export async function getColors(paginator: Paginator, filter: ColorFilter):Promi
       })
     }
     
-    const sizes = await prisma.color.findMany({
+    const colors = await prisma.color.findMany({
       select: {
         id: true,
         name: true,
         hexCode: true,
+        swatchImageUrl: true,
       },
       where: whereClause,
       skip: skip,
@@ -48,7 +49,7 @@ export async function getColors(paginator: Paginator, filter: ColorFilter):Promi
       where: whereClause,
     })
 
-    if(!sizes) {
+    if(!colors) {
       return {
         success: false,
         error: en.data_retrieval_failed
@@ -58,7 +59,7 @@ export async function getColors(paginator: Paginator, filter: ColorFilter):Promi
     return {
       success: true,
       data: {
-        colors : sizes,
+        colors : colors,
         totalRecords : totalRecords
       }
     };
@@ -99,7 +100,8 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
       const reActivatedColor = await prisma.color.update({
         where: { id: existingColor.id },
         data: {
-          hexCode: validatedData.hexCode,
+          hexCode: validatedData.hexCode ?? null,
+          swatchImageUrl: validatedData.swatchImageUrl ?? null,
           deletedAt: null,
           isActive: true,
         }
@@ -123,7 +125,8 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
     const newColor = await prisma.color.create({
       data: {
         name: validatedData.name,
-        hexCode: validatedData.hexCode,
+        hexCode: validatedData.hexCode ?? null,
+        swatchImageUrl: validatedData.swatchImageUrl ?? null,
         createdAt: new Date(),
         isActive: true,
       }
@@ -235,6 +238,7 @@ export async function updateColorById(id: string, data: ColorSchema):Promise<Api
       id: true,
       name: true,
       hexCode: true,
+      swatchImageUrl: true,
       deletedAt: true,
     }
   })
@@ -277,7 +281,8 @@ export async function updateColorById(id: string, data: ColorSchema):Promise<Api
     },
     data: {
       name: validatedData.name,
-      hexCode: validatedData.hexCode
+      hexCode: validatedData.hexCode ?? null,
+      swatchImageUrl: validatedData.swatchImageUrl ?? null,
     }
   })
 
@@ -326,6 +331,7 @@ export async function getColorSelectorData():Promise<ApiResponse> {
         id: true,
         name: true,
         hexCode: true,
+        swatchImageUrl: true,
       },
       orderBy: {
         name: 'asc',

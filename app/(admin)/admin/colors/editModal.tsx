@@ -32,11 +32,12 @@ export default function EditModal(props: Props) {
     setValue, reset, watch,
     formState: { errors, isValid },
   } = useForm<ColorSchema>({
-    resolver: zodResolver(colorSchema),
+    resolver: zodResolver(colorSchema) as any,
     mode: "onChange",
     defaultValues: {
       name: props.selectedColor?.name,
-      hexCode: props.selectedColor?.hexCode!,
+      hexCode: props.selectedColor?.hexCode ?? "",
+      swatchImageUrl: props.selectedColor?.swatchImageUrl ?? "",
     },
   });
 
@@ -46,9 +47,10 @@ export default function EditModal(props: Props) {
     if(!prevData) return false;
 
     const nameChanged = currentFormData.name !== prevData.name;
-    const hexCodechnaged = currentFormData.hexCode !== prevData.hexCode;
+    const hexCodeChanged = currentFormData.hexCode !== (prevData.hexCode ?? "");
+    const swatchChanged = currentFormData.swatchImageUrl !== (prevData.swatchImageUrl ?? "");
 
-    return nameChanged || hexCodechnaged;
+    return nameChanged || hexCodeChanged || swatchChanged;
   }, [currentFormData, prevData])
  
   const handleCancel = () => {
@@ -61,7 +63,8 @@ export default function EditModal(props: Props) {
     if(props.selectedColor) {
       setPrevData(props.selectedColor)
       setValue("name", props.selectedColor.name)
-      setValue("hexCode", props.selectedColor.hexCode)
+      setValue("hexCode", props.selectedColor.hexCode ?? "")
+      setValue("swatchImageUrl", props.selectedColor.swatchImageUrl ?? "")
     }
   }, [props.selectedColor])
 
@@ -97,7 +100,8 @@ export default function EditModal(props: Props) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <FieldGroup className="flex flex-row gap-4 items-center justify-center">
+          <FieldGroup className="flex flex-col gap-4">
+            <FieldGroup className="flex flex-row gap-4 items-center justify-center">
             <Field className="flex flex-col gap-2 flex-2">
               <Label htmlFor="new-name"> {en.name} </Label>
               <div className="flex flex-col">
@@ -137,11 +141,37 @@ export default function EditModal(props: Props) {
             <Field className="flex flex-col gap-2 w-fit">
               <Label htmlFor="preview"> {en.preview} </Label>
               <div id="preview" className="flex items-center justify-center h-full">
-                <div  className="w-9 h-9 rounded-full border border-neutral-400" style={{backgroundColor: `#${currentFormData.hexCode}`}}>
-                
-                </div>
+                {currentFormData.swatchImageUrl ? (
+                  <img
+                    src={currentFormData.swatchImageUrl}
+                    alt="swatch preview"
+                    className="w-9 h-9 rounded-full border border-neutral-400 object-cover"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full border border-neutral-400" style={{ backgroundColor: currentFormData.hexCode ? `#${currentFormData.hexCode}` : 'transparent' }} />
+                )}
               </div>
             </Field>
+          </FieldGroup>
+
+          <FieldGroup className="flex flex-row gap-4 items-start">
+            <Field className="flex flex-col gap-2 flex-1">
+              <Label htmlFor="edit-swatch-url"> Swatch Image URL </Label>
+              <div className="flex flex-col">
+                <Input
+                  id="edit-swatch-url"
+                  placeholder="https://example.com/swatch.jpg"
+                  {...register("swatchImageUrl")}
+                  disabled={isPending}
+                />
+                {errors.swatchImageUrl && (
+                  <span className="text-sm text-red-500">
+                    {errors.swatchImageUrl.message as string}
+                  </span>
+                )}
+              </div>
+            </Field>
+          </FieldGroup>
           </FieldGroup>
 
           <DialogFooter className="mt-6">

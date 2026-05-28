@@ -26,15 +26,17 @@ export default function AddNewModal(props: Props) {
     register, handleSubmit, watch, 
     reset, formState: { errors },
   } = useForm<ColorSchema>({
-    resolver: zodResolver(colorSchema),
+    resolver: zodResolver(colorSchema) as any,
     mode: "onChange",
     defaultValues: {
       name: "",
       hexCode: "",
+      swatchImageUrl: "",
     },
   });
 
   const hexCode = watch("hexCode");
+  const swatchImageUrl = watch("swatchImageUrl");
 
   const handleCancel = () => {
     props.onOpenChange(false);
@@ -113,14 +115,38 @@ export default function AddNewModal(props: Props) {
               <Field className="flex flex-col gap-2 w-fit">
                 <Label htmlFor="preview"> {en.preview} </Label>
                 <div id="preview" className="flex items-center justify-center h-full">
-                  <div  className="w-9 h-9 rounded-full border border-neutral-400" style={{ backgroundColor: hexCode ? `#${hexCode}` : 'transparent' }}>
-                  
-                  </div>
+                  {swatchImageUrl ? (
+                    <img
+                      src={swatchImageUrl}
+                      alt="swatch preview"
+                      className="w-9 h-9 rounded-full border border-neutral-400 object-cover"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full border border-neutral-400" style={{ backgroundColor: hexCode ? `#${hexCode}` : 'transparent' }} />
+                  )}
                 </div>
               </Field>
               
             </FieldGroup>
 
+            <FieldGroup className="flex flex-row gap-4 items-start">
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="new-swatch-url"> Swatch Image URL </Label>
+                <div className="flex flex-col">
+                  <Input
+                    id="new-swatch-url"
+                    placeholder="https://example.com/swatch.jpg"
+                    {...register("swatchImageUrl")}
+                    disabled={isPending}
+                  />
+                  {errors.swatchImageUrl && (
+                    <span className="text-sm text-red-500">
+                      {errors.swatchImageUrl.message as string}
+                    </span>
+                  )}
+                </div>
+              </Field>
+            </FieldGroup>
             
           </FieldGroup>
 

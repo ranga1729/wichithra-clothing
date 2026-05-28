@@ -60,7 +60,7 @@ export default function ColorsPage() {
   }
 
   // react queries  
-  const { data, isPending } = useQuery({
+  const { data: colors, isPending } = useQuery({
     queryKey: ['colors', 'list', {
       pageSize: paginator.pageSize, 
       pageIndex: paginator.pageIndex,
@@ -129,9 +129,9 @@ export default function ColorsPage() {
           onDelete: (color: Color) => deleteColor(color.id),
           paginator: paginator
         })}
-        data={data?.data.colors ?? []} 
+        data={colors?.data.colors || []} 
         isLoading={isPending}
-        totalRecords={data?.data.totalRecords ?? 0} 
+        totalRecords={colors?.data.totalRecords || 0} 
         initialPageSize={10}
         onPaginationChange={setPaginator}
       />
