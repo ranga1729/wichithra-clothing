@@ -6,6 +6,7 @@ export const SUPABASE_BUCKET = "wichithra-images";
 export const SUPABASE_FOLDERS = {
   TEMP: "temp",
   SIZE_GUIDES: "size-guides",
+  SWATCHES: "swatches"
 } as const;
 
 // ─── Browser client operations (temp folder only) ────────────────────────────

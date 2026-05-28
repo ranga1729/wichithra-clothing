@@ -12,10 +12,11 @@ import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { updateColorById } from "./action";
 import toast from "react-hot-toast";
+import { deleteTempFile, SUPABASE_BUCKET, SUPABASE_FOLDERS, uploadTempFile } from "@/components/providers/supabase/storage";
 
 interface Props {
   isModalOpen: boolean;
@@ -25,6 +26,9 @@ interface Props {
 
 export default function EditModal(props: Props) {
   const [prevData, setPrevData] = useState<Color>();
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isFileUploading, setIsFileUploading] = useState(false);
+  const tempUploadPathRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
   
   const {
@@ -54,8 +58,13 @@ export default function EditModal(props: Props) {
   }, [currentFormData, prevData])
  
   const handleCancel = () => {
+    if (tempUploadPathRef.current) {
+      deleteTempFile(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
+      tempUploadPathRef.current = null;
+    }
     props.onOpenChange(false);
     reset();
+    setFilePreview(null);
     setPrevData(undefined);
   }
 
@@ -65,6 +74,8 @@ export default function EditModal(props: Props) {
       setValue("name", props.selectedColor.name)
       setValue("hexCode", props.selectedColor.hexCode ?? "")
       setValue("swatchImageUrl", props.selectedColor.swatchImageUrl ?? "")
+      setFilePreview(props.selectedColor.swatchImageUrl ?? null);
+      tempUploadPathRef.current = null;
     }
   }, [props.selectedColor])
 
@@ -73,9 +84,11 @@ export default function EditModal(props: Props) {
     mutationFn: ({id, data}:{id: string, data: ColorSchema}) => updateColorById(id, data),
     onSuccess: (response) => {
       if (response.success) {
+        tempUploadPathRef.current = null;
         queryClient.invalidateQueries({ queryKey: ['colors'] });
         toast.success(en.color_updated_successfully);
         reset();
+        setFilePreview(null);
         props.onOpenChange(false);
         setPrevData(undefined);
       } else {
@@ -86,6 +99,37 @@ export default function EditModal(props: Props) {
       toast.error(error.message || en.color_update_failed);
     },
   });
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (tempUploadPathRef.current) {
+      await deleteTempFile(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
+      tempUploadPathRef.current = null;
+    }
+
+    setIsFileUploading(true);
+    try {
+      const { path, url } = await uploadTempFile(file);
+      tempUploadPathRef.current = path;
+      setValue("swatchImageUrl", url, { shouldValidate: true });
+      setFilePreview(url);
+    } catch (error: any) {
+      toast.error(error.message || en.failed_to_upload_image);
+    } finally {
+      setIsFileUploading(false);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    if (tempUploadPathRef.current) {
+      deleteTempFile(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
+      tempUploadPathRef.current = null;
+    }
+    setValue("swatchImageUrl", "");
+    setFilePreview(null);
+  };
 
   const onSubmit = (data: ColorSchema) => updateColor({id: prevData?.id!, data: data})
 
@@ -141,11 +185,11 @@ export default function EditModal(props: Props) {
             <Field className="flex flex-col gap-2 w-fit">
               <Label htmlFor="preview"> {en.preview} </Label>
               <div id="preview" className="flex items-center justify-center h-full">
-                {currentFormData.swatchImageUrl ? (
+                {filePreview ? (
                   <img
-                    src={currentFormData.swatchImageUrl}
+                    src={filePreview}
                     alt="swatch preview"
-                    className="w-9 h-9 rounded-full border border-neutral-400 object-cover"
+                    className="w-9 h-9 rounded-sm border border-neutral-400 object-cover"
                   />
                 ) : (
                   <div className="w-9 h-9 rounded-full border border-neutral-400" style={{ backgroundColor: currentFormData.hexCode ? `#${currentFormData.hexCode}` : 'transparent' }} />
@@ -156,26 +200,35 @@ export default function EditModal(props: Props) {
 
           <FieldGroup className="flex flex-row gap-4 items-start">
             <Field className="flex flex-col gap-2 flex-1">
-              <Label htmlFor="edit-swatch-url"> Swatch Image URL </Label>
-              <div className="flex flex-col">
+              <Label htmlFor="edit-swatch-image"> Swatch Image </Label>
+              <div className="flex flex-col gap-2">
                 <Input
-                  id="edit-swatch-url"
-                  placeholder="https://example.com/swatch.jpg"
-                  {...register("swatchImageUrl")}
-                  disabled={isPending}
+                  id="edit-swatch-image"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="cursor-pointer"
+                  onChange={handleFileChange}
+                  disabled={isPending || isFileUploading}
                 />
-                {errors.swatchImageUrl && (
-                  <span className="text-sm text-red-500">
-                    {errors.swatchImageUrl.message as string}
-                  </span>
-                )}
+                {isFileUploading && <span className="text-sm text-muted-foreground">Uploading...</span>}
               </div>
+              {filePreview && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleRemoveFile}
+                  disabled={isPending}
+                >
+                  {en.remove}
+                </Button>
+              )}
             </Field>
           </FieldGroup>
           </FieldGroup>
 
           <DialogFooter className="mt-6">
-            <Button type="submit" disabled={isPending || !hasChanges || !isValid}>
+            <Button type="submit" disabled={isPending || !hasChanges || !isValid || isFileUploading}>
               {isPending ? <>
                   <LoaderCircle className="animate-spin w-8 h-8" /> {en.saving}
                 </> : <>{en.save}</> }

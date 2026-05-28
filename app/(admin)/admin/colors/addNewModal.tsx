@@ -7,12 +7,14 @@ import { Label } from "@/components/ui/label";
 import { en } from "@/lib/i18n/en";
 import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createColor } from "./action";
 import toast from "react-hot-toast";
 import SaveButton from "@/components/SaveButton";
 import CancelButton from "@/components/CancelButton";
+import { deleteTempFile, SUPABASE_BUCKET, SUPABASE_FOLDERS, uploadTempFile } from "@/components/providers/supabase/storage";
 
 interface Props {
   isModalOpen: boolean;
@@ -21,9 +23,12 @@ interface Props {
 
 export default function AddNewModal(props: Props) {
   const queryClient = useQueryClient();
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isFileUploading, setIsFileUploading] = useState(false);
+  const tempUploadPathRef = useRef<string | null>(null);
 
   const {
-    register, handleSubmit, watch, 
+    register, handleSubmit, watch, setValue,
     reset, formState: { errors },
   } = useForm<ColorSchema>({
     resolver: zodResolver(colorSchema) as any,
@@ -36,11 +41,15 @@ export default function AddNewModal(props: Props) {
   });
 
   const hexCode = watch("hexCode");
-  const swatchImageUrl = watch("swatchImageUrl");
 
   const handleCancel = () => {
+    if (tempUploadPathRef.current) {
+      deleteTempFile(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
+      tempUploadPathRef.current = null;
+    }
     props.onOpenChange(false);
     reset();
+    setFilePreview(null);
   }
 
   // react queries
@@ -48,9 +57,11 @@ export default function AddNewModal(props: Props) {
     mutationFn: (data: ColorSchema) => createColor(data),
     onSuccess: (response) => {
       if (response.success) {
+        tempUploadPathRef.current = null;
         queryClient.invalidateQueries({ queryKey: ['colors'] });
         toast.success(en.color_created_successfully);
         reset();
+        setFilePreview(null);
         props.onOpenChange(false);
       } else {
         toast.error(response.error || en.failed_to_create_color);
@@ -60,6 +71,40 @@ export default function AddNewModal(props: Props) {
       toast.error(error.message || en.failed_to_create_color);
     }
   });
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (tempUploadPathRef.current) {
+      await deleteTempFile(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
+      tempUploadPathRef.current = null;
+    }
+
+    setIsFileUploading(true);
+    try {
+      const { path, url } = await uploadTempFile(file);
+      tempUploadPathRef.current = path;
+      setValue("swatchImageUrl", url, { shouldValidate: true });
+      setFilePreview(url);
+    } catch (error: any) {
+      toast.error(error.message || en.failed_to_upload_image);
+    } finally {
+      setIsFileUploading(false);
+    }
+  };
+
+  const handleRemoveFile = async () => {
+    if (!tempUploadPathRef.current) return;
+    try {
+      await deleteTempFile(tempUploadPathRef.current);
+      tempUploadPathRef.current = null;
+      setValue("swatchImageUrl", "");
+      setFilePreview(null);
+    } catch (error: any) {
+      toast.error(error.message || en.failed_to_remove_image);
+    }
+  };
 
   const onSubmit = (data: ColorSchema) => createNewColor(data);
 
@@ -115,11 +160,11 @@ export default function AddNewModal(props: Props) {
               <Field className="flex flex-col gap-2 w-fit">
                 <Label htmlFor="preview"> {en.preview} </Label>
                 <div id="preview" className="flex items-center justify-center h-full">
-                  {swatchImageUrl ? (
+                  {filePreview ? (
                     <img
-                      src={swatchImageUrl}
+                      src={filePreview}
                       alt="swatch preview"
-                      className="w-9 h-9 rounded-full border border-neutral-400 object-cover"
+                      className="w-9 h-9 rounded-sm border border-neutral-400 object-cover"
                     />
                   ) : (
                     <div className="w-9 h-9 rounded-full border border-neutral-400" style={{ backgroundColor: hexCode ? `#${hexCode}` : 'transparent' }} />
@@ -131,20 +176,29 @@ export default function AddNewModal(props: Props) {
 
             <FieldGroup className="flex flex-row gap-4 items-start">
               <Field className="flex flex-col gap-2 flex-1">
-                <Label htmlFor="new-swatch-url"> Swatch Image URL </Label>
-                <div className="flex flex-col">
+                <Label htmlFor="new-swatch-image"> Swatch Image </Label>
+                <div className="flex flex-col gap-2">
                   <Input
-                    id="new-swatch-url"
-                    placeholder="https://example.com/swatch.jpg"
-                    {...register("swatchImageUrl")}
-                    disabled={isPending}
+                    id="new-swatch-image"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="cursor-pointer"
+                    onChange={handleFileChange}
+                    disabled={isPending || isFileUploading}
                   />
-                  {errors.swatchImageUrl && (
-                    <span className="text-sm text-red-500">
-                      {errors.swatchImageUrl.message as string}
-                    </span>
-                  )}
+                  {isFileUploading && <span className="text-sm text-muted-foreground">Uploading...</span>}
                 </div>
+                {filePreview && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleRemoveFile}
+                    disabled={isPending}
+                  >
+                    {en.remove}
+                  </Button>
+                )}
               </Field>
             </FieldGroup>
             

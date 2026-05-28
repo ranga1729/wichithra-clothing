@@ -8,6 +8,7 @@ import { ColorFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { revalidatePath } from "next/cache";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
+import { SUPABASE_BUCKET, SUPABASE_FOLDERS, moveTempToPermanent, deleteImage } from "@/components/providers/supabase/storage";
 
 export async function getColors(paginator: Paginator, filter: ColorFilter):Promise<ApiResponse> {
   try {
@@ -114,6 +115,18 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
         };
       }
 
+      if (validatedData.swatchImageUrl?.includes(`/${SUPABASE_FOLDERS.TEMP}/`)) {
+        const url = new URL(validatedData.swatchImageUrl);
+        const tempPath = url.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+        try {
+          const { publicUrl } = await moveTempToPermanent(tempPath, SUPABASE_FOLDERS.SWATCHES, existingColor.id);
+          await prisma.color.update({ where: { id: existingColor.id }, data: { swatchImageUrl: publicUrl } });
+        } catch {
+          await deleteImage(tempPath).catch(() => null);
+          return { success: false, error: en.color_create_and_failed_adding_swatch };
+        }
+      }
+
       revalidatePath("/admin/colors");
 
       return {
@@ -137,6 +150,19 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
         success: false,
         error: en.failed_to_create_color,
       };
+    }
+
+    if (validatedData.swatchImageUrl?.includes(`/${SUPABASE_FOLDERS.TEMP}/`)) {
+      const url = new URL(validatedData.swatchImageUrl);
+      const tempPath = url.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+      try {
+        const { publicUrl } = await moveTempToPermanent(tempPath, SUPABASE_FOLDERS.SWATCHES, newColor.id);
+        await prisma.color.update({ where: { id: newColor.id }, data: { swatchImageUrl: publicUrl } });
+      } catch {
+        await deleteImage(tempPath).catch(() => null);
+        await prisma.color.delete({ where: { id: newColor.id } }).catch(() => null);
+        return { success: false, error: en.color_create_and_failed_adding_swatch };
+      }
     }
 
     revalidatePath("/admin/colors");
@@ -173,6 +199,7 @@ export async function deleteColorById(id: string):Promise<ApiResponse> {
         id: true,
         name: true,
         hexCode: true,
+        swatchImageUrl: true,
       }
     })
 
@@ -197,6 +224,14 @@ export async function deleteColorById(id: string):Promise<ApiResponse> {
         success: false,
         error: en.failed_to_delete_color,
       }
+    }
+
+    if (color.swatchImageUrl) {
+      try {
+        const oldUrl = new URL(color.swatchImageUrl);
+        const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+        if (oldPath) await deleteImage(oldPath).catch(() => null);
+      } catch { /* ignore URL parse errors */ }
     }
 
     revalidatePath('/admin/colors');
@@ -275,6 +310,36 @@ export async function updateColorById(id: string, data: ColorSchema):Promise<Api
     }
   }
 
+  let finalSwatchImageUrl: string | null = color.swatchImageUrl;
+
+  const incomingSwatchUrl = validatedData.swatchImageUrl || "";
+  const isNewTempUpload = incomingSwatchUrl.includes(`/${SUPABASE_FOLDERS.TEMP}/`);
+  const swatchWasCleared = !incomingSwatchUrl && !!color.swatchImageUrl;
+
+  if (isNewTempUpload) {
+    const url = new URL(incomingSwatchUrl);
+    const tempPath = url.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+    try {
+      const { publicUrl } = await moveTempToPermanent(tempPath, SUPABASE_FOLDERS.SWATCHES, color.id);
+      finalSwatchImageUrl = publicUrl;
+      if (color.swatchImageUrl && color.swatchImageUrl !== publicUrl) {
+        const oldUrl = new URL(color.swatchImageUrl);
+        const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+        if (oldPath) await deleteImage(oldPath).catch(() => null);
+      }
+    } catch {
+      await deleteImage(tempPath).catch(() => null);
+      return { success: false, error: en.data_updatated_but_failed_to_update_image };
+    }
+  } else if (swatchWasCleared) {
+    try {
+      const oldUrl = new URL(color.swatchImageUrl!);
+      const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+      if (oldPath) await deleteImage(oldPath).catch(() => null);
+    } catch { /* ignore URL parse errors */ }
+    finalSwatchImageUrl = null;
+  }
+
   const updatedColor = await prisma.color.update({
     where: {
       id: color.id
@@ -282,7 +347,7 @@ export async function updateColorById(id: string, data: ColorSchema):Promise<Api
     data: {
       name: validatedData.name,
       hexCode: validatedData.hexCode ?? null,
-      swatchImageUrl: validatedData.swatchImageUrl ?? null,
+      swatchImageUrl: finalSwatchImageUrl,
     }
   })
 

@@ -129,6 +129,7 @@ export const en = {
 
   color_created_successfully: "Color created successfully",
   failed_to_create_color: "Failed to create color",
+  color_create_and_failed_adding_swatch: "Color created but failed to add the swatch image",
   color_doesnt_exist: "Color doesn't exist",
   failed_to_delete_color: "Failed to delete color",
   color_deleted_successfully: "Color deleted successfully",
