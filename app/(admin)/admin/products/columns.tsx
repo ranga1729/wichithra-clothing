@@ -104,13 +104,13 @@ export const getColumns = ({
       const text = value.toString()
       return (
         <div className="flex flex-row items-center justify-center">
-        <p className={`border border-neutral-400 flex w-fit items-center justify-center rounded-full px-3 py-1 text-xs font-medium ${
-            value
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}>
-          {text.charAt(0).toUpperCase() + text.slice(1)}
-        </p>
+          <p className={`border flex w-fit items-center justify-center rounded-full px-3 py-1 text-xs font-medium ${
+              value
+                ? "border-green-500 bg-green-100 text-green-800"
+                : "border-red-500 bg-red-100 text-red-800"
+            }`}>
+            {text.charAt(0).toUpperCase() + text.slice(1)}
+          </p>
         </div>
       )
     },
@@ -119,12 +119,20 @@ export const getColumns = ({
     id: "status",
     header: () => { return <div className="text-center">Status</div> },
     cell: ({ row }) => {
-      const text = row.original.status.toString()
+      const status = row.original.status;
+      const text = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+      const statusStyles: Record<string, string> = {
+        AVAILABLE: "border-green-500 bg-green-100 text-green-800",
+        OUTOFSTOCK: "border-amber-700 bg-amber-100 text-amber-800",
+        DISCONTINUED: "border-red-500 bg-red-100 text-red-800",
+        DRAFT: "border-yellow-500 bg-yellow-100 text-yellow-800",
+      };
+      const style = statusStyles[status] ?? "border-neutral-400 bg-neutral-100 text-neutral-800";
       return (
         <div className="flex flex-row items-center justify-center">
-        <p className={"border border-neutral-400 flex w-fit items-center justify-center rounded-full px-3 py-1 text-xs font-medium bg-neutral-100 text-neutral-800"}>
-          {text.charAt(0).toUpperCase() + text.slice(1)}
-        </p>
+          <p className={`border flex w-fit items-center justify-center rounded-full px-3 py-1 text-xs font-medium ${style}`}>
+            {text}
+          </p>
         </div>
       )
     },

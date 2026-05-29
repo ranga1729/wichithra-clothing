@@ -3,8 +3,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { Color } from "@/generated/prisma/client"
 import { Paginator } from "@/types/table-types"
 import { ColumnDef } from "@tanstack/react-table"
-import { Ellipsis, Pencil, Trash } from "lucide-react"
-import Link from "next/link"
+import { Copy, Ellipsis, Pencil, Trash } from "lucide-react"
+import toast from "react-hot-toast"
 
 type ColumnProps = {
   onEdit?: (size: Color) => void
@@ -34,26 +34,41 @@ export const getColumns = ({
     cell: ({ row }) => {
       const hex = row.original.hexCode;
       const swatchUrl = row.original.swatchImageUrl;
-      return (
-        <div className="flex flex-row items-center justify-center">
-          {swatchUrl ? (
-            <Link
-              href={swatchUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-neutral-300 flex w-fit items-center justify-center rounded-md px-2 py-1 text-xs font-medium bg-neutral-200 text-blue-600 hover:text-blue-800 hover:underline"
+
+      if (swatchUrl) {
+        const handleCopy = () => {
+          navigator.clipboard.writeText(swatchUrl);
+          toast.success("Link copied!");
+        };
+        return (
+          <div className="flex items-center gap-3 max-w-[400px]">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 shrink-0 border p-3 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:active:bg-neutral-500 bg-neutral-200 hover:bg-neutral-300 active:bg-neutral-100"
+              onClick={handleCopy}
             >
-              URL
-            </Link>
-          ) : hex ? (
-            <p className={"border border-neutral-300 flex w-fit items-center justify-center rounded-md px-1 py-1 text-xs font-medium bg-neutral-200 text-neutral-800"}>
+              <Copy className="h-3.5 w-3.5" />
+            </Button>
+            <span className="truncate text-sm text-muted-foreground flex-1 min-w-0">
+              {swatchUrl}
+            </span>
+          </div>
+        );
+      }
+
+      if (hex) {
+        return (
+          <div className="flex flex-row items-center justify-center">
+            <p className="border border-neutral-300 flex w-fit items-center justify-center rounded-md px-1 py-1 text-xs font-medium bg-neutral-200 text-neutral-800">
               {"#" + hex}
             </p>
-          ) : (
-            <span className="text-neutral-400 text-xs">—</span>
-          )}
-        </div>
-      )
+          </div>
+        );
+      }
+
+      return <span className="text-neutral-400 text-xs">—</span>;
     },
   },
   {

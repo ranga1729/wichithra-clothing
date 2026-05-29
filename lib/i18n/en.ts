@@ -19,6 +19,7 @@ export const en = {
   reset_filters: "Reset Filters",
   add_new: "Add New",
   remove: "Remove",
+  view: "View",
   loading: "Loading...",
   unexpected_error: "An unexpected error occurred.",
   saving: "Saving...",

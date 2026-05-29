@@ -9,7 +9,7 @@ import { ProductFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { revalidatePath } from "next/cache";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
-import { SUPABASE_BUCKET, SUPABASE_FOLDERS, moveTempToPermanent, deleteImage } from "@/components/providers/supabase/storage";
+import { SUPABASE_BUCKET, SUPABASE_FOLDERS, uploadImage, deleteImage } from "@/components/providers/supabase/storage";
 
 export async function getProducts(paginator: Paginator, filter: ProductFilter):Promise<ApiResponse> {
   try {
@@ -240,7 +240,6 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
         discountPercentage: true,
         metaTitle: true,
         metaDescription: true,
-        sizeGuide: true,
       }
     })
 
@@ -250,46 +249,6 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
         error: en.product_doesnt_exist
       };
     }
-
-    // ── sizeGuide image handling ──────────────────────────────────────────────
-    let finalSizeGuideUrl: string | null = existingProduct.sizeGuide;
-
-    const incomingSizeGuide = validatedData.sizeGuide || "";
-    const isNewTempUpload = incomingSizeGuide.includes(`/${SUPABASE_FOLDERS.TEMP}/`);
-    const imageWasCleared = !incomingSizeGuide && existingProduct.sizeGuide;
-
-    if (isNewTempUpload) {
-      const url = new URL(incomingSizeGuide);
-      const tempPath = url.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
-
-      if (!tempPath) {
-        return { success: false, error: en.data_updatated_but_failed_to_update_image };
-      }
-
-      try {
-        const { publicUrl } = await moveTempToPermanent(
-          tempPath,
-          SUPABASE_FOLDERS.SIZE_GUIDES,
-          existingProduct.id
-        );
-        finalSizeGuideUrl = publicUrl;
-
-        if (existingProduct.sizeGuide && existingProduct.sizeGuide !== publicUrl) {
-          const oldUrl = new URL(existingProduct.sizeGuide);
-          const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
-          if (oldPath) await deleteImage(oldPath).catch(() => null);
-        }
-      } catch {
-        await deleteImage(incomingSizeGuide).catch(() => null);
-        return { success: false, error: en.data_updatated_but_failed_to_update_image };
-      }
-    } else if (imageWasCleared) {
-      const oldUrl = new URL(existingProduct.sizeGuide!);
-      const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
-      if (oldPath) await deleteImage(oldPath).catch(() => null);
-      finalSizeGuideUrl = null;
-    }
-    // if unchanged, finalSizeGuideUrl keeps the current value
 
     const updatedProduct = await prisma.product.update({
       where: { id: existingProduct.id },
@@ -306,7 +265,6 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
         categoryId: validatedData.category.id,
         metaTitle: validatedData.metaTitle,
         metaDescription: validatedData.metaDescription,
-        sizeGuide: finalSizeGuideUrl,
       }
     });
 
@@ -577,9 +535,87 @@ export async function createNewProduct(data: BasicProductInfoSchema):Promise<Api
   }
 }
 
-export async function addProductImage(productId: string, tempPath: string): Promise<ApiResponse> {
+export async function updateSizeGuide(productId: string, formData: FormData): Promise<ApiResponse> {
   try {
     await requireRole(["admin", "super-admin"]);
+
+    const file = formData.get("file") as File;
+    if (!file || !file.size) return { success: false, error: en.failed_to_upload_image };
+
+    const product = await prisma.product.findUnique({
+      where: { id: productId, deletedAt: null },
+      select: { id: true, sizeGuide: true },
+    });
+    if (!product) return { success: false, error: en.product_doesnt_exist };
+
+    if (product.sizeGuide) {
+      try {
+        const oldUrl = new URL(product.sizeGuide);
+        const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+        if (oldPath) await deleteImage(oldPath).catch(() => null);
+      } catch { /* ignore URL parse errors */ }
+    }
+
+    const ext = file.name.split(".").pop();
+    const storagePath = `${SUPABASE_FOLDERS.SIZE_GUIDES}/${productId}.${ext}`;
+    const publicUrl = await uploadImage(file, storagePath, file.type);
+
+    await prisma.product.update({
+      where: { id: productId },
+      data: { sizeGuide: publicUrl },
+    });
+
+    revalidatePath(`/admin/products/${productId}`);
+    return { success: true, data: { imageUrl: publicUrl } };
+
+  } catch (error) {
+    if (error instanceof AuthError) throw error;
+    console.error("Error updating size guide:", error);
+    if (error instanceof Error) return { success: false, error: error.message };
+    return { success: false, error: en.failed_to_upload_image };
+  }
+}
+
+export async function removeSizeGuide(productId: string): Promise<ApiResponse> {
+  try {
+    await requireRole(["admin", "super-admin"]);
+
+    const product = await prisma.product.findUnique({
+      where: { id: productId, deletedAt: null },
+      select: { id: true, sizeGuide: true },
+    });
+    if (!product) return { success: false, error: en.product_doesnt_exist };
+
+    if (product.sizeGuide) {
+      try {
+        const url = new URL(product.sizeGuide);
+        const path = url.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+        if (path) await deleteImage(path).catch(() => null);
+      } catch { /* ignore URL parse errors */ }
+    }
+
+    await prisma.product.update({
+      where: { id: productId },
+      data: { sizeGuide: null },
+    });
+
+    revalidatePath(`/admin/products/${productId}`);
+    return { success: true };
+
+  } catch (error) {
+    if (error instanceof AuthError) throw error;
+    console.error("Error removing size guide:", error);
+    if (error instanceof Error) return { success: false, error: error.message };
+    return { success: false, error: en.failed_to_remove_image };
+  }
+}
+
+export async function addProductImage(productId: string, formData: FormData): Promise<ApiResponse> {
+  try {
+    await requireRole(["admin", "super-admin"]);
+
+    const file = formData.get("file") as File;
+    if (!file || !file.size) return { success: false, error: en.failed_to_upload_image };
 
     const product = await prisma.product.findUnique({
       where: { id: productId, deletedAt: null },
@@ -598,19 +634,19 @@ export async function addProductImage(productId: string, tempPath: string): Prom
     const newImage = await prisma.productImage.create({
       data: {
         productId,
-        imageUrl: `temp:${tempPath}`,
+        imageUrl: "",
         isPrimary: existingCount === 0,
         sortOrder: existingCount,
       },
     });
 
-    // Move the temp file to its permanent location, named by the record ID
+    const ext = file.name.split(".").pop();
+    const storagePath = `${SUPABASE_FOLDERS.PRODUCTS}/${newImage.id}.${ext}`;
+
     let publicUrl: string;
     try {
-      const result = await moveTempToPermanent(tempPath, SUPABASE_FOLDERS.PRODUCTS, newImage.id);
-      publicUrl = result.publicUrl;
+      publicUrl = await uploadImage(file, storagePath, file.type);
     } catch {
-      // Clean up the orphaned DB record
       await prisma.productImage.delete({ where: { id: newImage.id } }).catch(() => null);
       return { success: false, error: en.failed_to_upload_image };
     }

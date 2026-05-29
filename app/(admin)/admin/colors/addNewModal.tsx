@@ -7,14 +7,13 @@ import { Label } from "@/components/ui/label";
 import { en } from "@/lib/i18n/en";
 import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createColor } from "./action";
+import { createColor, updateColorSwatch } from "./action";
 import toast from "react-hot-toast";
 import SaveButton from "@/components/SaveButton";
 import CancelButton from "@/components/CancelButton";
-import { deleteTempFile, SUPABASE_BUCKET, SUPABASE_FOLDERS, uploadTempFile } from "@/components/providers/supabase/storage";
 
 interface Props {
   isModalOpen: boolean;
@@ -24,11 +23,10 @@ interface Props {
 export default function AddNewModal(props: Props) {
   const queryClient = useQueryClient();
   const [filePreview, setFilePreview] = useState<string | null>(null);
-  const [isFileUploading, setIsFileUploading] = useState(false);
-  const tempUploadPathRef = useRef<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const {
-    register, handleSubmit, watch, setValue,
+    register, handleSubmit, watch,
     reset, formState: { errors },
   } = useForm<ColorSchema>({
     resolver: zodResolver(colorSchema) as any,
@@ -36,32 +34,39 @@ export default function AddNewModal(props: Props) {
     defaultValues: {
       name: "",
       hexCode: "",
-      swatchImageUrl: "",
     },
   });
 
   const hexCode = watch("hexCode");
 
   const handleCancel = () => {
-    if (tempUploadPathRef.current) {
-      deleteTempFile(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
-      tempUploadPathRef.current = null;
-    }
+    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
+    setSelectedFile(null);
+    setFilePreview(null);
     props.onOpenChange(false);
     reset();
-    setFilePreview(null);
   }
 
   // react queries
   const {mutate: createNewColor, isPending } = useMutation({
-    mutationFn: (data: ColorSchema) => createColor(data),
+    mutationFn: async (data: ColorSchema) => {
+      const response = await createColor(data);
+      if (response.success && selectedFile && response.data?.colorId) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        const swatchRes = await updateColorSwatch(response.data.colorId, formData);
+        if (!swatchRes.success) toast.error(swatchRes.error || en.failed_to_upload_image);
+      }
+      return response;
+    },
     onSuccess: (response) => {
       if (response.success) {
-        tempUploadPathRef.current = null;
+        if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
+        setSelectedFile(null);
+        setFilePreview(null);
         queryClient.invalidateQueries({ queryKey: ['colors'] });
         toast.success(en.color_created_successfully);
         reset();
-        setFilePreview(null);
         props.onOpenChange(false);
       } else {
         toast.error(response.error || en.failed_to_create_color);
@@ -72,38 +77,18 @@ export default function AddNewModal(props: Props) {
     }
   });
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (tempUploadPathRef.current) {
-      await deleteTempFile(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
-      tempUploadPathRef.current = null;
-    }
-
-    setIsFileUploading(true);
-    try {
-      const { path, url } = await uploadTempFile(file);
-      tempUploadPathRef.current = path;
-      setValue("swatchImageUrl", url, { shouldValidate: true });
-      setFilePreview(url);
-    } catch (error: any) {
-      toast.error(error.message || en.failed_to_upload_image);
-    } finally {
-      setIsFileUploading(false);
-    }
+    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
+    setSelectedFile(file);
+    setFilePreview(URL.createObjectURL(file));
   };
 
-  const handleRemoveFile = async () => {
-    if (!tempUploadPathRef.current) return;
-    try {
-      await deleteTempFile(tempUploadPathRef.current);
-      tempUploadPathRef.current = null;
-      setValue("swatchImageUrl", "");
-      setFilePreview(null);
-    } catch (error: any) {
-      toast.error(error.message || en.failed_to_remove_image);
-    }
+  const handleRemoveFile = () => {
+    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
+    setSelectedFile(null);
+    setFilePreview(null);
   };
 
   const onSubmit = (data: ColorSchema) => createNewColor(data);
@@ -184,20 +169,26 @@ export default function AddNewModal(props: Props) {
                     accept="image/png,image/jpeg,image/webp"
                     className="cursor-pointer"
                     onChange={handleFileChange}
-                    disabled={isPending || isFileUploading}
+                    disabled={isPending}
                   />
-                  {isFileUploading && <span className="text-sm text-muted-foreground">Uploading...</span>}
                 </div>
                 {filePreview && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleRemoveFile}
-                    disabled={isPending}
-                  >
-                    {en.remove}
-                  </Button>
+                  <div className="flex flex-col gap-2 mt-2">
+                    <img
+                      src={filePreview}
+                      alt="Swatch preview"
+                      className="max-h-60 rounded object-contain"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleRemoveFile}
+                      disabled={isPending}
+                    >
+                      {en.remove}
+                    </Button>
+                  </div>
                 )}
               </Field>
             </FieldGroup>

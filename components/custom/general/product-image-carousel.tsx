@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import { Eye, Loader2, Plus, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { deleteTempFile, uploadTempFile } from "@/components/providers/supabase/storage";
 import { addProductImage, deleteProductImage } from "@/app/(admin)/admin/products/action";
 import { en } from "@/lib/i18n/en";
 
@@ -41,12 +40,12 @@ export default function ProductImageCarousel({ productId, productImages }: Produ
 
     for (const file of filesToUpload) {
       try {
-        const { path } = await uploadTempFile(file);
-        const response = await addProductImage(productId, path);
+        const formData = new FormData();
+        formData.append("file", file);
+        const response = await addProductImage(productId, formData);
         if (response.success) {
           queryClient.invalidateQueries({ queryKey: ["products", productId] });
         } else {
-          await deleteTempFile(path).catch(() => null);
           toast.error(response.error || en.failed_to_upload_image);
         }
       } catch {

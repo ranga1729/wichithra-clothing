@@ -6,15 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { categorySchema, CategorySchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { createCategory } from "./action";
+import { createCategory, updateCategorySizeGuide } from "./action";
 import toast from "react-hot-toast";
 import { en } from "@/lib/i18n/en";
 import SaveButton from "@/components/SaveButton";
 import CancelButton from "@/components/CancelButton";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteImage, uploadTempFile } from "@/components/providers/supabase/storage";
 
 interface Props {
   isModalOpen: boolean;
@@ -24,12 +23,11 @@ interface Props {
 export default function AddNewModal(props: Props) {
   const queryClient = useQueryClient();
   const [filePreview, setFilePreview] = useState<string | null>(null);
-  const [isFileUploading, setIsFileUploading] = useState(false);
-  const tempUploadPathRef = useRef<string|null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const {
     register, handleSubmit,
-    setValue, reset,
+    reset,
     formState: { errors },
   } = useForm<CategorySchema>({
     resolver: zodResolver(categorySchema),
@@ -39,62 +37,49 @@ export default function AddNewModal(props: Props) {
       slug: "",
       description: "",
       sortOrder: 0,
-      sizeGuide: undefined,
     },
   });
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if(!file) return;
-
-    if(tempUploadPathRef.current) {
-      await deleteImage(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image))
-      tempUploadPathRef.current = null;
-    }
-
-    setIsFileUploading(true);
-    try {
-      const{ path, url } = await uploadTempFile(file);
-      tempUploadPathRef.current = path;
-      setValue("sizeGuide", url, {shouldValidate: true});
-      setFilePreview(url);
-    } catch(error:any) {
-      toast.error(error.message || en.failed_to_upload_image)
-    } finally {
-      setIsFileUploading(false);
-    }
+    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
+    setSelectedFile(file);
+    setFilePreview(URL.createObjectURL(file));
   };
 
-  const handleRemoveFile = async () => {
-    if(!tempUploadPathRef.current) return;
-    try {
-      await deleteImage(tempUploadPathRef.current);
-      tempUploadPathRef.current = null;
-      setValue("sizeGuide", undefined);
-      setFilePreview(null);
-    } catch(error:any) {
-      toast.error(error.message || en.failed_to_remove_image);
-    }
+  const handleRemoveFile = () => {
+    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
+    setSelectedFile(null);
+    setFilePreview(null);
   };
 
   const handleClose = () => {
-    if (tempUploadPathRef.current) {
-      deleteImage(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
-      tempUploadPathRef.current = null;
-    }
+    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
+    setSelectedFile(null);
+    setFilePreview(null);
     props.onOpenChange(false);
     reset();
-    setFilePreview(null);
   }
 
-  // react query
   const { mutate: createNewCategory, isPending } = useMutation({
-    mutationFn: (data: CategorySchema) => createCategory(data),
+    mutationFn: async (data: CategorySchema) => {
+      const response = await createCategory(data);
+      if (response.success && selectedFile && response.data?.categoryId) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        const sizeGuideRes = await updateCategorySizeGuide(response.data.categoryId, formData);
+        if (!sizeGuideRes.success) toast.error(sizeGuideRes.error || en.failed_to_upload_image);
+      }
+      return response;
+    },
     onSuccess: (response) => {
       if (response.success) {
+        if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
+        setSelectedFile(null);
+        setFilePreview(null);
         queryClient.invalidateQueries({ queryKey: ['categories'] });
         toast.success(en.category_created_successfully);
-        tempUploadPathRef.current = null;
         reset();
         props.onOpenChange(false);
       } else {
@@ -192,14 +177,8 @@ export default function AddNewModal(props: Props) {
                       accept="image/png,image/jpeg,image/webp"
                       className="cursor-pointer"
                       onChange={handleFileChange}
-                      disabled={isPending || isFileUploading}
+                      disabled={isPending}
                     />
-                    {isFileUploading && <span className="text-sm text-muted-foreground">Uploading...</span>}
-                    {errors.sizeGuide && (
-                      <span className="text-sm text-red-500">
-                        {errors.sizeGuide.message as string}
-                      </span>
-                    )}                
                   </div>
                 </Field>
               </FieldGroup>
@@ -208,7 +187,7 @@ export default function AddNewModal(props: Props) {
                   <img
                     src={filePreview}
                     alt="Size guide preview"
-                    className="max-h-40 mx-auto rounded"
+                    className="max-h-60 mx-auto rounded object-contain"
                   />
                   <Button
                     type="button"

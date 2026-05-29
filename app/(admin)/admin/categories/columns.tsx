@@ -80,10 +80,10 @@ export const getColumns = ({
       const text = value.toString()
       return (
         <div className="flex flex-row items-center justify-center">
-        <p className={`border border-neutral-400 flex w-fit items-center justify-center rounded-full px-3 py-1 text-xs font-medium ${
+        <p className={`border flex w-fit items-center justify-center rounded-full px-3 py-1 text-xs font-medium ${
             value
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
+              ? "border-green-500 bg-green-100 text-green-800"
+              : "border-red-500 bg-red-100 text-red-800"
           }`}>
           {text.charAt(0).toUpperCase() + text.slice(1)}
         </p>

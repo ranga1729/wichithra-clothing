@@ -2,8 +2,8 @@
 
 import { AgeGroupSchema, basicProductInfoSchema, BasicProductInfoSchema, GenderSchema } from "@/schemas/admin-schemas";
 import { useParams } from "next/navigation"
-import { useEffect, useRef, useState } from "react";
-import { changeBasicInfo, changeProductStatus, getProductById, toggleFeaturedStatus } from "../action";
+import { useEffect, useState } from "react";
+import { changeBasicInfo, changeProductStatus, getProductById, toggleFeaturedStatus, updateSizeGuide, removeSizeGuide } from "../action";
 import toast from "react-hot-toast";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
@@ -25,8 +25,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatLabel } from "@/lib/utils";
 import { getCategorySelectorData } from "../../categories/action";
-import { deleteTempFile, uploadTempFile } from "@/components/providers/supabase/storage";
-import { Eye } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
 import ProductImageCarousel from "@/components/custom/general/product-image-carousel";
 
 export default function ProductDetailPage() {  
@@ -35,8 +34,6 @@ export default function ProductDetailPage() {
   const queryClient = useQueryClient();
 
   const [sizeGuidePreview, setSizeGuidePreview] = useState<string | null>(null);
-  const [isSizeGuideUploading, setIsSizeGuideUploading] = useState(false);
-  const tempSizeGuideRef = useRef<string | null>(null);
 
 
   // react queries
@@ -73,7 +70,6 @@ export default function ProductDetailPage() {
       discountPercentage: product?.discountPercentage ?? 0,
       metaTitle: product?.metaTitle || "",
       metaDescription: product?.metaDescription || "",
-      sizeGuide: product?.sizeGuide || "",
     },
   });
   
@@ -94,9 +90,7 @@ export default function ProductDetailPage() {
       setValue("discountPercentage", product.discountPercentage);
       setValue("metaTitle", product.metaTitle ?? "");
       setValue("metaDescription", product.metaDescription ?? "");
-      setValue("sizeGuide", product.sizeGuide ?? "");
       setSizeGuidePreview(product.sizeGuide ?? null);
-      tempSizeGuideRef.current = null;
     }
   };
 
@@ -122,8 +116,7 @@ export default function ProductDetailPage() {
       currentFormData.gender === product.gender &&
       currentFormData.category?.id === product.category?.id &&
       (currentFormData.metaTitle ?? "") === (product.metaTitle ?? "") &&
-      (currentFormData.metaDescription ?? "") === (product.metaDescription ?? "") &&
-      (currentFormData.sizeGuide ?? "") === (product.sizeGuide ?? "")
+      (currentFormData.metaDescription ?? "") === (product.metaDescription ?? "")
     );
   }
 
@@ -136,36 +129,47 @@ export default function ProductDetailPage() {
     if (selected) setValue("category", { id: selected.id, name: selected.name, slug: selected.slug })
   }
 
-  const handleSizeGuideFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSizeGuideFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    setIsSizeGuideUploading(true);
-    try {
-      // Clean up any previous temp upload first
-      if (tempSizeGuideRef.current) {
-        await deleteTempFile(tempSizeGuideRef.current).catch(() => null);
-      }
-      const { path, url } = await uploadTempFile(file);
-      tempSizeGuideRef.current = path;
-      setValue("sizeGuide", url);
-      setSizeGuidePreview(url);
-    } catch {
-      toast.error(en.failed_to_upload_image);
-    } finally {
-      setIsSizeGuideUploading(false);
-      e.target.value = "";
-    }
+    uploadSizeGuide(file);
+    e.target.value = "";
   };
 
-  const handleSizeGuideRemove = async () => {
-    if (tempSizeGuideRef.current) {
-      await deleteTempFile(tempSizeGuideRef.current).catch(() => null);
-      tempSizeGuideRef.current = null;
-    }
-    setValue("sizeGuide", "");
-    setSizeGuidePreview(null);
-  };
+  const handleSizeGuideRemove = () => removeSizeGuideImage();
+
+  const { mutate: uploadSizeGuide, isPending: isSizeGuideUploading } = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await updateSizeGuide(productId!, formData);
+      if (!response.success) throw new Error(response.error || en.failed_to_upload_image);
+      return response.data.imageUrl as string;
+    },
+    onSuccess: (imageUrl) => {
+      queryClient.setQueryData(["products", productId], (old: any) =>
+        old ? { ...old, sizeGuide: imageUrl } : old
+      );
+      setSizeGuidePreview(imageUrl);
+      toast.success(en.product_updated_successfully);
+    },
+    onError: (error: Error) => toast.error(error.message || en.failed_to_upload_image),
+  });
+
+  const { mutate: removeSizeGuideImage, isPending: isDeletingSizeGuide } = useMutation({
+    mutationFn: async () => {
+      const response = await removeSizeGuide(productId!);
+      if (!response.success) throw new Error(response.error || en.failed_to_remove_image);
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(["products", productId], (old: any) =>
+        old ? { ...old, sizeGuide: null } : old
+      );
+      setSizeGuidePreview(null);
+      toast.success(en.product_updated_successfully);
+    },
+    onError: (error: Error) => toast.error(error.message || en.failed_to_remove_image),
+  });
 
   const { mutate: featuredStatustoggler } = useMutation({
     mutationFn: (id: string) => toggleFeaturedStatus(id),
@@ -455,6 +459,22 @@ export default function ProductDetailPage() {
               </Field>
             </FieldGroup>
 
+            <FieldGroup className="flex items-end justify-center">
+              <div className="flex flex-row gap-3">
+                <Button className="w-30" variant={"default"} disabled={hasDataChanged()} onClick={() => handleSubmit()}>Save</Button>
+                <Button className="w-30" variant={"default"} disabled={hasDataChanged()} onClick={() => handleReset()}> Reset</Button>
+              </div>
+            </FieldGroup>
+
+            <Separator className="bg-neutral-400" />
+
+            <FieldGroup className="flex lg:flex-row">
+              <IsFeaturedToggler isFeatured={product?.isFeatured} isLoading={isPending} toggler={() => featuredStatustoggler(product!.id)} />
+              <ProductStatusChanger productStatus={product?.status as ProductStatus} isLoading={isPending} changer={productStatusChanger} />
+            </FieldGroup>
+
+            <Separator className="bg-neutral-400" />
+            
             <FieldGroup className="flex flex-col gap-2">
               <Field className="flex flex-col gap-2">
                 <Label htmlFor="edit-sizeguide"> {en.size_guide_image} </Label>
@@ -491,8 +511,9 @@ export default function ProductDetailPage() {
                         size="sm"
                         className="w-fit"
                         onClick={handleSizeGuideRemove}
-                        disabled={isPending || isSizeGuideUploading}
+                        disabled={isDeletingSizeGuide}
                       >
+                        {isDeletingSizeGuide && <Loader2 size={14} className="animate-spin mr-1" />}
                         {en.remove}
                       </Button>
                     </div>
@@ -500,20 +521,6 @@ export default function ProductDetailPage() {
                 )}
               </Field>
             </FieldGroup>
-            <FieldGroup className="flex items-end justify-center">
-              <div className="flex flex-row gap-3">
-                <Button className="w-30" variant={"default"} disabled={hasDataChanged() || isSizeGuideUploading} onClick={() => handleSubmit()}>Save</Button>
-                <Button className="w-30" variant={"default"} disabled={hasDataChanged()} onClick={() => handleReset()}> Reset</Button>
-              </div>
-            </FieldGroup>
-          </FieldGroup>
-          
-
-          <Separator className="bg-neutral-400" />
-
-          <FieldGroup className="flex lg:flex-row">
-            <IsFeaturedToggler isFeatured={product?.isFeatured} isLoading={isPending} toggler={() => featuredStatustoggler(product!.id)} />
-            <ProductStatusChanger productStatus={product?.status as ProductStatus} isLoading={isPending} changer={productStatusChanger} />
           </FieldGroup>
         </div>
       </div>

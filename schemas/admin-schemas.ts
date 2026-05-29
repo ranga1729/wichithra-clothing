@@ -25,11 +25,6 @@ export const categorySchema = z.object({
     .number()
     .int("Must be an integer")
     .min(0, "Must be zero or greater"),
-  sizeGuide: z  
-    .url()
-    .optional()
-    .or(z.literal(""))
-    .transform((val) => val === "" ? undefined : val),
 })
 
 export const designSchema = z.object({
@@ -57,11 +52,6 @@ export const colorSchema = z.object({
   hexCode: z
     .string()
     .length(6, "Color code must have 6 digits")
-    .optional()
-    .or(z.literal(""))
-    .transform((val) => val === "" ? undefined : val),
-  swatchImageUrl: z
-    .url()
     .optional()
     .or(z.literal(""))
     .transform((val) => val === "" ? undefined : val),
@@ -223,11 +213,6 @@ export const basicProductInfoSchema = z.object({
   careInstructions: z.string().nullable(),
   metaTitle: z.string().max(200).nullable(),
   metaDescription: z.string().nullable(),
-  sizeGuide: z
-    .url()
-    .optional()
-    .or(z.literal(""))
-    .transform((val) => val === "" ? undefined : val),
 });
 
 // ─── Inventory ───────────────────────────────────────────────────────────────

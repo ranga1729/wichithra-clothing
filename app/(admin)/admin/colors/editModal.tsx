@@ -12,11 +12,10 @@ import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { updateColorById } from "./action";
+import { updateColorById, updateColorSwatch, removeColorSwatch } from "./action";
 import toast from "react-hot-toast";
-import { deleteTempFile, SUPABASE_BUCKET, SUPABASE_FOLDERS, uploadTempFile } from "@/components/providers/supabase/storage";
 
 interface Props {
   isModalOpen: boolean;
@@ -27,8 +26,8 @@ interface Props {
 export default function EditModal(props: Props) {
   const [prevData, setPrevData] = useState<Color>();
   const [filePreview, setFilePreview] = useState<string | null>(null);
-  const [isFileUploading, setIsFileUploading] = useState(false);
-  const tempUploadPathRef = useRef<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [swatchMarkedForRemoval, setSwatchMarkedForRemoval] = useState(false);
   const queryClient = useQueryClient();
   
   const {
@@ -41,7 +40,6 @@ export default function EditModal(props: Props) {
     defaultValues: {
       name: props.selectedColor?.name,
       hexCode: props.selectedColor?.hexCode ?? "",
-      swatchImageUrl: props.selectedColor?.swatchImageUrl ?? "",
     },
   });
 
@@ -49,19 +47,16 @@ export default function EditModal(props: Props) {
 
   const hasChanges = useMemo(() => {
     if(!prevData) return false;
-
     const nameChanged = currentFormData.name !== prevData.name;
     const hexCodeChanged = currentFormData.hexCode !== (prevData.hexCode ?? "");
-    const swatchChanged = currentFormData.swatchImageUrl !== (prevData.swatchImageUrl ?? "");
-
+    const swatchChanged = selectedFile !== null || swatchMarkedForRemoval;
     return nameChanged || hexCodeChanged || swatchChanged;
-  }, [currentFormData, prevData])
+  }, [currentFormData, prevData, selectedFile, swatchMarkedForRemoval])
  
   const handleCancel = () => {
-    if (tempUploadPathRef.current) {
-      deleteTempFile(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
-      tempUploadPathRef.current = null;
-    }
+    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
+    setSelectedFile(null);
+    setSwatchMarkedForRemoval(false);
     props.onOpenChange(false);
     reset();
     setFilePreview(null);
@@ -73,22 +68,36 @@ export default function EditModal(props: Props) {
       setPrevData(props.selectedColor)
       setValue("name", props.selectedColor.name)
       setValue("hexCode", props.selectedColor.hexCode ?? "")
-      setValue("swatchImageUrl", props.selectedColor.swatchImageUrl ?? "")
       setFilePreview(props.selectedColor.swatchImageUrl ?? null);
-      tempUploadPathRef.current = null;
+      setSelectedFile(null);
+      setSwatchMarkedForRemoval(false);
     }
   }, [props.selectedColor])
 
   // react query
   const {mutate: updateColor, isPending} = useMutation({
-    mutationFn: ({id, data}:{id: string, data: ColorSchema}) => updateColorById(id, data),
+    mutationFn: async ({id, data}:{id: string, data: ColorSchema}) => {
+      const response = await updateColorById(id, data);
+      if (!response.success) return response;
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        const swatchRes = await updateColorSwatch(id, formData);
+        if (!swatchRes.success) toast.error(swatchRes.error || en.failed_to_upload_image);
+      } else if (swatchMarkedForRemoval) {
+        await removeColorSwatch(id);
+      }
+      return response;
+    },
     onSuccess: (response) => {
       if (response.success) {
-        tempUploadPathRef.current = null;
+        if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
         queryClient.invalidateQueries({ queryKey: ['colors'] });
         toast.success(en.color_updated_successfully);
         reset();
         setFilePreview(null);
+        setSelectedFile(null);
+        setSwatchMarkedForRemoval(false);
         props.onOpenChange(false);
         setPrevData(undefined);
       } else {
@@ -100,35 +109,21 @@ export default function EditModal(props: Props) {
     },
   });
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSwatchFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (tempUploadPathRef.current) {
-      await deleteTempFile(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
-      tempUploadPathRef.current = null;
-    }
-
-    setIsFileUploading(true);
-    try {
-      const { path, url } = await uploadTempFile(file);
-      tempUploadPathRef.current = path;
-      setValue("swatchImageUrl", url, { shouldValidate: true });
-      setFilePreview(url);
-    } catch (error: any) {
-      toast.error(error.message || en.failed_to_upload_image);
-    } finally {
-      setIsFileUploading(false);
-    }
+    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
+    setSelectedFile(file);
+    setFilePreview(URL.createObjectURL(file));
+    setSwatchMarkedForRemoval(false);
+    e.target.value = "";
   };
 
-  const handleRemoveFile = () => {
-    if (tempUploadPathRef.current) {
-      deleteTempFile(tempUploadPathRef.current).catch((error) => toast.error(error.message || en.failed_to_remove_image));
-      tempUploadPathRef.current = null;
-    }
-    setValue("swatchImageUrl", "");
+  const handleRemoveSwatch = () => {
+    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
+    setSelectedFile(null);
     setFilePreview(null);
+    if (props.selectedColor?.swatchImageUrl) setSwatchMarkedForRemoval(true);
   };
 
   const onSubmit = (data: ColorSchema) => updateColor({id: prevData?.id!, data: data})
@@ -207,28 +202,41 @@ export default function EditModal(props: Props) {
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
                   className="cursor-pointer"
-                  onChange={handleFileChange}
-                  disabled={isPending || isFileUploading}
+                  onChange={handleSwatchFileChange}
+                  disabled={isPending}
                 />
-                {isFileUploading && <span className="text-sm text-muted-foreground">Uploading...</span>}
               </div>
               {filePreview && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleRemoveFile}
-                  disabled={isPending}
-                >
-                  {en.remove}
-                </Button>
+                <div className="flex flex-col gap-2 mt-2">
+                  <img
+                    src={filePreview}
+                    alt="Swatch preview"
+                    className="max-h-60 rounded object-contain"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleRemoveSwatch}
+                    disabled={isPending}
+                  >
+                    {en.remove}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => window.open(filePreview!, "_blank")}
+                  >
+                    {en.view}
+                  </Button>
+                </div>
               )}
             </Field>
           </FieldGroup>
           </FieldGroup>
 
           <DialogFooter className="mt-6">
-            <Button type="submit" disabled={isPending || !hasChanges || !isValid || isFileUploading}>
+            <Button type="submit" disabled={isPending || !hasChanges || !isValid}>
               {isPending ? <>
                   <LoaderCircle className="animate-spin w-8 h-8" /> {en.saving}
                 </> : <>{en.save}</> }
