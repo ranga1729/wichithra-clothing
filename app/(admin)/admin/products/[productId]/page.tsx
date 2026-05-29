@@ -5,9 +5,6 @@ import { useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react";
 import { changeBasicInfo, changeProductStatus, getProductById, toggleFeaturedStatus } from "../action";
 import toast from "react-hot-toast";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
-import Image from "next/image";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -29,6 +26,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { formatLabel } from "@/lib/utils";
 import { getCategorySelectorData } from "../../categories/action";
 import { deleteTempFile, uploadTempFile } from "@/components/providers/supabase/storage";
+import { Eye } from "lucide-react";
+import ProductImageCarousel from "@/components/custom/general/product-image-carousel";
 
 export default function ProductDetailPage() {  
   const params = useParams();
@@ -38,6 +37,7 @@ export default function ProductDetailPage() {
   const [sizeGuidePreview, setSizeGuidePreview] = useState<string | null>(null);
   const [isSizeGuideUploading, setIsSizeGuideUploading] = useState(false);
   const tempSizeGuideRef = useRef<string | null>(null);
+
 
   // react queries
   const { data:product, isPending, error, isError } = useQuery({
@@ -51,8 +51,6 @@ export default function ProductDetailPage() {
     },
     placeholderData: (prevdata) => prevdata
   })
-
-  console.log(product)
   
   const {
     register,
@@ -232,39 +230,9 @@ export default function ProductDetailPage() {
     }
   }, [error, isError])
 
-  const ImageCarousel = () => {
-    return <Carousel
-        opts={{
-          align: "start",
-        }}
-        className="w-full sm:max-w-md md:max-w-lg lg:max-w-4xl"
-      >
-      <CarouselPrevious />
-      <CarouselContent>
-        {product?.productImages.map((image:any, index:number) => (
-          <CarouselItem key={index} className="basis-1/2 lg:basis-1/4">
-            <div className="p-1">
-              <Card className="p-0.5 bg-neutral-400 dark:bg-neutral-700">
-                <CardContent className="flex aspect-square items-center justify-center m-0 p-0">
-                  <Image src={image.imageUrl} alt={"test"} width={1200} height={1200} className="rounded-xl" />
-                </CardContent>
-              </Card>
-            </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselNext />
-    </Carousel>
-  }
-
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <h1 className="font-bold text-md text-neutral-600 text-center">Product Images</h1>
-        <div className="flex items-center justify-center bg-neutral-200 dark:bg-neutral-600 py-3 rounded-2xl">
-          <ImageCarousel />
-        </div>
-      </div>
+      <ProductImageCarousel productId={productId!} productImages={product?.productImages ?? []} />
 
       <div className="flex flex-col gap-2">
         <h1 className="font-bold text-md text-neutral-600 text-center">Product Information</h1>
@@ -507,16 +475,27 @@ export default function ProductDetailPage() {
                       alt="Size guide preview"
                       className="max-h-48 rounded-lg object-contain border border-neutral-300"
                     />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="w-fit"
-                      onClick={handleSizeGuideRemove}
-                      disabled={isPending || isSizeGuideUploading}
-                    >
-                      {en.remove}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-fit"
+                        onClick={() => window.open(sizeGuidePreview, "_blank")}
+                      >
+                        <Eye size={14} className="mr-1" /> View
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="w-fit"
+                        onClick={handleSizeGuideRemove}
+                        disabled={isPending || isSizeGuideUploading}
+                      >
+                        {en.remove}
+                      </Button>
+                    </div>
                   </div>
                 )}
               </Field>

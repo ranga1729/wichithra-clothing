@@ -576,3 +576,115 @@ export async function createNewProduct(data: BasicProductInfoSchema):Promise<Api
     };
   }
 }
+
+export async function addProductImage(productId: string, tempPath: string): Promise<ApiResponse> {
+  try {
+    await requireRole(["admin", "super-admin"]);
+
+    const product = await prisma.product.findUnique({
+      where: { id: productId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!product) return { success: false, error: en.product_doesnt_exist };
+
+    const existingCount = await prisma.productImage.count({
+      where: { productId, deletedAt: null },
+    });
+
+    if (existingCount >= 10) {
+      return { success: false, error: en.product_image_limit_reached };
+    }
+
+    const newImage = await prisma.productImage.create({
+      data: {
+        productId,
+        imageUrl: `temp:${tempPath}`,
+        isPrimary: existingCount === 0,
+        sortOrder: existingCount,
+      },
+    });
+
+    // Move the temp file to its permanent location, named by the record ID
+    let publicUrl: string;
+    try {
+      const result = await moveTempToPermanent(tempPath, SUPABASE_FOLDERS.PRODUCTS, newImage.id);
+      publicUrl = result.publicUrl;
+    } catch {
+      // Clean up the orphaned DB record
+      await prisma.productImage.delete({ where: { id: newImage.id } }).catch(() => null);
+      return { success: false, error: en.failed_to_upload_image };
+    }
+
+    // Update the record with the real URL
+    await prisma.productImage.update({
+      where: { id: newImage.id },
+      data: { imageUrl: publicUrl },
+    });
+
+    revalidatePath(`/admin/products/${productId}`);
+    return { 
+      success: true, 
+      data: { 
+        id: newImage.id, 
+        imageUrl: publicUrl 
+      } 
+    };
+
+  } catch (error) {
+    if (error instanceof AuthError) throw error;
+    console.error("Error adding product image:", error);
+
+    if (error instanceof Error) return { 
+      success: false, error: 
+      error.message 
+    };
+
+    return { 
+      success: false, 
+      error: en.failed_to_upload_image 
+    };
+  }
+}
+
+export async function deleteProductImage(imageId: string): Promise<ApiResponse> {
+  try {
+    await requireRole(["admin", "super-admin"]);
+
+    const image = await prisma.productImage.findUnique({
+      where: { id: imageId },
+      select: { id: true, imageUrl: true, productId: true, deletedAt: true },
+    });
+
+    if (!image || image.deletedAt) {
+      return { success: false, error: en.failed_to_remove_image };
+    }
+
+    try {
+      const url = new URL(image.imageUrl);
+      const path = url.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+      if (path) await deleteImage(path).catch(() => null);
+    } catch {
+      // URL might be a placeholder — ignore
+    }
+
+    // Hard delete the DB record
+    await prisma.productImage.delete({ where: { id: imageId } });
+
+    revalidatePath(`/admin/products/${image.productId}`);
+    return { success: true };
+
+  } catch (error) {
+    if (error instanceof AuthError) throw error;
+    console.error("Error deleting product image:", error);
+
+    if (error instanceof Error) return { 
+      success: false, 
+      error: error.message 
+    };
+
+    return { 
+      success: false, 
+      error: en.failed_to_remove_image 
+    };
+  }
+}

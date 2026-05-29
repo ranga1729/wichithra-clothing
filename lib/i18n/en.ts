@@ -144,6 +144,7 @@ export const en = {
 
   meta_title: "Meta Title",
   meta_description: "Meta Description",
+  product_image_limit_reached: "Product already has the maximum of 10 images",
 
   error_updating: "Error updating",
   error_creating: "Error creating",
