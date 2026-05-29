@@ -162,7 +162,6 @@ export const productSchema = z.object({
     .max(100)
     .default(0),
   isFeatured: z.boolean(),
-  isActive: z.boolean(),
   status: z.enum(ProductStatus),
 
   category: categorySelectSchema,
@@ -222,6 +221,13 @@ export const basicProductInfoSchema = z.object({
   brand: z.string().nullable(),
   material: z.string().nullable(),
   careInstructions: z.string().nullable(),
+  metaTitle: z.string().max(200).nullable(),
+  metaDescription: z.string().nullable(),
+  sizeGuide: z
+    .url()
+    .optional()
+    .or(z.literal(""))
+    .transform((val) => val === "" ? undefined : val),
 });
 
 // ─── Inventory ───────────────────────────────────────────────────────────────
@@ -286,7 +292,7 @@ export type SimpleProductSchema = z.infer<typeof simpleProductSchema>
 
 export type VariantSchema = z.infer<typeof variantSchema>
 export type ProductDesignSchema = z.infer<typeof productDesignSchema>
-export type BasicProductInfoSchema = z.infer<typeof basicProductInfoSchema>;
+export type BasicProductInfoSchema = z.input<typeof basicProductInfoSchema>;
 
 export type InventorySchema = z.infer<typeof inventorySchema>
 export type SimpleInventorySchema = z.infer<typeof simpleInventorySchema>

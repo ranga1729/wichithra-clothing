@@ -1,9 +1,9 @@
 'use client'
 
-import { AgeGroupSchema, basicProductInfoSchema, BasicProductInfoSchema, GenderSchema, productSchema, ProductSchema } from "@/schemas/admin-schemas";
+import { AgeGroupSchema, basicProductInfoSchema, BasicProductInfoSchema, GenderSchema } from "@/schemas/admin-schemas";
 import { useParams } from "next/navigation"
-import { useEffect } from "react";
-import { changeBasicInfo, changeProductStatus, getProductById, getProducts, toggleFeaturedStatus } from "../action";
+import { useEffect, useRef, useState } from "react";
+import { changeBasicInfo, changeProductStatus, getProductById, toggleFeaturedStatus } from "../action";
 import toast from "react-hot-toast";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,11 +28,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatLabel } from "@/lib/utils";
 import { getCategorySelectorData } from "../../categories/action";
+import { deleteTempFile, uploadTempFile } from "@/components/providers/supabase/storage";
 
 export default function ProductDetailPage() {  
   const params = useParams();
   const productId = params.productId?.toString();
   const queryClient = useQueryClient();
+
+  const [sizeGuidePreview, setSizeGuidePreview] = useState<string | null>(null);
+  const [isSizeGuideUploading, setIsSizeGuideUploading] = useState(false);
+  const tempSizeGuideRef = useRef<string | null>(null);
 
   // react queries
   const { data:product, isPending, error, isError } = useQuery({
@@ -46,6 +51,8 @@ export default function ProductDetailPage() {
     },
     placeholderData: (prevdata) => prevdata
   })
+
+  console.log(product)
   
   const {
     register,
@@ -62,6 +69,13 @@ export default function ProductDetailPage() {
       gender: product?.gender || "",
       category: product?.category || undefined,
       brand: product?.brand || "",
+      material: product?.material || "",
+      careInstructions: product?.careInstructions || "",
+      description: product?.description || "",
+      discountPercentage: product?.discountPercentage ?? 0,
+      metaTitle: product?.metaTitle || "",
+      metaDescription: product?.metaDescription || "",
+      sizeGuide: product?.sizeGuide || "",
     },
   });
   
@@ -79,7 +93,12 @@ export default function ProductDetailPage() {
       setValue("material", product.material);
       setValue("careInstructions", product.careInstructions);
       setValue("description", product.description);
-      setValue("discountPercentage", product.discountPercentage)
+      setValue("discountPercentage", product.discountPercentage);
+      setValue("metaTitle", product.metaTitle ?? "");
+      setValue("metaDescription", product.metaDescription ?? "");
+      setValue("sizeGuide", product.sizeGuide ?? "");
+      setSizeGuidePreview(product.sizeGuide ?? null);
+      tempSizeGuideRef.current = null;
     }
   };
 
@@ -92,21 +111,22 @@ export default function ProductDetailPage() {
   }
 
   const hasDataChanged = () => {
-    if(
-      currentFormData.name != product?.name ||
-      currentFormData.slug != product.slug ||
-      currentFormData.brand != product.brand ||
-      currentFormData.material != product.material ||
-      currentFormData.careInstructions != product.careInstructions ||
-      currentFormData.description != product.description ||
-      Number(currentFormData.discountPercentage) != product.discountPercentage,
-      currentFormData.ageGroup != product?.ageGroup,
-      currentFormData.gender != product?.gender,
-      currentFormData.category != product?.category
-    ) {
-      return false;
-    }
-    return true;
+    if (!product) return true;
+    return (
+      currentFormData.name === product.name &&
+      currentFormData.slug === product.slug &&
+      (currentFormData.brand ?? "") === (product.brand ?? "") &&
+      (currentFormData.material ?? "") === (product.material ?? "") &&
+      (currentFormData.careInstructions ?? "") === (product.careInstructions ?? "") &&
+      currentFormData.description === product.description &&
+      Number(currentFormData.discountPercentage) === Number(product.discountPercentage) &&
+      currentFormData.ageGroup === product.ageGroup &&
+      currentFormData.gender === product.gender &&
+      currentFormData.category?.id === product.category?.id &&
+      (currentFormData.metaTitle ?? "") === (product.metaTitle ?? "") &&
+      (currentFormData.metaDescription ?? "") === (product.metaDescription ?? "") &&
+      (currentFormData.sizeGuide ?? "") === (product.sizeGuide ?? "")
+    );
   }
 
   const handleSelectorChange = (name: keyof BasicProductInfoSchema, value: string) => {
@@ -118,21 +138,36 @@ export default function ProductDetailPage() {
     if (selected) setValue("category", { id: selected.id, name: selected.name, slug: selected.slug })
   }
 
-  // react queries
-  // const { mutate: activeStatusToggler } = useMutation({
-  //   mutationFn: (id: string) => toggleActiveStatus(id),
-  //   onSuccess: (response) => {
-  //     if (response.success) {
-  //       queryClient.invalidateQueries({ queryKey: ["products"] });
-  //       toast.success(en.product_updated_successfully);
-  //     } else {
-  //       toast.error(response.error || en.product_update_failed);
-  //     }
-  //   },
-  //   onError: (error: Error) => {
-  //     toast.error(error.message || en.category_update_failed);
-  //   },
-  // });
+  const handleSizeGuideFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsSizeGuideUploading(true);
+    try {
+      // Clean up any previous temp upload first
+      if (tempSizeGuideRef.current) {
+        await deleteTempFile(tempSizeGuideRef.current).catch(() => null);
+      }
+      const { path, url } = await uploadTempFile(file);
+      tempSizeGuideRef.current = path;
+      setValue("sizeGuide", url);
+      setSizeGuidePreview(url);
+    } catch {
+      toast.error(en.failed_to_upload_image);
+    } finally {
+      setIsSizeGuideUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleSizeGuideRemove = async () => {
+    if (tempSizeGuideRef.current) {
+      await deleteTempFile(tempSizeGuideRef.current).catch(() => null);
+      tempSizeGuideRef.current = null;
+    }
+    setValue("sizeGuide", "");
+    setSizeGuidePreview(null);
+  };
 
   const { mutate: featuredStatustoggler } = useMutation({
     mutationFn: (id: string) => toggleFeaturedStatus(id),
@@ -150,7 +185,7 @@ export default function ProductDetailPage() {
   });
 
   const { mutate: productStatusChanger } = useMutation({
-    mutationFn: (newStatus:ProductStatus) => changeProductStatus(product.id, newStatus),
+    mutationFn: (newStatus:ProductStatus) => changeProductStatus(product?.id!, newStatus),
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -180,7 +215,7 @@ export default function ProductDetailPage() {
   });
 
   const { data : categorySelectorData } = useQuery({
-    queryKey: ['products'],
+    queryKey: ['categories'],
     queryFn: async () => {
       const response = await getCategorySelectorData()
       if(!response.success) {
@@ -269,6 +304,24 @@ export default function ProductDetailPage() {
                 </div>
               </Field>
             </FieldGroup>
+            <FieldGroup className="flex flex-row flex-wrap gap-4">
+              <Field className="flex flex-col gap-2">
+                <Label htmlFor="edit-description"> {en.description} </Label>
+                <div> 
+                  <Textarea
+                    id="edit-description"
+                    placeholder="Description of this product"
+                    {...register("description")}
+                    disabled= {isPending}
+                  />
+                  {errors.description && (
+                    <span className="text-sm text-red-500">
+                      {errors.description.message as string}
+                    </span>
+                  )}
+                </div> 
+              </Field>
+            </FieldGroup>
             
             <FieldGroup className="flex flex-row flex-wrap gap-4">
               <Field className="flex flex-col gap-2 flex-1">
@@ -325,22 +378,22 @@ export default function ProductDetailPage() {
             </FieldGroup>
 
             <FieldGroup className="flex flex-row flex-wrap gap-4">
-              <Field className="flex flex-col gap-2 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <Label htmlFor="slider-demo-temperature">{en.discount_precentage}</Label>
-                    <span className="text-muted-foreground text-sm">
-                      {currentFormData.discountPercentage + "%"}
-                    </span>
-                  </div>
-                  <Slider 
-                    id="discount-percentage-handle"
-                    value={[currentFormData.discountPercentage as number]}
-                    min={0}
-                    max={100}
-                    step={1}
-                    className="mx-auto w-full max-w-xs border border-neutral-500 rounded-2xl"
-                    onValueChange={(value) => setValue("discountPercentage", value[0])}
-                  />
+              <Field className="flex flex-col gap-2 flex-1 ">
+                <div className="flex items-center justify-start gap-2">
+                  <Label htmlFor="slider-demo-temperature">{en.discount_precentage}</Label>
+                  <span className="text-muted-foreground text-sm">
+                    {currentFormData.discountPercentage + "%"}
+                  </span>
+                </div>
+                <Slider 
+                  id="discount-percentage-handle"
+                  value={[currentFormData.discountPercentage as number]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="mx-auto w-full max-w-xs border border-neutral-500 rounded-2xl"
+                  onValueChange={(value) => setValue("discountPercentage", value[0])}
+                />
               </Field>
             </FieldGroup>
             <FieldGroup className="flex flex-row flex-wrap gap-4">
@@ -394,26 +447,83 @@ export default function ProductDetailPage() {
                   )}
                 </div>
               </Field>
-              <Field className="flex flex-col gap-2">
-                <Label htmlFor="edit-description"> {en.description} </Label>
-                <div> 
-                  <Textarea
-                    id="edit-description"
-                    placeholder="Description of this product"
-                    {...register("description")}
-                    disabled= {isPending}
+            </FieldGroup>
+
+            <FieldGroup className="flex flex-row flex-wrap gap-4">
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="edit-metatitle"> {en.meta_title} </Label>
+                <div className="flex flex-col">
+                  <Input
+                    id="edit-metatitle"
+                    placeholder={en.meta_title}
+                    {...register("metaTitle")}
+                    disabled={isPending}
                   />
-                  {errors.description && (
+                  {errors.metaTitle && (
                     <span className="text-sm text-red-500">
-                      {errors.description.message as string}
+                      {errors.metaTitle.message as string}
                     </span>
                   )}
-                </div> 
+                </div>
+              </Field>
+            </FieldGroup>
+
+            <FieldGroup className="flex flex-row flex-wrap gap-4">
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="edit-metadescription"> {en.meta_description} </Label>
+                <div className="flex flex-col">
+                  <Textarea
+                    id="edit-metadescription"
+                    placeholder={en.meta_description}
+                    {...register("metaDescription")}
+                    disabled={isPending}
+                  />
+                  {errors.metaDescription && (
+                    <span className="text-sm text-red-500">
+                      {errors.metaDescription.message as string}
+                    </span>
+                  )}
+                </div>
+              </Field>
+            </FieldGroup>
+
+            <FieldGroup className="flex flex-col gap-2">
+              <Field className="flex flex-col gap-2">
+                <Label htmlFor="edit-sizeguide"> {en.size_guide_image} </Label>
+                <Input
+                  id="edit-sizeguide"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/jpg"
+                  onChange={handleSizeGuideFileChange}
+                  disabled={isPending || isSizeGuideUploading}
+                />
+                {isSizeGuideUploading && (
+                  <span className="text-sm text-muted-foreground">{en.loading}</span>
+                )}
+                {sizeGuidePreview && (
+                  <div className="flex flex-col gap-2 mt-2">
+                    <img
+                      src={sizeGuidePreview}
+                      alt="Size guide preview"
+                      className="max-h-48 rounded-lg object-contain border border-neutral-300"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="w-fit"
+                      onClick={handleSizeGuideRemove}
+                      disabled={isPending || isSizeGuideUploading}
+                    >
+                      {en.remove}
+                    </Button>
+                  </div>
+                )}
               </Field>
             </FieldGroup>
             <FieldGroup className="flex items-end justify-center">
               <div className="flex flex-row gap-3">
-                <Button className="w-30" variant={"default"} disabled={hasDataChanged()} onClick={() => handleSubmit()}>Save</Button>
+                <Button className="w-30" variant={"default"} disabled={hasDataChanged() || isSizeGuideUploading} onClick={() => handleSubmit()}>Save</Button>
                 <Button className="w-30" variant={"default"} disabled={hasDataChanged()} onClick={() => handleReset()}> Reset</Button>
               </div>
             </FieldGroup>

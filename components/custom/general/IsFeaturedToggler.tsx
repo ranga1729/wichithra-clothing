@@ -1,7 +1,6 @@
 import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from "@/components/ui/field"
 import { Switch } from "@/components/ui/switch"
 import { en } from "@/lib/i18n/en"
-import { useState } from "react"
 
 interface Props {
   isFeatured? : boolean;

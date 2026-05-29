@@ -9,6 +9,7 @@ import { ProductFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { revalidatePath } from "next/cache";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
+import { SUPABASE_BUCKET, SUPABASE_FOLDERS, moveTempToPermanent, deleteImage } from "@/components/providers/supabase/storage";
 
 export async function getProducts(paginator: Paginator, filter: ProductFilter):Promise<ApiResponse> {
   try {
@@ -103,8 +104,6 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
   try {
     await requireRole(["admin", "super-admin"]);
 
-    console.log("id:", productId)
-
     const selectedProduct = await prisma.product.findUnique({
       where: {
         id: productId,
@@ -122,6 +121,9 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
         discountPercentage: true,
         isFeatured: true,
         status: true,
+        metaTitle: true,
+        metaDescription: true,
+        sizeGuide: true,
 
         category: {
           select: {
@@ -193,8 +195,6 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
       },
     });
 
-    console.log(selectedProduct)
-
     const serializedProducts = JSON.parse(JSON.stringify(selectedProduct));
 
     if(!selectedProduct) {
@@ -214,7 +214,6 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
 
   } catch(error:any) {
     if (error instanceof AuthError) throw error;
-    console.log(error)
     return { 
       success: false,
       error: error.message || en.data_retrieval_failed 
@@ -239,6 +238,9 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
         careInstructions: true,
         description: true,
         discountPercentage: true,
+        metaTitle: true,
+        metaDescription: true,
+        sizeGuide: true,
       }
     })
 
@@ -248,6 +250,46 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
         error: en.product_doesnt_exist
       };
     }
+
+    // ── sizeGuide image handling ──────────────────────────────────────────────
+    let finalSizeGuideUrl: string | null = existingProduct.sizeGuide;
+
+    const incomingSizeGuide = validatedData.sizeGuide || "";
+    const isNewTempUpload = incomingSizeGuide.includes(`/${SUPABASE_FOLDERS.TEMP}/`);
+    const imageWasCleared = !incomingSizeGuide && existingProduct.sizeGuide;
+
+    if (isNewTempUpload) {
+      const url = new URL(incomingSizeGuide);
+      const tempPath = url.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+
+      if (!tempPath) {
+        return { success: false, error: en.data_updatated_but_failed_to_update_image };
+      }
+
+      try {
+        const { publicUrl } = await moveTempToPermanent(
+          tempPath,
+          SUPABASE_FOLDERS.SIZE_GUIDES,
+          existingProduct.id
+        );
+        finalSizeGuideUrl = publicUrl;
+
+        if (existingProduct.sizeGuide && existingProduct.sizeGuide !== publicUrl) {
+          const oldUrl = new URL(existingProduct.sizeGuide);
+          const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+          if (oldPath) await deleteImage(oldPath).catch(() => null);
+        }
+      } catch {
+        await deleteImage(incomingSizeGuide).catch(() => null);
+        return { success: false, error: en.data_updatated_but_failed_to_update_image };
+      }
+    } else if (imageWasCleared) {
+      const oldUrl = new URL(existingProduct.sizeGuide!);
+      const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
+      if (oldPath) await deleteImage(oldPath).catch(() => null);
+      finalSizeGuideUrl = null;
+    }
+    // if unchanged, finalSizeGuideUrl keeps the current value
 
     const updatedProduct = await prisma.product.update({
       where: { id: existingProduct.id },
@@ -261,7 +303,10 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
         discountPercentage: validatedData.discountPercentage,
         gender: validatedData.gender,
         ageGroup: validatedData.ageGroup,
-        categoryId: validatedData.category.id
+        categoryId: validatedData.category.id,
+        metaTitle: validatedData.metaTitle,
+        metaDescription: validatedData.metaDescription,
+        sizeGuide: finalSizeGuideUrl,
       }
     });
 
@@ -297,64 +342,6 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
   }
 }
 
-// export async function toggleActiveStatus(id: string):Promise<ApiResponse> {
-//   try {
-//     await requireRole(["admin", "super-admin"]);
-
-//     const existingProduct = await prisma.product.findUnique({
-//       where: {id : id},
-//       select: {
-//         id: true,
-//         isActive: true,
-//       }
-//     })
-
-//     if(!existingProduct) {
-//       return {
-//         success: false,
-//         error: en.product_doesnt_exist
-//       };
-//     }
-
-//     const updatedProduct = await prisma.product.update({
-//       where: { id: existingProduct.id },
-//       data: {
-//         isActive : !existingProduct.isActive,
-//       }
-//     });
-
-//     if (!updatedProduct) {
-//       return {
-//         success: false,
-//         error: en.product_update_failed,
-//       };
-//     }
-
-//     revalidatePath(`/admin/products/${updatedProduct.id}`);
-
-//     return {
-//       success: true,
-//       message: en.product_updated_successfully,
-//     };
-
-//   } catch(error) {
-//     if (error instanceof AuthError) throw error;
-//     console.error("Error updating product:", error);
-    
-//     if (error instanceof Error) {
-//       return {
-//         success: false,
-//         error: error.message,
-//       };
-//     }
-    
-//     return {
-//       success: false,
-//       error: en.product_update_failed,
-//     };
-//   }
-// }
-
 export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
   try {
     await requireRole(["admin", "super-admin"]);
@@ -367,6 +354,8 @@ export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
       }
     })
 
+    console.log("test:", existingProduct)
+
     if(!existingProduct) {
       return {
         success: false,
@@ -377,8 +366,8 @@ export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
     const updatedProduct = await prisma.product.update({
       where: { id: existingProduct.id },
       data: {
-        isFeatured : !existingProduct.isFeatured,
-      }
+        isFeatured: !existingProduct.isFeatured,
+      },
     });
 
     if (!updatedProduct) {
@@ -487,7 +476,6 @@ export async function createNewProduct(data: BasicProductInfoSchema):Promise<Api
     await requireRole(["admin", "super-admin"]);
 
     const validatedData = basicProductInfoSchema.parse(data);
-    console.log(validatedData)
 
     const existingProducts = await prisma.product.findMany({
       where: {

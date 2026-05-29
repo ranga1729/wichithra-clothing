@@ -138,9 +138,12 @@ export const en = {
 
   product_doesnt_exist: "Product doesn't exist",
   product_update_failed: "Product update failed",
-  product_updated_successfully: "Color updated successfully",
-  product_created_successfully: "Color created successfully",
+  product_updated_successfully: "Product updated successfully",
+  product_created_successfully: "Product created successfully",
   failed_to_create_product: "Failed to create product",
+
+  meta_title: "Meta Title",
+  meta_description: "Meta Description",
 
   error_updating: "Error updating",
   error_creating: "Error creating",
