@@ -168,7 +168,6 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
             sku: true,
             costPrice: true,
             sellingPrice: true,
-            isMainColor: true,
             isActive: true,
             color: {
               select: {

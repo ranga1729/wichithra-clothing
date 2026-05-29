@@ -123,7 +123,6 @@ const variantSchema = z.object({
   sku: z.string(),
   costPrice: z.coerce.number().nullable(),
   sellingPrice: z.coerce.number(),
-  isMainColor: z.boolean(),
   isActive: z.boolean(),
   color: colorSelectSchema,
   size: variantSizeSchema,
@@ -248,9 +247,8 @@ export const inventorySchema = z.object({
   variant: z.object({
     id: z.uuid(),
     sku: z.string(),
-    costPrice: z.coerce.number().nullable(),
+    costPrice: z.coerce.number(),
     sellingPrice: z.coerce.number(),
-    isMainColor: z.boolean(),
     isActive: z.boolean(),
     product: z.object({
       id: z.uuid(),
@@ -287,3 +285,37 @@ export type BasicProductInfoSchema = z.input<typeof basicProductInfoSchema>;
 
 //export type InventorySchema = z.infer<typeof inventorySchema>
 export type InventorySchema = z.infer<typeof inventorySchema>
+export type CreateInventoryItemSchema = z.infer<typeof createInventoryItemSchema>
+
+export const createInventoryItemSchema = z.object({
+  productId: z.uuid("Please select a product"),
+  colorId: z.uuid("Please select a color"),
+  sizeId: z.uuid("Please select a size"),
+  sku: z
+    .string("SKU is required")
+    .min(1, "SKU is required")
+    .max(100, "SKU cannot exceed 100 characters")
+    .transform((val) => val.trim()),
+  costPrice: z
+    .coerce
+    .number()
+    .positive("Cost price must be positive"),
+  sellingPrice: z
+    .coerce
+    .number()
+    .positive("Selling price must be positive"),
+  isActive: z.boolean().default(true),
+  quantity: z
+    .coerce
+    .number()
+    .int("Quantity must be an integer")
+    .min(0, "Quantity must be 0 or more")
+    .default(0),
+  lowStockThreshold: z
+    .coerce
+    .number()
+    .int("Low stock threshold must be an integer")
+    .min(0, "Low stock threshold must be 0 or more")
+    .default(5)
+    .optional(),
+});

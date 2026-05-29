@@ -13,6 +13,8 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { getInventory } from "./actions";
 import { getColumns } from "./columns";
+import { useRouter } from "next/navigation";
+import AddNewButton from "@/components/AddNewButton";
 
 const initialFilter: InventoryFilter = {
   productName: "",
@@ -21,6 +23,7 @@ const initialFilter: InventoryFilter = {
 
 export default function InventoryPage() {
   const tableRef = useRef<TableWithPaginationRef>(null);
+  const router = useRouter();
 
   const [paginator, setPaginator] = useState<Paginator>(initialPaginator);
   const [filter, setFilter] = useState<InventoryFilter>(initialFilter);
@@ -91,6 +94,7 @@ export default function InventoryPage() {
 
         <div className="flex flex-row items-center justify-between">
           <ResetFilterButton onClick={handleReset} />
+          <AddNewButton onClick={() => router.push("/admin/inventory/add-new")} />
         </div>
       </form>
 
