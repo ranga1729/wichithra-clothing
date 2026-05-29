@@ -206,9 +206,8 @@ model ProductVariant {
   colorId      String    @db.Uuid
   sizeId       String    @db.Uuid
   sku          String    @unique @db.VarChar(100)
-  costPrice    Decimal?  @db.Decimal(10, 2)
+  costPrice    Decimal  @db.Decimal(10, 2)
   sellingPrice Decimal   @db.Decimal(10, 2)
-  isMainColor  Boolean   @default(false) // marks the default color shown on the product listing page
   isActive     Boolean   @default(true)
   deletedAt    DateTime? @db.Timestamptz(6)
   createdAt    DateTime  @default(now()) @db.Timestamptz(6)

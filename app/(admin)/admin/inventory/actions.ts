@@ -50,11 +50,18 @@ export async function getInventory(paginator: Paginator, filter: InventoryFilter
             sku: true,
             costPrice: true,
             sellingPrice: true,
-            isMainColor: true,
+            isActive: true,
             product: {
               select: {
                 id: true,
                 name: true,
+                discountPercentage: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
             color: {

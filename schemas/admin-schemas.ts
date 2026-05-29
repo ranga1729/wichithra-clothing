@@ -217,30 +217,30 @@ export const basicProductInfoSchema = z.object({
 
 // ─── Inventory ───────────────────────────────────────────────────────────────
 
-export const inventorySchema = z.object({
-  variantId: z.uuid("Invalid product variant"),
-  quantity: z
-    .coerce
-    .number()
-    .int("Quantity must be an integer")
-    .min(0, "Quantity must be 0 or more")
-    .default(0),
-  reservedQuantity: z
-    .coerce
-    .number()
-    .int("Reserved quantity must be an integer")
-    .min(0, "Reserved quantity must be 0 or more")
-    .default(0),
-  lowStockThreshold: z
-    .coerce
-    .number()
-    .int("Low stock threshold must be an integer")
-    .min(0, "Low stock threshold must be 0 or more")
-    .default(5)
-    .optional(),
-});
+// export const inventorySchema = z.object({
+//   variantId: z.uuid("Invalid product variant"),
+//   quantity: z
+//     .coerce
+//     .number()
+//     .int("Quantity must be an integer")
+//     .min(0, "Quantity must be 0 or more")
+//     .default(0),
+//   reservedQuantity: z
+//     .coerce
+//     .number()
+//     .int("Reserved quantity must be an integer")
+//     .min(0, "Reserved quantity must be 0 or more")
+//     .default(0),
+//   lowStockThreshold: z
+//     .coerce
+//     .number()
+//     .int("Low stock threshold must be an integer")
+//     .min(0, "Low stock threshold must be 0 or more")
+//     .default(5)
+//     .optional(),
+// });
 
-export const simpleInventorySchema = z.object({
+export const inventorySchema = z.object({
   id: z.uuid(),
   quantity: z.number().int(),
   reservedQuantity: z.number().int(),
@@ -251,9 +251,15 @@ export const simpleInventorySchema = z.object({
     costPrice: z.coerce.number().nullable(),
     sellingPrice: z.coerce.number(),
     isMainColor: z.boolean(),
+    isActive: z.boolean(),
     product: z.object({
       id: z.uuid(),
       name: z.string(),
+      discountPercentage: z.coerce.number(),
+      category: z.object({
+        id: z.uuid(),
+        name: z.string(),
+      }),
     }),
     color: z.object({
       id: z.uuid(),
@@ -279,5 +285,5 @@ export type VariantSchema = z.infer<typeof variantSchema>
 export type ProductDesignSchema = z.infer<typeof productDesignSchema>
 export type BasicProductInfoSchema = z.input<typeof basicProductInfoSchema>;
 
+//export type InventorySchema = z.infer<typeof inventorySchema>
 export type InventorySchema = z.infer<typeof inventorySchema>
-export type SimpleInventorySchema = z.infer<typeof simpleInventorySchema>

@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDebounce } from "@/hooks/useDebounce";
 import { en } from "@/lib/i18n/en";
-import { SimpleInventorySchema } from "@/schemas/admin-schemas";
 import { InventoryFilter } from "@/types/filter-types";
 import { initialPaginator, Paginator } from "@/types/table-types";
 import { useQuery } from "@tanstack/react-query";
@@ -39,9 +38,7 @@ export default function InventoryPage() {
   };
 
   const { data, isPending, error, isError } = useQuery({
-    queryKey: [
-      'inventory',
-      'list',
+    queryKey: ['inventory', 'list',
       {
         pageSize: paginator.pageSize,
         pageIndex: paginator.pageIndex,
