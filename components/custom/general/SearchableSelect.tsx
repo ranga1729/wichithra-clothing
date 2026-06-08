@@ -46,7 +46,7 @@ export default function SearchableSelect<T extends { id?: string }>({
       <Combobox
         items={items}
         itemToStringValue={itemToStringValue}
-        value={value !== null ? itemToStringValue(value) : ""}
+        value={(value !== null ? itemToStringValue(value) : "") as any}
         onValueChange={onValueChange}
         disabled={disabled}
       >
