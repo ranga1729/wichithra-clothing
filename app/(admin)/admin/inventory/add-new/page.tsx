@@ -9,7 +9,6 @@ import { Field, FieldGroup } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
 import {
   Select,
   SelectContent,
@@ -23,7 +22,14 @@ import CancelButton from "@/components/CancelButton"
 import { en } from "@/lib/i18n/en"
 import toast from "react-hot-toast"
 import { createInventoryItemSchema, CreateInventoryItemSchema } from "@/schemas/admin-schemas"
-import { useDebounce } from "@/hooks/useDebounce"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox"
 import {
   checkVariantExists,
   createInventoryItem,
@@ -39,10 +45,6 @@ export default function AddNewInventoryItem() {
   const queryClient = useQueryClient()
 
   const [categoryFilter, setCategoryFilter] = useState<string>("")
-  const [productSearch, setProductSearch] = useState<string>("")
-  const [colorSearch, setColorSearch] = useState<string>("")
-
-  const debouncedProductSearch = useDebounce(productSearch, 400)
 
   const {
     register,
@@ -72,7 +74,6 @@ export default function AddNewInventoryItem() {
   useEffect(() => {
     setValue("colorId", "")
     setValue("sizeId", "")
-    setColorSearch("")
   }, [productId, setValue])
 
   // Reset size when color changes
@@ -80,8 +81,7 @@ export default function AddNewInventoryItem() {
     setValue("sizeId", "")
   }, [colorId, setValue])
 
-  // ─── Queries ─────────────────────────────────────────────────────────────
-
+  // queries
   const { data: categories } = useQuery({
     queryKey: ["categorySelectorData"],
     queryFn: async () => {
@@ -93,12 +93,9 @@ export default function AddNewInventoryItem() {
   })
 
   const { data: products } = useQuery({
-    queryKey: ["productSelector", { categoryFilter, search: debouncedProductSearch }],
+    queryKey: ["productSelector", { categoryFilter }],
     queryFn: async () => {
-      const res = await getProductSelectorData(
-        categoryFilter || undefined,
-        debouncedProductSearch || undefined
-      )
+      const res = await getProductSelectorData(categoryFilter || undefined)
       if (!res.success) toast.error(res.error ?? en.data_retrieval_failed)
       return res.data ?? []
     },
@@ -132,12 +129,7 @@ export default function AddNewInventoryItem() {
     enabled: !!(productId && colorId && sizeId),
   })
 
-  const filteredColors = ((colors as any[]) ?? []).filter((c) =>
-    c.name.toLowerCase().includes(colorSearch.toLowerCase())
-  )
-
-  // ─── Mutation ─────────────────────────────────────────────────────────────
-
+  // mutation
   const { mutate: submit, isPending } = useMutation({
     mutationFn: (data: CreateInventoryItemSchema) => createInventoryItem(data),
     onSuccess: (response) => {
@@ -165,13 +157,11 @@ export default function AddNewInventoryItem() {
   const variantAllSelected = !!(productId && colorId && sizeId)
 
   return (
-    <div className="flex flex-col gap-5 w-4xl mx-auto border border-red-500">
+    <div className="flex flex-col gap-5 w-4xl mx-auto">
       
       {/* header */}
       <div className="flex flex-col gap-1">
-        <h1 className="font-bold text-xl text-neutral-700 dark:text-neutral-200">
-          Add New Inventory Item
-        </h1>
+        <h1 className="font-bold text-xl text-neutral-700 dark:text-neutral-200">Add New Inventory Item</h1>
         <p className="text-sm text-neutral-500">
           Select a product, color, and size to create a new product variant with inventory.
         </p>
@@ -181,82 +171,70 @@ export default function AddNewInventoryItem() {
 
         {/* ── Variant Selection ─────────────────────────────────────────── */}
         <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
-          <h2 className="font-semibold text-neutral-600 dark:text-neutral-300">Variant Selection</h2>
-          <Separator className="bg-neutral-200" />
+          <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">Variant Selection</h1>
 
-          {/* Category filter + Product search */}
-          <FieldGroup className="flex flex-row flex-wrap gap-4">
-            <Field className="flex flex-col gap-2 flex-1 min-w-[200px]">
-              <Label>Filter by Category</Label>
-              <Select
-                value={categoryFilter || "__all__"}
-                onValueChange={(val) => {
-                  setCategoryFilter(val === "__all__" ? "" : val)
-                  setValue("productId", "")
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="__all__">All categories</SelectItem>
-                    {((categories as any[]) ?? []).map((c: any) => (
-                      <SelectItem key={c.id} value={c.slug}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </Field>
+          {/* Category filter — drives server-side product query */}
+          <Field className="flex flex-col gap-2">
+            <Label>Filter by Category</Label>
+            <Select
+              value={categoryFilter || "__all__"}
+              onValueChange={(val) => {
+                setCategoryFilter(val === "__all__" ? "" : val)
+                setValue("productId", "")
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="All categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="__all__">All categories</SelectItem>
+                  {((categories as any[]) ?? []).map((c: any) => (
+                    <SelectItem key={c.id} value={c.slug}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </Field>
 
-            <Field className="flex flex-col gap-2 flex-1 min-w-[200px]">
-              <Label>Search Product</Label>
-              <Input
-                placeholder="Type to search products..."
-                value={productSearch}
-                onChange={(e) => setProductSearch(e.target.value)}
-              />
-            </Field>
-          </FieldGroup>
-
-          {/* Product selector */}
+          {/* Product combobox — search and select in one component */}
           <Field className="flex flex-col gap-2">
             <Label htmlFor="productId">Product *</Label>
             <Controller
               name="productId"
               control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value}
-                  onValueChange={(val) => {
-                    field.onChange(val)
-                  }}
-                >
-                  <SelectTrigger
-                    id="productId"
-                    className={errors.productId ? "border-red-500" : ""}
+              render={({ field }) => {
+                const selectedProduct =
+                  ((products as any[]) ?? []).find((p: any) => p.id === field.value) ?? null
+                  
+                return (
+                  <Combobox
+                    items={(products as any[]) ?? []}
+                    itemToStringValue={(p: any) => p?.name ?? ""}
+                    value={selectedProduct?.name ?? ""}
+                    onValueChange={(item: any) => field.onChange(item?.id ?? "")}
                   >
-                    <SelectValue placeholder="Select a product..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {((products as any[]) ?? []).length === 0 ? (
-                        <div className="py-2 px-3 text-sm text-neutral-500">
-                          No products found
-                        </div>
-                      ) : (
-                        ((products as any[]) ?? []).map((p: any) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              )}
+                    <ComboboxInput
+                      id="productId"
+                      placeholder="Search and select a product..."
+                      showClear
+                      aria-invalid={!!errors.productId}
+                    />
+                    <ComboboxContent>
+                      <ComboboxEmpty>No products found.</ComboboxEmpty>
+                      <ComboboxList>
+                        {(product: any) => (
+                          <ComboboxItem key={product?.id ?? product} value={product}>
+                            {product?.name ?? ""}
+                          </ComboboxItem>
+                        )}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                )
+              }}
             />
             {errors.productId && (
               <span className="text-sm text-red-500">
@@ -265,63 +243,52 @@ export default function AddNewInventoryItem() {
             )}
           </Field>
 
-          {/* Color search + Size */}
           <FieldGroup className="flex flex-row flex-wrap gap-4">
-            <Field className="flex flex-col gap-2 flex-1 min-w-[200px]">
-              <Label>Search Color</Label>
-              <Input
-                placeholder="Filter colors..."
-                value={colorSearch}
-                onChange={(e) => setColorSearch(e.target.value)}
-                disabled={!productId}
-              />
-            </Field>
-          </FieldGroup>
-
-          <FieldGroup className="flex flex-row flex-wrap gap-4">
-            {/* Color selector */}
+            {/* Color combobox — search and select in one component */}
             <Field className="flex flex-col gap-2 flex-1 min-w-[200px]">
               <Label htmlFor="colorId">Color *</Label>
               <Controller
                 name="colorId"
                 control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={!productId}
-                  >
-                    <SelectTrigger
-                      id="colorId"
-                      className={errors.colorId ? "border-red-500" : ""}
+                render={({ field }) => {
+                  const selectedColor =
+                    ((colors as any[]) ?? []).find((c: any) => c.id === field.value) ?? null
+                  return (
+                    <Combobox
+                      items={(colors as any[]) ?? []}
+                      itemToStringValue={(c: any) => c.name}
+                      value={selectedColor?.name ?? ""}
+                      onValueChange={(item: any) => field.onChange(item?.id ?? "")}
+                      disabled={!productId}
                     >
-                      <SelectValue placeholder="Select a color..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {filteredColors.length === 0 ? (
-                          <div className="py-2 px-3 text-sm text-neutral-500">
-                            No colors found
-                          </div>
-                        ) : (
-                          filteredColors.map((c: any) => (
-                            <SelectItem key={c.id} value={c.id}>
+                      <ComboboxInput
+                        id="colorId"
+                        placeholder="Search and select a color..."
+                        showClear
+                        disabled={!productId}
+                        aria-invalid={!!errors.colorId}
+                      />
+                      <ComboboxContent>
+                        <ComboboxEmpty>No colors found.</ComboboxEmpty>
+                        <ComboboxList>
+                          {(color: any) => (
+                            <ComboboxItem key={color.id} value={color}>
                               <span className="flex items-center gap-2">
-                                {c.hexCode && (
+                                {color.hexCode && (
                                   <span
                                     className="h-3 w-3 shrink-0 rounded-full border border-neutral-400"
-                                    style={{ backgroundColor: `#${c.hexCode}` }}
+                                    style={{ backgroundColor: `#${color.hexCode}` }}
                                   />
                                 )}
-                                {c.name}
+                                {color.name}
                               </span>
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                )}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
+                  )
+                }}
               />
               {errors.colorId && (
                 <span className="text-sm text-red-500">
@@ -385,7 +352,11 @@ export default function AddNewInventoryItem() {
                 <>
                   <AlertTriangle className="h-4 w-4 shrink-0" />
                   <span>
-                    This product + color + size combination already exists. Please choose a
+                    This product + color + size combination already exists. 
+                    {variantCheck?.variant?.sku && (
+                      <strong className="block my-1">SKU: {variantCheck.variant.sku}</strong>
+                    )}
+                    Please choose a
                     different combination.
                   </span>
                 </>
@@ -401,8 +372,7 @@ export default function AddNewInventoryItem() {
 
         {/* ── Variant Details ───────────────────────────────────────────── */}
         <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
-          <h2 className="font-semibold text-neutral-600 dark:text-neutral-300">Variant Details</h2>
-          <Separator className="bg-neutral-200" />
+          <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">Variant Details</h1>
 
           <Field className="flex flex-col gap-2">
             <Label htmlFor="sku">SKU *</Label>
@@ -477,10 +447,9 @@ export default function AddNewInventoryItem() {
 
         {/* ── Inventory Details ─────────────────────────────────────────── */}
         <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
-          <h2 className="font-semibold text-neutral-600 dark:text-neutral-300">
+          <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">
             Inventory Details
-          </h2>
-          <Separator className="bg-neutral-200" />
+          </h1>
 
           <FieldGroup className="flex flex-row flex-wrap gap-4">
             <Field className="flex flex-col gap-2 flex-1 min-w-[180px]">

@@ -214,31 +214,7 @@ export const basicProductInfoSchema = z.object({
   metaDescription: z.string().nullable(),
 });
 
-// ─── Inventory ───────────────────────────────────────────────────────────────
-
-// export const inventorySchema = z.object({
-//   variantId: z.uuid("Invalid product variant"),
-//   quantity: z
-//     .coerce
-//     .number()
-//     .int("Quantity must be an integer")
-//     .min(0, "Quantity must be 0 or more")
-//     .default(0),
-//   reservedQuantity: z
-//     .coerce
-//     .number()
-//     .int("Reserved quantity must be an integer")
-//     .min(0, "Reserved quantity must be 0 or more")
-//     .default(0),
-//   lowStockThreshold: z
-//     .coerce
-//     .number()
-//     .int("Low stock threshold must be an integer")
-//     .min(0, "Low stock threshold must be 0 or more")
-//     .default(5)
-//     .optional(),
-// });
-
+// Inventory
 export const inventorySchema = z.object({
   id: z.uuid(),
   quantity: z.number().int(),
@@ -272,21 +248,6 @@ export const inventorySchema = z.object({
   }),
 });
 
-export type CategorySchema = z.input<typeof categorySchema>
-export type DesignSchema = z.infer<typeof designSchema>
-export type ColorSchema = z.infer<typeof colorSchema>
-
-export type ProductSchema = z.infer<typeof productSchema>
-export type SimpleProductSchema = z.infer<typeof simpleProductSchema>
-
-export type VariantSchema = z.infer<typeof variantSchema>
-export type ProductDesignSchema = z.infer<typeof productDesignSchema>
-export type BasicProductInfoSchema = z.input<typeof basicProductInfoSchema>;
-
-//export type InventorySchema = z.infer<typeof inventorySchema>
-export type InventorySchema = z.infer<typeof inventorySchema>
-export type CreateInventoryItemSchema = z.infer<typeof createInventoryItemSchema>
-
 export const createInventoryItemSchema = z.object({
   productId: z.uuid("Please select a product"),
   colorId: z.uuid("Please select a color"),
@@ -319,3 +280,18 @@ export const createInventoryItemSchema = z.object({
     .default(5)
     .optional(),
 });
+
+export type CategorySchema = z.input<typeof categorySchema>
+export type DesignSchema = z.infer<typeof designSchema>
+export type ColorSchema = z.infer<typeof colorSchema>
+
+export type ProductSchema = z.infer<typeof productSchema>
+export type SimpleProductSchema = z.infer<typeof simpleProductSchema>
+
+export type VariantSchema = z.infer<typeof variantSchema>
+export type ProductDesignSchema = z.infer<typeof productDesignSchema>
+export type BasicProductInfoSchema = z.input<typeof basicProductInfoSchema>;
+
+//export type InventorySchema = z.infer<typeof inventorySchema>
+export type InventorySchema = z.infer<typeof inventorySchema>
+export type CreateInventoryItemSchema = z.infer<typeof createInventoryItemSchema>

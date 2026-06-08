@@ -180,10 +180,19 @@ export async function checkVariantExists(productId: string, colorId: string, siz
       where: {
         productId_colorId_sizeId: { productId, colorId, sizeId },
       },
-      select: { id: true, sku: true },
+      select: { 
+        id: true, 
+        sku: true 
+      },
     });
 
-    return { success: true, data: { exists: !!variant, variant } };
+    return { 
+      success: true, 
+      data: { 
+        exists: !!variant, 
+        variant: variant
+      } 
+    };
   } catch (error: any) {
     if (error instanceof AuthError) throw error;
     return { success: false, error: error.message || en.data_retrieval_failed };
