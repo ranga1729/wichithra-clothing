@@ -8,10 +8,10 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { en } from "@/lib/i18n/en";
 import { InventoryFilter } from "@/types/filter-types";
 import { initialPaginator, Paginator } from "@/types/table-types";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { getInventory } from "./actions";
+import { getInventory, deleteInventoryItem } from "./actions";
 import { getColumns } from "./columns";
 import { useRouter } from "next/navigation";
 import AddNewButton from "@/components/AddNewButton";
@@ -25,6 +25,7 @@ const initialFilter: InventoryFilter = {
 export default function InventoryPage() {
   const tableRef = useRef<TableWithPaginationRef>(null);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [paginator, setPaginator] = useState<Paginator>(initialPaginator);
   const [filter, setFilter] = useState<InventoryFilter>(initialFilter);
@@ -44,6 +45,21 @@ export default function InventoryPage() {
   const onEdit = (inventory: InventorySchema) => {
     router.push(`/admin/inventory/${inventory.variant.id}`);
   };
+
+  const { mutate: onDelete } = useMutation({
+    mutationFn: (inventory: InventorySchema) => deleteInventoryItem(inventory.variant.id),
+    onSuccess: (res) => {
+      if (res.success) {
+        toast.success(en.inventory_item_deleted_successfully);
+        queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      } else {
+        toast.error(res.error || en.failed_to_delete_inventory_item);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || en.failed_to_delete_inventory_item);
+    },
+  });
 
   const { data, isPending, error, isError } = useQuery({
     queryKey: ['inventory', 'list',
@@ -108,6 +124,7 @@ export default function InventoryPage() {
         columns={getColumns({
           paginator,
           onEdit,
+          onDelete,
         })}
         data={data?.inventory ?? []}
         isLoading={isPending}

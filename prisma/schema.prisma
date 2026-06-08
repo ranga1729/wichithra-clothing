@@ -219,7 +219,6 @@ model ProductVariant {
   size      Size       @relation(fields: [sizeId], references: [id])
   inventory Inventory?
 
-  @@unique([productId, colorId, sizeId])
   @@index([productId])
   @@index([deletedAt])
   @@map("product_variants")

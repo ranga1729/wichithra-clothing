@@ -268,9 +268,13 @@ export async function checkVariantExists(productId: string, colorId: string, siz
   try {
     await requireRole(["admin", "super-admin"]);
 
-    const variant = await prisma.productVariant.findUnique({
+    // Only match active (non-soft-deleted) variants — mirrors the partial unique index
+    const variant = await prisma.productVariant.findFirst({
       where: {
-        productId_colorId_sizeId: { productId, colorId, sizeId },
+        productId,
+        colorId,
+        sizeId,
+        ...notDeleted
       },
       select: { 
         id: true, 
@@ -291,6 +295,48 @@ export async function checkVariantExists(productId: string, colorId: string, siz
   }
 }
 
+export async function deleteInventoryItem(variantId: string): Promise<ApiResponse> {
+  try {
+    await requireRole(["admin", "super-admin"]);
+
+    // Guard: block deletion if there is reserved stock (active carts / pending orders)
+    const inventory = await prisma.inventory.findFirst({
+      where: { variantId, ...notDeleted },
+      select: { id: true, reservedQuantity: true },
+    });
+
+    if (!inventory) {
+      return { success: false, error: en.failed_to_load_inventory_item };
+    }
+
+    if (inventory.reservedQuantity > 0) {
+      return { success: false, error: en.cannot_delete_variant_with_reserved_stock };
+    }
+
+    const now = new Date();
+
+    // Soft-delete both the inventory row and the product variant in a transaction
+    await prisma.$transaction(async (tx) => {
+      await tx.inventory.update({
+        where: { id: inventory.id },
+        data: { deletedAt: now },
+      });
+
+      await tx.productVariant.update({
+        where: { id: variantId },
+        data: { deletedAt: now },
+      });
+    });
+
+    revalidatePath('/admin/inventory');
+
+    return { success: true, message: en.inventory_item_deleted_successfully };
+  } catch (error: any) {
+    if (error instanceof AuthError) throw error;
+    return { success: false, error: error.message || en.failed_to_delete_inventory_item };
+  }
+}
+
 export async function createInventoryItem(data: CreateInventoryItemSchema): Promise<ApiResponse> {
   try {
     await requireRole(["admin", "super-admin"]);
@@ -298,13 +344,12 @@ export async function createInventoryItem(data: CreateInventoryItemSchema): Prom
     const validatedData = createInventoryItemSchema.parse(data);
 
     // Check if variant already exists
-    const existingVariant = await prisma.productVariant.findUnique({
+    const existingVariant = await prisma.productVariant.findFirst({
       where: {
-        productId_colorId_sizeId: {
-          productId: validatedData.productId,
-          colorId: validatedData.colorId,
-          sizeId: validatedData.sizeId,
-        },
+        productId: validatedData.productId,
+        colorId: validatedData.colorId,
+        sizeId: validatedData.sizeId,
+        deletedAt: null,
       },
     });
 

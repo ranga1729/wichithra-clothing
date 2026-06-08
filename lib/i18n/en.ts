@@ -172,6 +172,9 @@ export const en = {
   variant_already_exists: "A variant with this product, color and size combination already exists",
   sku_already_exists: "A variant with this SKU already exists",
   failed_to_load_product_selector_data: "Failed to load product selector data",
+  inventory_item_deleted_successfully: "Inventory item deleted successfully",
+  failed_to_delete_inventory_item: "Failed to delete inventory item",
+  cannot_delete_variant_with_reserved_stock: "Cannot delete this variant — it has reserved stock from active orders or carts. Please resolve those first.",
 
   logged_out_successfully: "Logged out successfully",
   logout_failed: "Logout failed"
