@@ -281,6 +281,30 @@ export const createInventoryItemSchema = z.object({
     .optional(),
 });
 
+export const updateInventoryItemSchema = z.object({
+  costPrice: z
+    .coerce
+    .number()
+    .positive("Cost price must be positive")
+    .optional(),
+  sellingPrice: z
+    .coerce
+    .number()
+    .positive("Selling price must be positive"),
+  isActive: z.boolean().default(true),
+  quantity: z
+    .coerce
+    .number()
+    .int("Quantity must be an integer")
+    .min(0, "Quantity must be 0 or more"),
+  lowStockThreshold: z
+    .coerce
+    .number()
+    .int("Low stock threshold must be an integer")
+    .min(0, "Low stock threshold must be 0 or more")
+    .optional(),
+});
+
 export type CategorySchema = z.input<typeof categorySchema>
 export type DesignSchema = z.infer<typeof designSchema>
 export type ColorSchema = z.infer<typeof colorSchema>
@@ -295,3 +319,4 @@ export type BasicProductInfoSchema = z.input<typeof basicProductInfoSchema>;
 //export type InventorySchema = z.infer<typeof inventorySchema>
 export type InventorySchema = z.infer<typeof inventorySchema>
 export type CreateInventoryItemSchema = z.infer<typeof createInventoryItemSchema>
+export type UpdateInventoryItemSchema = z.infer<typeof updateInventoryItemSchema>

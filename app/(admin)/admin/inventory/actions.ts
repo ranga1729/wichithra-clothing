@@ -6,8 +6,100 @@ import { ApiResponse } from "@/types/auth-types";
 import { InventoryFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
-import { createInventoryItemSchema, CreateInventoryItemSchema } from "@/schemas/admin-schemas";
+import { createInventoryItemSchema, CreateInventoryItemSchema, updateInventoryItemSchema, UpdateInventoryItemSchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
+
+export async function getInventoryItemByVariantId(variantId: string): Promise<ApiResponse> {
+  try {
+    await requireRole(["admin", "super-admin"]);
+
+    const inventory = await prisma.inventory.findFirst({
+      where: {
+        ...notDeleted,
+        variantId,
+      },
+      select: {
+        id: true,
+        quantity: true,
+        reservedQuantity: true,
+        lowStockThreshold: true,
+        variant: {
+          select: {
+            id: true,
+            sku: true,
+            costPrice: true,
+            sellingPrice: true,
+            isActive: true,
+            product: {
+              select: {
+                id: true,
+                name: true,
+                discountPercentage: true,
+                category: {
+                  select: { id: true, name: true },
+                },
+              },
+            },
+            color: {
+              select: {
+                id: true,
+                name: true,
+                hexCode: true,
+                swatchImageUrl: true,
+              },
+            },
+            size: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!inventory) {
+      return { success: false, error: en.failed_to_load_inventory_item };
+    }
+
+    return { success: true, data: JSON.parse(JSON.stringify(inventory)) };
+  } catch (error: any) {
+    if (error instanceof AuthError) throw error;
+    return { success: false, error: error.message || en.failed_to_load_inventory_item };
+  }
+}
+
+export async function updateInventoryItem(variantId: string, data: UpdateInventoryItemSchema): Promise<ApiResponse> {
+  try {
+    await requireRole(["admin", "super-admin"]);
+
+    const validatedData = updateInventoryItemSchema.parse(data);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.productVariant.update({
+        where: { id: variantId },
+        data: {
+          costPrice: validatedData.costPrice ?? undefined,
+          sellingPrice: validatedData.sellingPrice,
+          isActive: validatedData.isActive,
+        },
+      });
+
+      await tx.inventory.updateMany({
+        where: { variantId },
+        data: {
+          quantity: validatedData.quantity,
+          lowStockThreshold: validatedData.lowStockThreshold ?? 5,
+        },
+      });
+    });
+
+    revalidatePath('/admin/inventory');
+
+    return { success: true, message: en.inventory_item_updated_successfully };
+  } catch (error: any) {
+    if (error instanceof AuthError) throw error;
+    return { success: false, error: error.message || en.failed_to_update_inventory_item };
+  }
+}
 
 export async function getInventory(paginator: Paginator, filter: InventoryFilter): Promise<ApiResponse> {
   try {

@@ -15,6 +15,7 @@ import { getInventory } from "./actions";
 import { getColumns } from "./columns";
 import { useRouter } from "next/navigation";
 import AddNewButton from "@/components/AddNewButton";
+import { InventorySchema } from "@/schemas/admin-schemas";
 
 const initialFilter: InventoryFilter = {
   productName: "",
@@ -38,6 +39,10 @@ export default function InventoryPage() {
   const handleReset = () => {
     setFilter(initialFilter);
     setPaginator((prev) => ({ ...prev, pageIndex: 0 }));
+  };
+
+  const onEdit = (inventory: InventorySchema) => {
+    router.push(`/admin/inventory/${inventory.variant.id}`);
   };
 
   const { data, isPending, error, isError } = useQuery({
@@ -102,6 +107,7 @@ export default function InventoryPage() {
         ref={tableRef}
         columns={getColumns({
           paginator,
+          onEdit,
         })}
         data={data?.inventory ?? []}
         isLoading={isPending}
