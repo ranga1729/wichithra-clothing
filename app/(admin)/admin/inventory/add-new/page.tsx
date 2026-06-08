@@ -22,14 +22,7 @@ import CancelButton from "@/components/CancelButton"
 import { en } from "@/lib/i18n/en"
 import toast from "react-hot-toast"
 import { createInventoryItemSchema, CreateInventoryItemSchema } from "@/schemas/admin-schemas"
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@/components/ui/combobox"
+import SearchableSelect from "@/components/custom/general/SearchableSelect"
 import {
   checkVariantExists,
   createInventoryItem,
@@ -169,133 +162,83 @@ export default function AddNewInventoryItem() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
 
-        {/* ── Variant Selection ─────────────────────────────────────────── */}
+        {/* Variant Selection */}
         <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
           <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">Variant Selection</h1>
 
           {/* Category filter — drives server-side product query */}
-          <Field className="flex flex-col gap-2">
-            <Label>Filter by Category</Label>
-            <Select
-              value={categoryFilter || "__all__"}
-              onValueChange={(val) => {
-                setCategoryFilter(val === "__all__" ? "" : val)
-                setValue("productId", "")
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="All categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="__all__">All categories</SelectItem>
-                  {((categories as any[]) ?? []).map((c: any) => (
-                    <SelectItem key={c.id} value={c.slug}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </Field>
+          <SearchableSelect
+            items={(categories as any[]) ?? []}
+            itemToStringValue={(c: any) => c?.name ?? ""}
+            value={((categories as any[]) ?? []).find((c: any) => c.slug === categoryFilter) ?? null}
+            onValueChange={(item: any) => {
+              setCategoryFilter(item?.slug ?? "")
+              setValue("productId", "")
+            }}
+            label="Filter by Category"
+            placeholder="All categories"
+            emptyMessage="No categories found."
+          />
 
           {/* Product combobox — search and select in one component */}
-          <Field className="flex flex-col gap-2">
-            <Label htmlFor="productId">Product *</Label>
-            <Controller
-              name="productId"
-              control={control}
-              render={({ field }) => {
-                const selectedProduct =
-                  ((products as any[]) ?? []).find((p: any) => p.id === field.value) ?? null
-                  
-                return (
-                  <Combobox
-                    items={(products as any[]) ?? []}
-                    itemToStringValue={(p: any) => p?.name ?? ""}
-                    value={selectedProduct?.name ?? ""}
-                    onValueChange={(item: any) => field.onChange(item?.id ?? "")}
-                  >
-                    <ComboboxInput
-                      id="productId"
-                      placeholder="Search and select a product..."
-                      showClear
-                      aria-invalid={!!errors.productId}
-                    />
-                    <ComboboxContent>
-                      <ComboboxEmpty>No products found.</ComboboxEmpty>
-                      <ComboboxList>
-                        {(product: any) => (
-                          <ComboboxItem key={product?.id ?? product} value={product}>
-                            {product?.name ?? ""}
-                          </ComboboxItem>
-                        )}
-                      </ComboboxList>
-                    </ComboboxContent>
-                  </Combobox>
-                )
-              }}
-            />
-            {errors.productId && (
-              <span className="text-sm text-red-500">
-                {errors.productId.message as string}
-              </span>
-            )}
-          </Field>
+          <Controller
+            name="productId"
+            control={control}
+            render={({ field }) => {
+              const selectedProduct =
+                ((products as any[]) ?? []).find((p: any) => p.id === field.value) ?? null
+              return (
+                <SearchableSelect
+                  items={(products as any[]) ?? []}
+                  itemToStringValue={(p: any) => p?.name ?? ""}
+                  value={selectedProduct}
+                  onValueChange={(item: any) => field.onChange(item?.id ?? "")}
+                  label="Product *"
+                  id="productId"
+                  placeholder="Search and select a product..."
+                  emptyMessage="No products found."
+                  error={errors.productId?.message as string | undefined}
+                />
+              )
+            }}
+          />
 
           <FieldGroup className="flex flex-row flex-wrap gap-4">
             {/* Color combobox — search and select in one component */}
-            <Field className="flex flex-col gap-2 flex-1 min-w-[200px]">
-              <Label htmlFor="colorId">Color *</Label>
-              <Controller
-                name="colorId"
-                control={control}
-                render={({ field }) => {
-                  const selectedColor =
-                    ((colors as any[]) ?? []).find((c: any) => c.id === field.value) ?? null
-                  return (
-                    <Combobox
-                      items={(colors as any[]) ?? []}
-                      itemToStringValue={(c: any) => c.name}
-                      value={selectedColor?.name ?? ""}
-                      onValueChange={(item: any) => field.onChange(item?.id ?? "")}
-                      disabled={!productId}
-                    >
-                      <ComboboxInput
-                        id="colorId"
-                        placeholder="Search and select a color..."
-                        showClear
-                        disabled={!productId}
-                        aria-invalid={!!errors.colorId}
-                      />
-                      <ComboboxContent>
-                        <ComboboxEmpty>No colors found.</ComboboxEmpty>
-                        <ComboboxList>
-                          {(color: any) => (
-                            <ComboboxItem key={color.id} value={color}>
-                              <span className="flex items-center gap-2">
-                                {color.hexCode && (
-                                  <span
-                                    className="h-3 w-3 shrink-0 rounded-full border border-neutral-400"
-                                    style={{ backgroundColor: `#${color.hexCode}` }}
-                                  />
-                                )}
-                                {color.name}
-                              </span>
-                            </ComboboxItem>
-                          )}
-                        </ComboboxList>
-                      </ComboboxContent>
-                    </Combobox>
-                  )
-                }}
-              />
-              {errors.colorId && (
-                <span className="text-sm text-red-500">
-                  {errors.colorId.message as string}
-                </span>
-              )}
-            </Field>
+            <Controller
+              name="colorId"
+              control={control}
+              render={({ field }) => {
+                const selectedColor =
+                  ((colors as any[]) ?? []).find((c: any) => c.id === field.value) ?? null
+                return (
+                  <SearchableSelect
+                    items={(colors as any[]) ?? []}
+                    itemToStringValue={(c: any) => c?.name ?? ""}
+                    value={selectedColor}
+                    className="flex-1 min-w-[200px]"
+                    onValueChange={(item: any) => field.onChange(item?.id ?? "")}
+                    label="Color *"
+                    id="colorId"
+                    placeholder="Search and select a color..."
+                    disabled={!productId}
+                    emptyMessage="No colors found."
+                    error={errors.colorId?.message as string | undefined}
+                    renderItem={(color: any) => (
+                      <span className="flex items-center gap-2">
+                        {color.hexCode && (
+                          <span
+                            className="h-3 w-3 shrink-0 rounded-full border border-neutral-400"
+                            style={{ backgroundColor: `#${color.hexCode}` }}
+                          />
+                        )}
+                        {color.name}
+                      </span>
+                    )}
+                  />
+                )
+              }}
+            />
 
             {/* Size selector */}
             <Field className="flex flex-col gap-2 flex-1 min-w-[200px]">
@@ -370,7 +313,7 @@ export default function AddNewInventoryItem() {
           )}
         </div>
 
-        {/* ── Variant Details ───────────────────────────────────────────── */}
+        {/* Variant Details */}
         <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
           <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">Variant Details</h1>
 
@@ -445,7 +388,7 @@ export default function AddNewInventoryItem() {
           </FieldGroup>
         </div>
 
-        {/* ── Inventory Details ─────────────────────────────────────────── */}
+        {/* Inventory Details */}
         <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
           <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">
             Inventory Details
@@ -484,7 +427,7 @@ export default function AddNewInventoryItem() {
           </FieldGroup>
         </div>
 
-        {/* ── Actions ───────────────────────────────────────────────────── */}
+        {/* Actions */}
         <div className="flex flex-row gap-3 justify-end pb-6">
           <CancelButton onClick={() => router.push("/admin/inventory")} isPending={isPending} />
           <SaveButton
