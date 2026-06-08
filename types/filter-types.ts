@@ -20,6 +20,8 @@ export interface ProductFilter {
 }
 
 export interface InventoryFilter {
-  productName?: string,
+  productId?: string,
   sku?: string,
+  colorId?: string,
+  sizeId?: string,
 }

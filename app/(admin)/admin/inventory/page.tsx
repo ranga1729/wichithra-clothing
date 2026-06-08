@@ -11,15 +11,26 @@ import { initialPaginator, Paginator } from "@/types/table-types";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { getInventory, deleteInventoryItem } from "./actions";
+import { getInventory, deleteInventoryItem, getColorSelectorData, getSizeSelectorData, getProductSelectorData } from "./actions";
 import { getColumns } from "./columns";
 import { useRouter } from "next/navigation";
 import AddNewButton from "@/components/AddNewButton";
 import { InventorySchema } from "@/schemas/admin-schemas";
+import SearchableSelect from "@/components/custom/general/SearchableSelect";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const initialFilter: InventoryFilter = {
-  productName: "",
+  productId: "",
   sku: "",
+  colorId: "",
+  sizeId: "",
 };
 
 export default function InventoryPage() {
@@ -31,6 +42,33 @@ export default function InventoryPage() {
   const [filter, setFilter] = useState<InventoryFilter>(initialFilter);
 
   const debouncedFilter = useDebounce(filter, 500);
+
+  const { data: products } = useQuery({
+    queryKey: ["productSelector"],
+    queryFn: async () => {
+      const res = await getProductSelectorData()
+      if (!res.success) toast.error(res.error ?? en.data_retrieval_failed)
+      return res.data ?? []
+    },
+  })
+
+  const { data: colors } = useQuery({
+    queryKey: ["colorSelector"],
+    queryFn: async () => {
+      const res = await getColorSelectorData()
+      if (!res.success) toast.error(res.error ?? en.data_retrieval_failed)
+      return res.data ?? []
+    },
+  })
+
+  const { data: sizes } = useQuery({
+    queryKey: ["sizeSelector"],
+    queryFn: async () => {
+      const res = await getSizeSelectorData()
+      if (!res.success) toast.error(res.error ?? en.data_retrieval_failed)
+      return res.data ?? []
+    },
+  })
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -88,16 +126,16 @@ export default function InventoryPage() {
   return (
     <div className="flex flex-col gap-3">
       <form className="flex flex-col gap-3">
-        <div className="flex flex-row justify-start items-center gap-3 w-full border py-3 px-2 rounded-md">
-          <div className="grid w-60 max-w-sm items-center gap-2">
-            <Label htmlFor="productName">{en.name}</Label>
-            <Input
-              type="text"
-              id="productName"
-              placeholder="Product name"
-              value={filter.productName}
-              name="productName"
-              onChange={handleFilterChange}
+        <div className="flex flex-row flex-wrap justify-start items-end gap-3 w-full border py-3 px-2 rounded-md">
+          <div className="w-60 max-w-sm">
+            <SearchableSelect
+              items={(products as any[]) ?? []}
+              itemToStringValue={(p: any) => p?.name ?? ""}
+              value={((products as any[]) ?? []).find((p: any) => p.id === filter.productId) ?? null}
+              onValueChange={(item: any) => setFilter((prev) => ({ ...prev, productId: item?.id ?? "" }))}
+              label={en.name}
+              placeholder="All products"
+              emptyMessage="No products found."
             />
           </div>
           <div className="grid w-60 max-w-sm items-center gap-2">
@@ -110,6 +148,51 @@ export default function InventoryPage() {
               name="sku"
               onChange={handleFilterChange}
             />
+          </div>
+          <div className="w-60 max-w-sm">
+            <SearchableSelect
+              items={(colors as any[]) ?? []}
+              itemToStringValue={(c: any) => c?.name ?? ""}
+              value={((colors as any[]) ?? []).find((c: any) => c.id === filter.colorId) ?? null}
+              onValueChange={(item: any) => setFilter((prev) => ({ ...prev, colorId: item?.id ?? "" }))}
+              label="Color"
+              placeholder="All colors"
+              emptyMessage="No colors found."
+              renderItem={(color: any) => (
+                <span className="flex items-center gap-2">
+                  {color.hexCode && (
+                    <span
+                      className="h-3 w-3 shrink-0 rounded-full border border-neutral-400"
+                      style={{ backgroundColor: `#${color.hexCode}` }}
+                    />
+                  )}
+                  {color.name}
+                </span>
+              )}
+            />
+          </div>
+          <div className="grid w-60 max-w-sm items-center gap-2">
+            <Label>Size</Label>
+            <Select
+              value={filter.sizeId || "__all__"}
+              onValueChange={(val) =>
+                setFilter((prev) => ({ ...prev, sizeId: val === "__all__" ? "" : val }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="All sizes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="__all__">All sizes</SelectItem>
+                  {((sizes as any[]) ?? []).map((s: any) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

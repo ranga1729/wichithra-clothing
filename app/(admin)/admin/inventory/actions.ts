@@ -111,24 +111,12 @@ export async function getInventory(paginator: Paginator, filter: InventoryFilter
 
     const whereClause: any = {
       ...notDeleted,
-      ...(filter.sku && {
-        variant: {
-          sku: {
-            contains: filter.sku as string,
-            mode: 'insensitive',
-          },
-        },
-      }),
-      ...(filter.productName && {
-        variant: {
-          product: {
-            name: {
-              contains: filter.productName as string,
-              mode: 'insensitive',
-            },
-          },
-        },
-      }),
+      variant: {
+        ...(filter.sku && { sku: { contains: filter.sku, mode: 'insensitive' } }),
+        ...(filter.productId && { productId: filter.productId }),
+        ...(filter.colorId && { colorId: filter.colorId }),
+        ...(filter.sizeId && { sizeId: filter.sizeId }),
+      },
     };
 
     const inventory = await prisma.inventory.findMany({
