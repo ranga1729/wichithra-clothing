@@ -25,3 +25,11 @@ export interface InventoryFilter {
   colorId?: string,
   sizeId?: string,
 }
+
+export interface NewOrderFilter {
+  orderNumber?: string,
+  userName?: string,
+  createdDateFrom?: string, // ISO date string (YYYY-MM-DD)
+  createdDateTo?: string,   // ISO date string (YYYY-MM-DD)
+  paymentStatus?: string,
+}

@@ -17,7 +17,7 @@ export function AdminHeader(props: Props) {
   const { toggleSidebar } = useSidebar()
 
   return (
-    <header className="bg-background dark:bg-neutral-800 sticky top-0 z-50 flex w-full items-center border-b">
+    <header className="bg-background dark:bg-neutral-800 sticky top-0 z-50 flex w-auto items-center border-b">
       <div className="flex h-(--header-height) w-full items-center justify-between gap-2 px-4">
         
         <div className="flex flex-row gap-4 h-full items-center justify-start">

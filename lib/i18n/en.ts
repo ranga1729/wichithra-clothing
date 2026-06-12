@@ -177,5 +177,8 @@ export const en = {
   cannot_delete_variant_with_reserved_stock: "Cannot delete this variant — it has reserved stock from active orders or carts. Please resolve those first.",
 
   logged_out_successfully: "Logged out successfully",
-  logout_failed: "Logout failed"
+  logout_failed: "Logout failed",
+
+  new_orders_data_retrieval_failed: "Failed to fetch new orders",
+  failed_to_load_new_orders: "Failed to load new orders",
 }

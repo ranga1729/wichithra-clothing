@@ -1,4 +1,4 @@
-import { AgeGroup, GenderTarget, ProductStatus } from "@/generated/prisma/enums";
+import { AgeGroup, GenderTarget, PaymentStatus, ProductStatus } from "@/generated/prisma/enums";
 import * as z from "zod"
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
@@ -305,6 +305,23 @@ export const updateInventoryItemSchema = z.object({
     .optional(),
 });
 
+export const newOrderSchema = z.object({
+  id: z.uuid(),
+  orderNumber: z.string(),
+  createdAt: z.coerce.date(),
+  paymentStatus: z.enum(PaymentStatus),
+  subtotal: z.coerce.number(),
+  discountAmount: z.coerce.number(),
+  shippingFee: z.coerce.number(),
+  taxAmount: z.coerce.number(),
+  totalAmount: z.coerce.number(),
+  notes: z.string().nullable(),
+  user: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+  }),
+})
+
 export type CategorySchema = z.input<typeof categorySchema>
 export type DesignSchema = z.infer<typeof designSchema>
 export type ColorSchema = z.infer<typeof colorSchema>
@@ -316,7 +333,8 @@ export type VariantSchema = z.infer<typeof variantSchema>
 export type ProductDesignSchema = z.infer<typeof productDesignSchema>
 export type BasicProductInfoSchema = z.input<typeof basicProductInfoSchema>;
 
-//export type InventorySchema = z.infer<typeof inventorySchema>
 export type InventorySchema = z.infer<typeof inventorySchema>
 export type CreateInventoryItemSchema = z.infer<typeof createInventoryItemSchema>
 export type UpdateInventoryItemSchema = z.infer<typeof updateInventoryItemSchema>
+
+export type NewOrderSchema = z.infer<typeof newOrderSchema>
