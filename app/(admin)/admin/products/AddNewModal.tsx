@@ -17,7 +17,7 @@ import { createNewProduct } from "./action";
 import toast from "react-hot-toast";
 import { AgeGroup, GenderTarget } from "@/generated/prisma/enums";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getCategorySelectorData } from "../categories/action";
+import { getCategorySelectorData } from "../facets/categories/action";
 import { formatLabel } from "@/lib/utils";
 
 interface Props {

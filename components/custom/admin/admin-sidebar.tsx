@@ -34,21 +34,25 @@ const data = {
     },
     {
       title: "Orders",
-      url: "/admin/new-orders",
+      url: "/admin/orders/new",
       icon: ListOrdered,
       isActive: true,
       items: [
         {
           title: "New orders",
-          url: "/admin/new-orders",
+          url: "/admin/orders/new",
         },
         {
-          title: "Ongoing",
-          url: "/admin/ongoing-orders",
+          title: "Ongoing order",
+          url: "/admin/orders/ongoing",
         },
         {
-          title: "Completed",
-          url: "/admin/completed-orders",
+          title: "Completed order",
+          url: "/admin/orders/completed",
+        },
+        {
+          title: "Cancelled order",
+          url: "/admin/orders/cancelled",
         },
       ]
     },
@@ -66,24 +70,25 @@ const data = {
     },
     {
       title: "Facets",
+      url: "/admin/facets/categories",
       icon: ListCollapse,
       isActive: true,
       items: [
         {
           title: "Categories",
-          url: "/admin/categories",
+          url: "/admin/facets/categories",
         },
         {
           title: "Designs",
-          url: "/admin/designs",
+          url: "/admin/facets/designs",
         },
         {
           title: "Colors",
-          url: "/admin/colors",
+          url: "/admin/facets/colors",
         },
         {
           title: "Sizes",
-          url: "/admin/sizes",
+          url: "/admin/facets/sizes",
         },
       ],
     },

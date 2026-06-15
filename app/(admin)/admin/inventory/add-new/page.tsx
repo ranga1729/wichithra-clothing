@@ -29,9 +29,9 @@ import {
   getColorSelectorData,
   getProductSelectorData,
   getSizeSelectorData,
-} from "./../actions"
+} from "../actions"
 import { AlertTriangle, CheckCircle } from "lucide-react"
-import { getCategorySelectorData } from "../../categories/action"
+import { getCategorySelectorData } from "../../facets/categories/action"
 
 export default function AddNewInventoryItem() {
   const router = useRouter()

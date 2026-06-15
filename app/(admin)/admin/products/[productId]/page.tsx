@@ -24,7 +24,7 @@ import { Slider } from "@/components/ui/slider";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatLabel } from "@/lib/utils";
-import { getCategorySelectorData } from "../../categories/action";
+import { getCategorySelectorData } from "../../facets/categories/action";
 import { Eye, Loader2 } from "lucide-react";
 import ProductImageCarousel from "@/components/custom/general/product-image-carousel";
 

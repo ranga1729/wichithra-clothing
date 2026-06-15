@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { en } from "@/lib/i18n/en";
 import CustomSelect from "@/components/custom/general/CustomSelect";
 import toast from "react-hot-toast";
-import { getCategorySelectorData } from "../categories/action";
+import { getCategorySelectorData } from "../facets/categories/action";
 import { useDebounce } from "@/hooks/useDebounce";
 import AddNewButton from "@/components/AddNewButton";
 import AddNewModal from "./AddNewModal";
