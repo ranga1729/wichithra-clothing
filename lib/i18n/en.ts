@@ -181,4 +181,6 @@ export const en = {
 
   new_orders_data_retrieval_failed: "Failed to fetch new orders",
   failed_to_load_new_orders: "Failed to load new orders",
+  failed_to_fetch_order_details: "Failed to fetch order details",
+  order_not_found: "Order not found"
 }

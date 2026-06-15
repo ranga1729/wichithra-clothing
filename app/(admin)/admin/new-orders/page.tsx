@@ -5,7 +5,6 @@ import ResetFilterButton from "@/components/ResetFilterButton"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
   Select,
@@ -17,36 +16,38 @@ import {
 } from "@/components/ui/select"
 import { useDebounce } from "@/hooks/useDebounce"
 import { en } from "@/lib/i18n/en"
-import { cn } from "@/lib/utils"
 import { NewOrderFilter } from "@/types/filter-types"
 import { initialPaginator, Paginator } from "@/types/table-types"
 import { useQuery } from "@tanstack/react-query"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 import { type DateRange } from "react-day-picker"
 import toast from "react-hot-toast"
 import { getNewOrders } from "./actions"
 import { getColumns } from "./columns"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { PaymentStatus } from "@/generated/prisma/enums"
 
 const PAYMENT_STATUS_OPTIONS = [
-  { label: "Pending", value: "PENDING" },
-  { label: "Completed", value: "COMPLETED" },
-  { label: "Failed", value: "FAILED" },
-  { label: "Refunded", value: "REFUNDED" },
-  { label: "Partially Refunded", value: "PARTIALLY_REFUNDED" },
+  { label: "Pending", value: PaymentStatus.PENDING },
+  { label: "Completed", value: PaymentStatus.COMPLETED },
+  { label: "Failed", value: PaymentStatus.FAILED },
+  { label: "Refunded", value: PaymentStatus.REFUNDED },
+  { label: "Partially Refunded", value: PaymentStatus.PARTIALLY_REFUNDED },
 ]
 
 const initialFilter: NewOrderFilter = {
   orderNumber: "",
-  userName: "",
+  customerName: "",
   createdDateFrom: "",
   createdDateTo: "",
   paymentStatus: "",
 }
 
 export default function NewOrdersPage() {
+  const router = useRouter()
   const tableRef = useRef<TableWithPaginationRef>(null)
   const [paginator, setPaginator] = useState<Paginator>(initialPaginator)
   const [filter, setFilter] = useState<NewOrderFilter>(initialFilter)
@@ -104,6 +105,7 @@ export default function NewOrdersPage() {
     <div className="flex flex-col gap-3">
       <form className="flex flex-col gap-3">
         <FieldGroup className="flex flex-row flex-wrap justify-start items-end gap-3 w-full border py-3 px-2 rounded-md">
+          
           {/* Order Number */}
           <Field className="grid w-60 max-w-sm items-center gap-2">
             <FieldLabel htmlFor="orderNumber">Order Number</FieldLabel>
@@ -119,13 +121,13 @@ export default function NewOrdersPage() {
 
           {/* Customer Name */}
           <Field className="grid w-60 max-w-sm items-center gap-2">
-            <FieldLabel htmlFor="userName">Customer Name</FieldLabel>
+            <FieldLabel htmlFor="customerName">Customer Name</FieldLabel>
             <Input
               type="text"
-              id="userName"
-              name="userName"
+              id="customerName"
+              name="customerName"
               placeholder="First or last name"
-              value={filter.userName}
+              value={filter.customerName}
               onChange={handleFilterChange}
             />
           </Field>
@@ -207,7 +209,7 @@ export default function NewOrdersPage() {
         ref={tableRef}
         columns={getColumns({
           paginator: paginator,
-          onView: (id) => console.log(id),
+          onView: (id) => router.push(`/admin/new-orders/${id}`),
           onMove: (id) => console.log(id),
           onCancel: (id) => console.log(id),
         })}

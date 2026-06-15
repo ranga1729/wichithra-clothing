@@ -28,7 +28,7 @@ export interface InventoryFilter {
 
 export interface NewOrderFilter {
   orderNumber?: string,
-  userName?: string,
+  customerName?: string,
   createdDateFrom?: string, // ISO date string (YYYY-MM-DD)
   createdDateTo?: string,   // ISO date string (YYYY-MM-DD)
   paymentStatus?: string,

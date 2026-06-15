@@ -6,7 +6,7 @@ import { ApiResponse } from "@/types/auth-types";
 import { NewOrderFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
-import { OrderStatus } from "@/generated/prisma/enums";
+import { OrderStatus, PaymentStatus } from "@/generated/prisma/enums";
 
 const NEW_ORDER_STATUSES: OrderStatus[] = [OrderStatus.PENDING, OrderStatus.CONFIRMED];
 
@@ -18,7 +18,8 @@ export async function getNewOrders(paginator: Paginator, filter: NewOrderFilter)
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
 
-    // Build date range filter when a date range is provided
+    // Build date range filter 
+    // Set the hours, minutes,seconds and ms of the start and end dates. 
     let dateFilter: { gte?: Date; lte?: Date } | undefined;
     if (filter.createdDateFrom || filter.createdDateTo) {
       dateFilter = {};
@@ -34,13 +35,13 @@ export async function getNewOrders(paginator: Paginator, filter: NewOrderFilter)
       }
     }
 
-    // Build user name filter (search across firstName and lastName)
-    const userNameFilter = filter.userName?.trim()
+    // customer name filter. Check both first name and last name.
+    const customerNameFilter = filter.customerName?.trim()
       ? {
           user: {
             OR: [
-              { firstName: { contains: filter.userName.trim(), mode: 'insensitive' as const } },
-              { lastName: { contains: filter.userName.trim(), mode: 'insensitive' as const } },
+              { firstName: { contains: filter.customerName.trim(), mode: 'insensitive' as const } },
+              { lastName: { contains: filter.customerName.trim(), mode: 'insensitive' as const } },
             ],
           },
         }
@@ -51,14 +52,13 @@ export async function getNewOrders(paginator: Paginator, filter: NewOrderFilter)
       ...(filter.orderNumber && {
         orderNumber: { contains: filter.orderNumber.trim(), mode: 'insensitive' as const },
       }),
-      ...(filter.paymentStatus && { paymentStatus: filter.paymentStatus as any }),
+      ...(filter.paymentStatus && { paymentStatus: filter.paymentStatus as PaymentStatus }),
       ...(dateFilter && { createdAt: dateFilter }),
-      ...userNameFilter,
+      ...customerNameFilter,
     };
 
     const [orders, totalRecords] = await Promise.all([
       prisma.order.findMany({
-        where: whereClause,
         select: {
           id: true,
           orderNumber: true,
@@ -77,6 +77,7 @@ export async function getNewOrders(paginator: Paginator, filter: NewOrderFilter)
             },
           },
         },
+        where: whereClause,
         skip,
         take: pageSize,
         orderBy: { createdAt: 'desc' },
@@ -96,6 +97,69 @@ export async function getNewOrders(paginator: Paginator, filter: NewOrderFilter)
     return {
       success: false,
       error: error.message || en.new_orders_data_retrieval_failed,
+    };
+  }
+}
+
+export async function getOrderItems(orderId: string): Promise<ApiResponse> {
+  try {
+    await requireRole(["admin", "super-admin"]);
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        orderNumber: true,
+        createdAt: true,
+        status: true,
+        paymentStatus: true,
+        subtotal: true,
+        discountAmount: true,
+        shippingFee: true,
+        taxAmount: true,
+        totalAmount: true,
+        notes: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        orderItems: {
+          select: {
+            id: true,
+            sku: true,
+            productName: true,
+            sizeName: true,
+            colorName: true,
+            imageUrl: true,
+            quantity: true,
+            unitPrice: true,
+            discountAmount: true,
+            totalPrice: true,
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+
+    if (!order) {
+      return { 
+        success: false, 
+        error: en.order_not_found
+      };
+    }
+
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(order)),
+    };
+  } catch (error: any) {
+    if (error instanceof AuthError) throw error;
+    return {
+      success: false,
+      error: error.message || en.failed_to_fetch_order_details,
     };
   }
 }

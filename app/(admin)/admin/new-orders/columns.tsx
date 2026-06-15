@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { paymentStatusStyles } from "@/lib/color-objects"
 import { NewOrderSchema } from "@/schemas/admin-schemas"
 import { Paginator } from "@/types/table-types"
 import { ColumnDef } from "@tanstack/react-table"
@@ -13,13 +14,6 @@ type ColumnProps = {
   onView: (id:string) => void,
 }
 
-const paymentStatusStyles: Record<string, string> = {
-  PENDING: "bg-yellow-100 text-yellow-800",
-  COMPLETED: "bg-green-100 text-green-800",
-  FAILED: "bg-red-100 text-red-800",
-  REFUNDED: "bg-blue-100 text-blue-800",
-  PARTIALLY_REFUNDED: "bg-purple-100 text-purple-800",
-}
 
 export const getColumns = ({ onCancel, onMove, onView, paginator }: ColumnProps): ColumnDef<NewOrderSchema>[] => [
   {
