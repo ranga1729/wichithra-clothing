@@ -28,15 +28,7 @@ import toast from "react-hot-toast"
 import { getNewOrders } from "./actions"
 import { getColumns } from "./columns"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { PaymentStatus } from "@/generated/prisma/enums"
-
-const PAYMENT_STATUS_OPTIONS = [
-  { label: "Pending", value: PaymentStatus.PENDING },
-  { label: "Completed", value: PaymentStatus.COMPLETED },
-  { label: "Failed", value: PaymentStatus.FAILED },
-  { label: "Refunded", value: PaymentStatus.REFUNDED },
-  { label: "Partially Refunded", value: PaymentStatus.PARTIALLY_REFUNDED },
-]
+import { PAYMENT_STATUS_OPTIONS } from "@/lib/data-objects"
 
 const initialFilter: NewOrderFilter = {
   orderNumber: "",
@@ -88,7 +80,7 @@ export default function NewOrdersPage() {
     queryFn: async () => {
       const response = await getNewOrders(paginator, debouncedFilter)
       if (!response.success) {
-        throw new Error(response.error || en.new_orders_data_retrieval_failed)
+        throw new Error(response.error || en.failed_to_load_orders)
       }
       return response.data
     },

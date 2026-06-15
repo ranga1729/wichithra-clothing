@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { paymentStatusStyles } from "@/lib/color-objects"
+import { paymentStatusStyles } from "@/lib/data-objects"
 import { NewOrderSchema } from "@/schemas/admin-schemas"
 import { Paginator } from "@/types/table-types"
 import { ColumnDef } from "@tanstack/react-table"
 import { format } from "date-fns"
-import { Check, Ellipsis, LayoutList, Pencil, TicketMinus, Trash, X } from "lucide-react"
+import { Check, Ellipsis, LayoutList, X } from "lucide-react"
 
 type ColumnProps = {
   paginator?: Paginator

@@ -179,8 +179,7 @@ export const en = {
   logged_out_successfully: "Logged out successfully",
   logout_failed: "Logout failed",
 
-  new_orders_data_retrieval_failed: "Failed to fetch new orders",
-  failed_to_load_new_orders: "Failed to load new orders",
-  failed_to_fetch_order_details: "Failed to fetch order details",
+  failed_to_load_orders: "Failed to load orders",
+  failed_to_load_order_details: "Failed to load order details",
   order_not_found: "Order not found"
 }

@@ -3,14 +3,14 @@
 import { en } from "@/lib/i18n/en";
 import { prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
-import { NewOrderFilter } from "@/types/filter-types";
+import { OngoingOrderFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
 import { OrderStatus, PaymentStatus } from "@/generated/prisma/enums";
 
-const NEW_ORDER_STATUSES: OrderStatus[] = [OrderStatus.PENDING, OrderStatus.CONFIRMED];
+const ONGOING_ORDER_STATUSES: OrderStatus[] = [OrderStatus.PROCESSING];
 
-export async function getNewOrders(paginator: Paginator, filter: NewOrderFilter): Promise<ApiResponse> {
+export async function getOngoingOrders(paginator: Paginator, filter: OngoingOrderFilter): Promise<ApiResponse> {
   try {
     await requireRole(["admin", "super-admin"]);
 
@@ -48,7 +48,7 @@ export async function getNewOrders(paginator: Paginator, filter: NewOrderFilter)
       : {};
 
     const whereClause = {
-      status: { in: NEW_ORDER_STATUSES },
+      status: { in: ONGOING_ORDER_STATUSES },
       ...(filter.orderNumber && {
         orderNumber: { contains: filter.orderNumber.trim(), mode: 'insensitive' as const },
       }),
@@ -96,7 +96,7 @@ export async function getNewOrders(paginator: Paginator, filter: NewOrderFilter)
     if (error instanceof AuthError) throw error;
     return {
       success: false,
-      error: error.message || en.new_orders_data_retrieval_failed,
+      error: error.message || en.failed_to_load_orders,
     };
   }
 }
@@ -159,7 +159,7 @@ export async function getOrderItems(orderId: string): Promise<ApiResponse> {
     if (error instanceof AuthError) throw error;
     return {
       success: false,
-      error: error.message || en.failed_to_fetch_order_details,
+      error: error.message || en.failed_to_load_order_details,
     };
   }
 }

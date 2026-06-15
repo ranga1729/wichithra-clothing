@@ -96,7 +96,7 @@ export async function getNewOrders(paginator: Paginator, filter: NewOrderFilter)
     if (error instanceof AuthError) throw error;
     return {
       success: false,
-      error: error.message || en.new_orders_data_retrieval_failed,
+      error: error.message || en.failed_to_load_orders,
     };
   }
 }
@@ -159,7 +159,7 @@ export async function getOrderItems(orderId: string): Promise<ApiResponse> {
     if (error instanceof AuthError) throw error;
     return {
       success: false,
-      error: error.message || en.failed_to_fetch_order_details,
+      error: error.message || en.failed_to_load_order_details,
     };
   }
 }

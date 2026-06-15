@@ -33,3 +33,11 @@ export interface NewOrderFilter {
   createdDateTo?: string,   // ISO date string (YYYY-MM-DD)
   paymentStatus?: string,
 }
+
+export interface OngoingOrderFilter {
+  orderNumber?: string,
+  customerName?: string,
+  createdDateFrom?: string, // ISO date string (YYYY-MM-DD)
+  createdDateTo?: string,   // ISO date string (YYYY-MM-DD)
+  paymentStatus?: string,
+}

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select"
 import { useDebounce } from "@/hooks/useDebounce"
 import { en } from "@/lib/i18n/en"
-import { NewOrderFilter } from "@/types/filter-types"
+import { OngoingOrderFilter } from "@/types/filter-types"
 import { initialPaginator, Paginator } from "@/types/table-types"
 import { useQuery } from "@tanstack/react-query"
 import { format } from "date-fns"
@@ -25,20 +25,12 @@ import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { type DateRange } from "react-day-picker"
 import toast from "react-hot-toast"
-import { getNewOrders } from "./actions"
 import { getColumns } from "./columns"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { PaymentStatus } from "@/generated/prisma/enums"
+import { getOngoingOrders } from "./actions"
+import { PAYMENT_STATUS_OPTIONS } from "@/lib/data-objects"
 
-const PAYMENT_STATUS_OPTIONS = [
-  { label: "Pending", value: PaymentStatus.PENDING },
-  { label: "Completed", value: PaymentStatus.COMPLETED },
-  { label: "Failed", value: PaymentStatus.FAILED },
-  { label: "Refunded", value: PaymentStatus.REFUNDED },
-  { label: "Partially Refunded", value: PaymentStatus.PARTIALLY_REFUNDED },
-]
-
-const initialFilter: NewOrderFilter = {
+const initialFilter: OngoingOrderFilter = {
   orderNumber: "",
   customerName: "",
   createdDateFrom: "",
@@ -46,11 +38,11 @@ const initialFilter: NewOrderFilter = {
   paymentStatus: "",
 }
 
-export default function NewOrdersPage() {
+export default function OngoingOrdersPage() {
   const router = useRouter()
   const tableRef = useRef<TableWithPaginationRef>(null)
   const [paginator, setPaginator] = useState<Paginator>(initialPaginator)
-  const [filter, setFilter] = useState<NewOrderFilter>(initialFilter)
+  const [filter, setFilter] = useState<OngoingOrderFilter>(initialFilter)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
 
   const debouncedFilter = useDebounce(filter, 500)
@@ -78,7 +70,7 @@ export default function NewOrdersPage() {
   }
 
   const { data, isPending, error, isError } = useQuery({
-    queryKey: ["new-orders", "list",
+    queryKey: ["ongoing-orders", "list",
       {
         pageSize: paginator.pageSize,
         pageIndex: paginator.pageIndex,
@@ -86,9 +78,9 @@ export default function NewOrdersPage() {
       },
     ],
     queryFn: async () => {
-      const response = await getNewOrders(paginator, debouncedFilter)
+      const response = await getOngoingOrders(paginator, debouncedFilter)
       if (!response.success) {
-        throw new Error(response.error || en.new_orders_data_retrieval_failed)
+        throw new Error(response.error || en.failed_to_load_orders)
       }
       return response.data
     },
@@ -209,7 +201,7 @@ export default function NewOrdersPage() {
         ref={tableRef}
         columns={getColumns({
           paginator: paginator,
-          onView: (id) => router.push(`/admin/new-orders/${id}`),
+          onView: (id) => router.push(`/admin/ongoing-orders/${id}`),
           onMove: (id) => console.log(id),
           onCancel: (id) => console.log(id),
         })}

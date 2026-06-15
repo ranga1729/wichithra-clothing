@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table"
 import { getOrderItems } from "../actions"
 import { en } from "@/lib/i18n/en"
-import { paymentStatusStyles } from "@/lib/color-objects"
+import { paymentStatusStyles } from "@/lib/data-objects"
 
 export default function OrderItemsPage({ params }: {params: Promise<{ OrderId: string }>}) {
   const { OrderId } = use(params)
@@ -30,7 +30,7 @@ export default function OrderItemsPage({ params }: {params: Promise<{ OrderId: s
     queryFn: async () => {
       const res = await getOrderItems(OrderId)
       if (!res.success) {
-        throw new Error(res.error ?? en.failed_to_fetch_order_details)
+        throw new Error(res.error ?? en.failed_to_load_order_details)
       }
       return res.data
     },
