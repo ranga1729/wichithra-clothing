@@ -356,6 +356,23 @@ export const completedOrderSchema = z.object({
   }),
 })
 
+export const cancelledOrderSchema = z.object({
+  id: z.uuid(),
+  orderNumber: z.string(),
+  createdAt: z.coerce.date(),
+  paymentStatus: z.enum(PaymentStatus),
+  subtotal: z.coerce.number(),
+  discountAmount: z.coerce.number(),
+  shippingFee: z.coerce.number(),
+  taxAmount: z.coerce.number(),
+  totalAmount: z.coerce.number(),
+  notes: z.string().nullable(),
+  user: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+  }),
+})
+
 export type CategorySchema = z.input<typeof categorySchema>
 export type DesignSchema = z.infer<typeof designSchema>
 export type ColorSchema = z.infer<typeof colorSchema>
@@ -374,3 +391,4 @@ export type UpdateInventoryItemSchema = z.infer<typeof updateInventoryItemSchema
 export type NewOrderSchema = z.infer<typeof newOrderSchema>
 export type OngoingOrderSchema = z.infer<typeof ongoingOrderSchema>
 export type CompletedOrderSchema = z.infer<typeof completedOrderSchema>
+export type CancelledOrderSchema = z.infer<typeof cancelledOrderSchema>

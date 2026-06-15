@@ -49,3 +49,11 @@ export interface CompletedOrderFilter {
   createdDateTo?: string,   // ISO date string (YYYY-MM-DD)
   paymentStatus?: string,
 }
+
+export interface CancelledOrderFilter {
+  orderNumber?: string,
+  customerName?: string,
+  createdDateFrom?: string, // ISO date string (YYYY-MM-DD)
+  createdDateTo?: string,   // ISO date string (YYYY-MM-DD)
+  paymentStatus?: string,
+}
