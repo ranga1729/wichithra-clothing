@@ -140,8 +140,8 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild className="bg-neutral-200 hover:bg-neutral-200 dark:bg-neutral-800">
               <a href="#">
-                <div className="text-sidebar-primary-foreground flex aspect-square size-10 items-center justify-center rounded-lg">
-                  <Image src={logo} alt={"Wichithra logo"} sizes="10" />
+                <div className="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                  <Image src={logo} alt={"Wichithra logo"} height={30} width={30} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Wichithra-Clothing</span>

@@ -47,7 +47,8 @@
     "react-hot-toast": "^2.6.0",
     "react-resizable-panels": "^4.7.0",
     "tailwind-merge": "^3.4.0",
-    "zod": "^4.1.13"
+    "zod": "^4.1.13",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@prisma/client": "^7.3.0",

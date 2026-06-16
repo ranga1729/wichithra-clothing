@@ -11,6 +11,7 @@ import { JwtPayload } from "@/types/auth-types"
 import { usePathname } from "next/navigation"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import React from "react"
+import { useBreadcrumbStore } from "@/lib/zustand-stores/use-breadcrum-store"
 
 interface Props {
   user : JwtPayload | null;
@@ -18,10 +19,10 @@ interface Props {
 
 export function AdminHeader(props: Props) {
   const { toggleSidebar } = useSidebar()
+  const dynamicLabel = useBreadcrumbStore((state) => state.dynamicLabel)
 
   const pathname = usePathname()
   const pathSegments = pathname.split("/").filter((segment) => segment !== "" && segment !== "admin")
-  console.log(pathSegments)
 
   return (
     <header className="bg-background dark:bg-neutral-800 sticky top-0 z-50 flex w-full items-center border-b">
@@ -42,7 +43,9 @@ export function AdminHeader(props: Props) {
             <BreadcrumbList>
               {pathSegments.map((segment, index) => {
                 const isLast = index === pathSegments.length - 1
-                const formattedName = segment.charAt(0).toUpperCase() + segment.slice(1)
+                const formattedName = isLast && dynamicLabel
+                  ? dynamicLabel
+                  : segment.charAt(0).toUpperCase() + segment.slice(1)
 
                 return (
                   <React.Fragment key={segment}>

@@ -15,6 +15,7 @@ import { en } from "@/lib/i18n/en"
 import toast from "react-hot-toast"
 import { updateInventoryItemSchema, UpdateInventoryItemSchema } from "@/schemas/admin-schemas"
 import { getInventoryItemByVariantId, updateInventoryItem } from "../actions"
+import { useBreadcrumbStore } from "@/lib/zustand-stores/use-breadcrum-store"
 
 export default function EditInventoryItem({
   params,
@@ -23,7 +24,8 @@ export default function EditInventoryItem({
 }) {
   const { productVariantId } = use(params)
   const router = useRouter()
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
+  const setDynamicLabel = useBreadcrumbStore((state) => state.setDynamicLabel);
 
   const {
     register,
@@ -85,6 +87,14 @@ export default function EditInventoryItem({
       toast.error(error.message || en.failed_to_update_inventory_item)
     },
   })
+
+  useEffect(() => {
+    if(item) {
+      console.log(item)
+      setDynamicLabel(item.variant.sku)
+    }
+  })
+
 
   const onSubmit = (data: UpdateInventoryItemSchema) => {
     submit(data)

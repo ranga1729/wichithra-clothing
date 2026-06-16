@@ -27,12 +27,14 @@ import { formatLabel } from "@/lib/utils";
 import { getCategorySelectorData } from "../../facets/categories/action";
 import { Eye, Loader2 } from "lucide-react";
 import ProductImageCarousel from "@/components/custom/general/product-image-carousel";
+import { useBreadcrumbStore } from "@/lib/zustand-stores/use-breadcrum-store";
 
 export default function ProductDetailPage() {  
   const params = useParams();
   const productId = params.productId?.toString();
   const queryClient = useQueryClient();
-
+  const setDynamicLabel = useBreadcrumbStore((state) => state.setDynamicLabel);
+  
   const [sizeGuidePreview, setSizeGuidePreview] = useState<string | null>(null);
 
 
@@ -101,6 +103,13 @@ export default function ProductDetailPage() {
   const handleReset = () => {
     loadCategoryData();
   }
+
+  useEffect(() => {
+    if(product?.name) {
+      setDynamicLabel(product.name)
+    }
+  })
+
 
   const hasDataChanged = () => {
     if (!product) return true;

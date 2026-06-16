@@ -1,6 +1,6 @@
 'use client'
 
-import { use } from "react"
+import { use, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import { format } from "date-fns"
@@ -20,10 +20,12 @@ import {
 import { getOrderItems } from "../actions"
 import { en } from "@/lib/i18n/en"
 import { paymentStatusStyles } from "@/lib/data-objects"
+import { useBreadcrumbStore } from "@/lib/zustand-stores/use-breadcrum-store"
 
 export default function OrderItemsPage({ params }: {params: Promise<{ OrderId: string }>}) {
   const { OrderId } = use(params)
   const router = useRouter()
+  const setDynamicLabel = useBreadcrumbStore((state) => state.setDynamicLabel)
 
   const { data: order, isPending, isError, error } = useQuery({
     queryKey: ["order-items", OrderId],
@@ -41,7 +43,12 @@ export default function OrderItemsPage({ params }: {params: Promise<{ OrderId: s
     toast.error(error.message)
   }
 
-  // Calculate total item quantity
+  useEffect(() => {
+    if(order?.orderNumber) {
+      setDynamicLabel(order.orderNumber)
+    }
+  })
+
   const totalQuantity = order?.orderItems?.reduce(
     (acc: number, item: any) => acc + item.quantity, 
     0
