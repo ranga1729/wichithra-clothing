@@ -201,7 +201,7 @@ export default function CompletedOrdersPage() {
         ref={tableRef}
         columns={getColumns({
           paginator: paginator,
-          onView: (id) => router.push(`/admin/completed-orders/${id}`),
+          onView: (id) => router.push(`/admin/orders/completed/${id}`),
           onMove: (id) => console.log(id),
           onCancel: (id) => console.log(id),
         })}

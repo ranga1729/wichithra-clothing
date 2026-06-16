@@ -70,6 +70,7 @@ export async function getCancelledOrders(paginator: Paginator, filter: Cancelled
           taxAmount: true,
           totalAmount: true,
           notes: true,
+          cancelReason: true,
           user: {
             select: {
               firstName: true,

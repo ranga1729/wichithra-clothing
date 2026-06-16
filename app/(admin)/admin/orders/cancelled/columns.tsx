@@ -95,6 +95,15 @@ export const getColumns = ({ onCancel, onMove, onView, paginator }: ColumnProps)
     ),
   },
   {
+    id: "cancelReason",
+    header: () => <div>Cancel Reason</div>,
+    cell: ({ row }) => (
+      <div className="max-w-[400px] truncate text-sm text-muted-foreground">
+        {row.original.cancelReason ?? "—"}
+      </div>
+    ),
+  },
+  {
     id: "notes",
     header: () => <div>Notes</div>,
     cell: ({ row }) => (

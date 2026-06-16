@@ -201,7 +201,7 @@ export default function OngoingOrdersPage() {
         ref={tableRef}
         columns={getColumns({
           paginator: paginator,
-          onView: (id) => router.push(`/admin/ongoing-orders/${id}`),
+          onView: (id) => router.push(`/admin/orders/ongoing/${id}`),
           onMove: (id) => console.log(id),
           onCancel: (id) => console.log(id),
         })}

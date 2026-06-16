@@ -201,7 +201,7 @@ export default function CancelledOrdersPage() {
         ref={tableRef}
         columns={getColumns({
           paginator: paginator,
-          onView: (id) => router.push(`/admin/cancelled-orders/${id}`),
+          onView: (id) => router.push(`/admin/orders/cancelled/${id}`),
           onMove: (id) => console.log(id),
           onCancel: (id) => console.log(id),
         })}

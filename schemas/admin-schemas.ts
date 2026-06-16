@@ -357,6 +357,7 @@ export const cancelledOrderSchema = z.object({
   taxAmount: z.coerce.number(),
   totalAmount: z.coerce.number(),
   notes: z.string().nullable(),
+  cancelReason: z.string().nullable(),
   user: z.object({
     firstName: z.string(),
     lastName: z.string(),

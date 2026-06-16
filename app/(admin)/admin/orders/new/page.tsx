@@ -201,7 +201,7 @@ export default function NewOrdersPage() {
         ref={tableRef}
         columns={getColumns({
           paginator: paginator,
-          onView: (id) => router.push(`/admin/new-orders/${id}`),
+          onView: (id) => router.push(`/admin/orders/new/${id}`),
           onMove: (id) => console.log(id),
           onCancel: (id) => console.log(id),
         })}
