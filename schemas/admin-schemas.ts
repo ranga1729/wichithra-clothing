@@ -364,6 +364,18 @@ export const cancelledOrderSchema = z.object({
   }),
 })
 
+export const customerSchema = z.object({
+  id: z.uuid(),
+  firstName: z.string(),
+  lastName: z.string(),
+  email: z.string().email(),
+  isActive: z.boolean(),
+  isVerified: z.boolean(),
+  createdAt: z.coerce.date(),
+})
+
+export type CustomerSchema = z.infer<typeof customerSchema>
+
 export type CategorySchema = z.input<typeof categorySchema>
 export type DesignSchema = z.infer<typeof designSchema>
 export type ColorSchema = z.infer<typeof colorSchema>

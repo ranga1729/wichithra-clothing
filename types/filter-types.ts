@@ -19,6 +19,11 @@ export interface ProductFilter {
   category?: string,
 }
 
+export interface CustomerFilter {
+  name?: string,
+  email?: string,
+}
+
 export interface InventoryFilter {
   productId?: string,
   sku?: string,
