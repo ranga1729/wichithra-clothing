@@ -8,6 +8,9 @@ import { ThemeToggler } from "../../providers/theme/theme-toggler"
 import Logout from "@/components/custom/general/logout-button/logout-button"
 import AdminIndicator from "./admin-indicator"
 import { JwtPayload } from "@/types/auth-types"
+import { usePathname } from "next/navigation"
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import React from "react"
 
 interface Props {
   user : JwtPayload | null;
@@ -15,6 +18,10 @@ interface Props {
 
 export function AdminHeader(props: Props) {
   const { toggleSidebar } = useSidebar()
+
+  const pathname = usePathname()
+  const pathSegments = pathname.split("/").filter((segment) => segment !== "" && segment !== "admin")
+  console.log(pathSegments)
 
   return (
     <header className="bg-background dark:bg-neutral-800 sticky top-0 z-50 flex w-full items-center border-b">
@@ -30,6 +37,31 @@ export function AdminHeader(props: Props) {
             <SidebarIcon />
           </Button>
           <Separator orientation="vertical" className="h-full bg-neutral-300 dark:bg-neutral-600" />
+        
+          <Breadcrumb>
+            <BreadcrumbList>
+              {pathSegments.map((segment, index) => {
+                const isLast = index === pathSegments.length - 1
+                const formattedName = segment.charAt(0).toUpperCase() + segment.slice(1)
+
+                return (
+                  <React.Fragment key={segment}>
+                    <BreadcrumbItem>
+                      {isLast ? (
+                        // Active/Last page styles (usually bolder or darker)
+                        <BreadcrumbPage>{formattedName}</BreadcrumbPage>
+                      ) : (
+                        // Non-active pages rendered as plain text instead of a Link
+                        <span className="text-muted-foreground text-sm">{formattedName}</span>
+                      )}
+                    </BreadcrumbItem>
+                    {!isLast && <BreadcrumbSeparator />}
+                  </React.Fragment>
+                )
+              })}
+            </BreadcrumbList>
+          </Breadcrumb>
+
         </div>
 
         <div className="flex flex-row gap-4 h-full items-center justify-start">
