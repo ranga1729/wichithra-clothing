@@ -48,10 +48,8 @@ export function AdminHeader(props: Props) {
                   <React.Fragment key={segment}>
                     <BreadcrumbItem>
                       {isLast ? (
-                        // Active/Last page styles (usually bolder or darker)
                         <BreadcrumbPage>{formattedName}</BreadcrumbPage>
                       ) : (
-                        // Non-active pages rendered as plain text instead of a Link
                         <span className="text-muted-foreground text-sm">{formattedName}</span>
                       )}
                     </BreadcrumbItem>
