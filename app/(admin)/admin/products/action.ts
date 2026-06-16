@@ -164,7 +164,6 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
             id: true,
             productId: true,
             colorId: true,
-            sizeId: true,
             sku: true,
             costPrice: true,
             sellingPrice: true,
@@ -177,17 +176,10 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
                 swatchImageUrl: true,
               }
             },
-            size: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                sortOrder: true,
-              }
-            }
+            size: true,
           },
           orderBy: [
-            { size: { sortOrder: 'asc' } },
+            { size: 'asc' },
             { color: { name: 'asc' } },
           ]
         },

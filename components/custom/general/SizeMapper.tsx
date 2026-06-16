@@ -2,16 +2,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import { VariantSchema } from "@/schemas/admin-schemas";
 
+const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+
 interface Props {
   variants?: VariantSchema[];
 }
 
 const SizeMapper = (props: Props) => {
-  // Derive distinct sizes from variants, sorted by sortOrder
   const distinctSizes = props.variants
-    ? Array.from(
-        new Map(props.variants.map((v) => [v.sizeId, v.size])).values()
-      ).sort((a, b) => a.sortOrder - b.sortOrder)
+    ? Array.from(new Set(props.variants.map((v) => v.size))).sort(
+        (a, b) => SIZE_ORDER.indexOf(a) - SIZE_ORDER.indexOf(b)
+      )
     : [];
 
   return (
@@ -26,13 +27,13 @@ const SizeMapper = (props: Props) => {
         ) : (
           distinctSizes.map((size) => (
             <span
-              key={size.id}
+              key={size}
               className={cn(
                 "border flex items-center justify-center rounded-md px-2 py-1 text-xs font-medium",
                 "bg-neutral-200 text-neutral-800 border-neutral-400"
               )}
             >
-              {size.name}
+              {size}
             </span>
           ))
         )}

@@ -57,7 +57,7 @@ export const getColumns = ({
     id: "size",
     header: () => <div className="text-center">Size</div>,
     cell: ({ row }) => (
-      <div className="text-center">{row.original.variant.size.name}</div>
+      <div className="text-center">{row.original.variant.size}</div>
     ),
   },
   {

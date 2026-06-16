@@ -148,7 +148,7 @@ export default function EditInventoryItem({
             <Field className="flex flex-col gap-2 flex-1 min-w-[180px]">
               <Label>Size</Label>
               <Input
-                value={isLoading ? "Loading..." : (item?.variant.size.name ?? "—")}
+                value={isLoading ? "Loading..." : (item?.variant.size ?? "—")}
                 disabled
                 readOnly
               />

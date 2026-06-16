@@ -23,7 +23,7 @@ export interface InventoryFilter {
   productId?: string,
   sku?: string,
   colorId?: string,
-  sizeId?: string,
+  size?: string,
 }
 
 export interface NewOrderFilter {

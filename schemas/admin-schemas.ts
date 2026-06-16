@@ -1,4 +1,4 @@
-import { AgeGroup, GenderTarget, PaymentStatus, ProductStatus } from "@/generated/prisma/enums";
+import { AgeGroup, ClothingSize, GenderTarget, PaymentStatus, ProductStatus } from "@/generated/prisma/enums";
 import * as z from "zod"
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
@@ -6,6 +6,7 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jp
 export const ProductStatusSchema = z.enum(ProductStatus);
 export const AgeGroupSchema = z.enum(AgeGroup)
 export const GenderSchema = z.enum(GenderTarget)
+export const ClothingSizeSchema = z.enum(ClothingSize)
 
 export const categorySchema = z.object({
   name: z
@@ -108,24 +109,16 @@ const productImageSchema = z.object({
   sortOrder: z.number().int(),
 });
 
-const variantSizeSchema = z.object({
-  id: z.uuid(),
-  name: z.string(),
-  description: z.string().nullable(),
-  sortOrder: z.number().int(),
-});
-
 const variantSchema = z.object({
   id: z.uuid(),
   productId: z.uuid(),
   colorId: z.uuid(),
-  sizeId: z.uuid(),
   sku: z.string(),
   costPrice: z.coerce.number().nullable(),
   sellingPrice: z.coerce.number(),
   isActive: z.boolean(),
   color: colorSelectSchema,
-  size: variantSizeSchema,
+  size: ClothingSizeSchema,
 });
 
 export const productSchema = z.object({
@@ -241,17 +234,14 @@ export const inventorySchema = z.object({
       hexCode: z.string().nullable(),
       swatchImageUrl: z.string().nullable(),
     }),
-    size: z.object({
-      id: z.uuid(),
-      name: z.string(),
-    }),
+    size: ClothingSizeSchema,
   }),
 });
 
 export const createInventoryItemSchema = z.object({
   productId: z.uuid("Please select a product"),
   colorId: z.uuid("Please select a color"),
-  sizeId: z.uuid("Please select a size"),
+  size: ClothingSizeSchema,
   sku: z
     .string("SKU is required")
     .min(1, "SKU is required")

@@ -28,8 +28,8 @@ import {
   createInventoryItem,
   getColorSelectorData,
   getProductSelectorData,
-  getSizeSelectorData,
 } from "../actions"
+import { ClothingSize } from "@/generated/prisma/enums"
 import { AlertTriangle, CheckCircle } from "lucide-react"
 import { getCategorySelectorData } from "../../facets/categories/action"
 
@@ -51,7 +51,7 @@ export default function AddNewInventoryItem() {
     defaultValues: {
       productId: "",
       colorId: "",
-      sizeId: "",
+      size: "" as ClothingSize,
       sku: "",
       costPrice: undefined as any,
       sellingPrice: undefined as any,
@@ -61,17 +61,17 @@ export default function AddNewInventoryItem() {
     },
   })
 
-  const { productId, colorId, sizeId } = watch()
+  const { productId, colorId, size } = watch()
 
   // Reset dependent fields when product changes
   useEffect(() => {
     setValue("colorId", "")
-    setValue("sizeId", "")
+    setValue("size", "" as ClothingSize)
   }, [productId, setValue])
 
   // Reset size when color changes
   useEffect(() => {
-    setValue("sizeId", "")
+    setValue("size", "" as ClothingSize)
   }, [colorId, setValue])
 
   // queries
@@ -104,22 +104,13 @@ export default function AddNewInventoryItem() {
     },
   })
 
-  const { data: sizes } = useQuery({
-    queryKey: ["sizeSelector"],
-    queryFn: async () => {
-      const res = await getSizeSelectorData()
-      if (!res.success) toast.error(res.error ?? en.data_retrieval_failed)
-      return res.data ?? []
-    },
-  })
-
   const { data: variantCheck, isFetching: isCheckingVariant } = useQuery({
-    queryKey: ["variantCheck", productId, colorId, sizeId],
+    queryKey: ["variantCheck", productId, colorId, size],
     queryFn: async () => {
-      const res = await checkVariantExists(productId, colorId, sizeId)
+      const res = await checkVariantExists(productId, colorId, size)
       return res.data
     },
-    enabled: !!(productId && colorId && sizeId),
+    enabled: !!(productId && colorId && size),
   })
 
   // mutation
@@ -147,7 +138,7 @@ export default function AddNewInventoryItem() {
     submit(data)
   }
 
-  const variantAllSelected = !!(productId && colorId && sizeId)
+  const variantAllSelected = !!(productId && colorId && size)
 
   return (
     <div className="flex flex-col gap-5 w-4xl mx-auto">
@@ -242,9 +233,9 @@ export default function AddNewInventoryItem() {
 
             {/* Size selector */}
             <Field className="flex flex-col gap-2 flex-1 min-w-[200px]">
-              <Label htmlFor="sizeId">Size *</Label>
+              <Label htmlFor="size">Size *</Label>
               <Controller
-                name="sizeId"
+                name="size"
                 control={control}
                 render={({ field }) => (
                   <Select
@@ -253,16 +244,16 @@ export default function AddNewInventoryItem() {
                     disabled={!productId || !colorId}
                   >
                     <SelectTrigger
-                      id="sizeId"
-                      className={errors.sizeId ? "border-red-500" : ""}
+                      id="size"
+                      className={errors.size ? "border-red-500" : ""}
                     >
                       <SelectValue placeholder="Select a size..." />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        {((sizes as any[]) ?? []).map((s: any) => (
-                          <SelectItem key={s.id} value={s.id}>
-                            {s.name}
+                        {Object.values(ClothingSize).map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
                           </SelectItem>
                         ))}
                       </SelectGroup>
@@ -270,9 +261,9 @@ export default function AddNewInventoryItem() {
                   </Select>
                 )}
               />
-              {errors.sizeId && (
+              {errors.size && (
                 <span className="text-sm text-red-500">
-                  {errors.sizeId.message as string}
+                  {errors.size.message as string}
                 </span>
               )}
             </Field>

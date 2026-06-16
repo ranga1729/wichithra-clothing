@@ -11,7 +11,8 @@ import { initialPaginator, Paginator } from "@/types/table-types";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { getInventory, deleteInventoryItem, getColorSelectorData, getSizeSelectorData, getProductSelectorData } from "./actions";
+import { getInventory, deleteInventoryItem, getColorSelectorData, getProductSelectorData } from "./actions";
+import { ClothingSize } from "@/generated/prisma/enums";
 import { getColumns } from "./columns";
 import { useRouter } from "next/navigation";
 import AddNewButton from "@/components/AddNewButton";
@@ -30,7 +31,7 @@ const initialFilter: InventoryFilter = {
   productId: "",
   sku: "",
   colorId: "",
-  sizeId: "",
+  size: "",
 };
 
 export default function InventoryPage() {
@@ -56,15 +57,6 @@ export default function InventoryPage() {
     queryKey: ["colorSelector"],
     queryFn: async () => {
       const res = await getColorSelectorData()
-      if (!res.success) toast.error(res.error ?? en.data_retrieval_failed)
-      return res.data ?? []
-    },
-  })
-
-  const { data: sizes } = useQuery({
-    queryKey: ["sizeSelector"],
-    queryFn: async () => {
-      const res = await getSizeSelectorData()
       if (!res.success) toast.error(res.error ?? en.data_retrieval_failed)
       return res.data ?? []
     },
@@ -174,9 +166,9 @@ export default function InventoryPage() {
           <div className="grid w-60 max-w-sm items-center gap-2">
             <Label>Size</Label>
             <Select
-              value={filter.sizeId || "__all__"}
+              value={filter.size || "__all__"}
               onValueChange={(val) =>
-                setFilter((prev) => ({ ...prev, sizeId: val === "__all__" ? "" : val }))
+                setFilter((prev) => ({ ...prev, size: val === "__all__" ? "" : val }))
               }
             >
               <SelectTrigger>
@@ -185,9 +177,9 @@ export default function InventoryPage() {
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="__all__">All sizes</SelectItem>
-                  {((sizes as any[]) ?? []).map((s: any) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.name}
+                  {Object.values(ClothingSize).map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
                     </SelectItem>
                   ))}
                 </SelectGroup>

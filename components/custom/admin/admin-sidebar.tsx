@@ -86,10 +86,6 @@ const data = {
           title: "Colors",
           url: "/admin/facets/colors",
         },
-        {
-          title: "Sizes",
-          url: "/admin/facets/sizes",
-        },
       ],
     },
     {

@@ -8,6 +8,7 @@ import { Paginator } from "@/types/table-types";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
 import { createInventoryItemSchema, CreateInventoryItemSchema, updateInventoryItemSchema, UpdateInventoryItemSchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
+import { ClothingSize } from "@/generated/prisma/enums";
 
 export async function getInventoryItemByVariantId(variantId: string): Promise<ApiResponse> {
   try {
@@ -48,9 +49,7 @@ export async function getInventoryItemByVariantId(variantId: string): Promise<Ap
                 swatchImageUrl: true,
               },
             },
-            size: {
-              select: { id: true, name: true },
-            },
+            size: true,
           },
         },
       },
@@ -115,7 +114,7 @@ export async function getInventory(paginator: Paginator, filter: InventoryFilter
         ...(filter.sku && { sku: { contains: filter.sku, mode: 'insensitive' } }),
         ...(filter.productId && { productId: filter.productId }),
         ...(filter.colorId && { colorId: filter.colorId }),
-        ...(filter.sizeId && { sizeId: filter.sizeId }),
+        ...(filter.size && { size: filter.size as ClothingSize }),
       },
     };
 
@@ -154,12 +153,7 @@ export async function getInventory(paginator: Paginator, filter: InventoryFilter
                 swatchImageUrl: true,
               },
             },
-            size: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
+            size: true,
           },
         },
       },
@@ -186,6 +180,7 @@ export async function getInventory(paginator: Paginator, filter: InventoryFilter
     };
   } catch (error: any) {
     if (error instanceof AuthError) throw error;
+    console.log(error)
     return {
       success: false,
       error: error.message || en.inventory_data_retrieval_failed,
@@ -235,24 +230,8 @@ export async function getColorSelectorData(): Promise<ApiResponse> {
   }
 }
 
-export async function getSizeSelectorData(): Promise<ApiResponse> {
-  try {
-    await requireRole(["admin", "super-admin"]);
 
-    const sizes = await prisma.size.findMany({
-      where: { ...notDeleted, isActive: true },
-      select: { id: true, name: true, sortOrder: true },
-      orderBy: { sortOrder: 'asc' },
-    });
-
-    return { success: true, data: sizes };
-  } catch (error: any) {
-    if (error instanceof AuthError) throw error;
-    return { success: false, error: error.message || en.data_retrieval_failed };
-  }
-}
-
-export async function checkVariantExists(productId: string, colorId: string, sizeId: string): Promise<ApiResponse> {
+export async function checkVariantExists(productId: string, colorId: string, size: string): Promise<ApiResponse> {
   try {
     await requireRole(["admin", "super-admin"]);
 
@@ -261,7 +240,7 @@ export async function checkVariantExists(productId: string, colorId: string, siz
       where: {
         productId,
         colorId,
-        sizeId,
+        size: size as ClothingSize,
         ...notDeleted
       },
       select: { 
@@ -336,7 +315,7 @@ export async function createInventoryItem(data: CreateInventoryItemSchema): Prom
       where: {
         productId: validatedData.productId,
         colorId: validatedData.colorId,
-        sizeId: validatedData.sizeId,
+        size: validatedData.size,
         deletedAt: null,
       },
     });
@@ -360,7 +339,7 @@ export async function createInventoryItem(data: CreateInventoryItemSchema): Prom
         data: {
           productId: validatedData.productId,
           colorId: validatedData.colorId,
-          sizeId: validatedData.sizeId,
+          size: validatedData.size,
           sku: validatedData.sku,
           costPrice: validatedData.costPrice,
           sellingPrice: validatedData.sellingPrice,

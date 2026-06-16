@@ -147,23 +147,6 @@ model Color {
   @@map("colors")
 }
 
-model Size {
-  id          String    @id @default(uuid()) @db.Uuid
-  name        String    @unique @db.VarChar(10) // 'XS', 'S', 'M', 'L', 'XL', 'XXL', etc.
-  description String?   @db.VarChar(50) // 'Extra Small', 'Small', 'Medium', etc.
-  sortOrder   Int       @default(0)
-  isActive    Boolean   @default(true)
-  deletedAt   DateTime? @db.Timestamptz(6)
-  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
-
-  // Relationships
-  variants ProductVariant[]
-
-  @@index([deletedAt])
-  @@map("sizes")
-}
-
 model Product {
   id                 String        @id @default(uuid()) @db.Uuid
   name               String        @db.VarChar(200)
@@ -202,22 +185,21 @@ model Product {
 }
 
 model ProductVariant {
-  id           String    @id @default(uuid()) @db.Uuid
-  productId    String    @db.Uuid
-  colorId      String    @db.Uuid
-  sizeId       String    @db.Uuid
-  sku          String    @unique @db.VarChar(100)
-  costPrice    Decimal  @db.Decimal(10, 2)
-  sellingPrice Decimal   @db.Decimal(10, 2)
-  isActive     Boolean   @default(true)
-  deletedAt    DateTime? @db.Timestamptz(6)
-  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime  @updatedAt @db.Timestamptz(6)
+  id           String        @id @default(uuid()) @db.Uuid
+  productId    String        @db.Uuid
+  colorId      String        @db.Uuid
+  size         ClothingSize  @default(OS)
+  sku          String        @unique @db.VarChar(100)
+  costPrice    Decimal       @db.Decimal(10, 2)
+  sellingPrice Decimal       @db.Decimal(10, 2)
+  isActive     Boolean       @default(true)
+  deletedAt    DateTime?     @db.Timestamptz(6)
+  createdAt    DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime      @updatedAt @db.Timestamptz(6)
 
   // Relationships
   product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   color     Color      @relation(fields: [colorId], references: [id])
-  size      Size       @relation(fields: [sizeId], references: [id])
   inventory Inventory?
 
   @@index([productId])
@@ -590,4 +572,17 @@ enum PaymentMethod {
   OTHER
 
   @@map("payment_method")
+}
+
+enum ClothingSize {
+  XS
+  S
+  M
+  L
+  XL
+  XXL
+  XXXL
+  OS
+
+  @@map("clothing_size")
 }
