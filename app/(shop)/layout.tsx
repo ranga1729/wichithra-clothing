@@ -40,10 +40,10 @@ export default function ShopFrontLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="[--header-height:calc(--spacing(14))] font-sans antialiased bg-background text-foreground min-h-lvh flex-col items-center justify-center">
+    <div className="[--header-height:calc(--spacing(14))] font-sans antialiased bg-background text-foreground min-h-lvh flex flex-col items-center">
       <KoaHeader />
       <KoaHero />
-      <main className="border border-blue-500 max-w-7xl h-100">
+      <main className="w-full max-w-7xl">
         {children}
       </main>
       <KoaFooter/>

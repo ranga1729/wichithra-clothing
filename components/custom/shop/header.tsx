@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ShoppingCart, Search, LogOut, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ThemeToggler } from '@/components/providers/theme/theme-toggler'
 
 export function KoaHeader() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -12,7 +13,7 @@ export function KoaHeader() {
   const [cartCount, setCartCount] = useState(3)
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-koa-blue">
+    <header className="sticky top-0 z-50 bg-white border-b border-koa-blue w-full">
       
       {/* Main Header - keep the 7xl margin */}
       <div className="max-w-7xl mx-auto px-4">
@@ -69,6 +70,7 @@ export function KoaHeader() {
             >
               <span className="hidden sm:inline text-sm">Logout</span>
             </Button>
+            <ThemeToggler />
           </div>
         </div>
 

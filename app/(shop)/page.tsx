@@ -4,7 +4,7 @@ export default function ShopFront() {
   const userName = "Next.js User";
   
   return (
-    <div>
+    <div className="h-100">
       main
     </div>
   );

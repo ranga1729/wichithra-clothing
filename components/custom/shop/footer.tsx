@@ -3,7 +3,7 @@ import { Mail, Share2, Globe } from 'lucide-react'
 
 export function KoaFooter() {
   return (
-    <footer className="bg-[#101010] text-white">
+    <footer className="bg-[#101010] text-white w-full">
       <div className="max-w-7xl mx-auto px-4 py-16">
         {/* Main Footer Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
