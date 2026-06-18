@@ -1,3 +1,6 @@
+import { KoaFooter } from "@/components/custom/shop/footer";
+import { KoaHeader } from "@/components/custom/shop/header";
+import { KoaHero } from "@/components/custom/shop/hero";
 import { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -37,16 +40,13 @@ export default function ShopFrontLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="[--header-height:calc(--spacing(14))] font-sans antialiased bg-background text-foreground min-h-lvh">
-      <header>
-        <h1>header</h1>
-      </header>
-      <main>
+    <div className="[--header-height:calc(--spacing(14))] font-sans antialiased bg-background text-foreground min-h-lvh flex-col items-center justify-center">
+      <KoaHeader />
+      <KoaHero />
+      <main className="border border-blue-500 max-w-7xl h-100">
         {children}
       </main>
-      <footer>
-        <h1>footer</h1>
-      </footer>
+      <KoaFooter/>
     </div>
   );
 }
