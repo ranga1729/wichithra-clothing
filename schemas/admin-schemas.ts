@@ -369,12 +369,25 @@ export const customerSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
   email: z.string().email(),
-  isActive: z.boolean(),
   isVerified: z.boolean(),
   createdAt: z.coerce.date(),
+  phoneNumbers: z.array(z.object({
+    phoneNumber: z.string(),
+    countryCode: z.string().nullable(),
+    type: z.string(),
+    isDefault: z.boolean(),
+  })),
+  addresses: z.array(z.object({
+    houseNo: z.string(),
+    addressLine1: z.string(),
+    addressLine2: z.string().nullable(),
+    city: z.string(),
+    province: z.string(),
+    zipcode: z.string(),
+    country: z.string(),
+    isDefault: z.boolean(),
+  })),
 })
-
-export type CustomerSchema = z.infer<typeof customerSchema>
 
 export type CategorySchema = z.input<typeof categorySchema>
 export type DesignSchema = z.infer<typeof designSchema>
@@ -395,3 +408,5 @@ export type NewOrderSchema = z.infer<typeof newOrderSchema>
 export type OngoingOrderSchema = z.infer<typeof ongoingOrderSchema>
 export type CompletedOrderSchema = z.infer<typeof completedOrderSchema>
 export type CancelledOrderSchema = z.infer<typeof cancelledOrderSchema>
+
+export type CustomerSchema = z.infer<typeof customerSchema>

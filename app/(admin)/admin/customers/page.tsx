@@ -17,6 +17,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 const initialFilter: CustomerFilter = {
   name: "",
   email: "",
+  phone: "",
+  address: "",
 };
 
 export default function CustomersPage() {
@@ -82,6 +84,28 @@ export default function CustomersPage() {
               placeholder="Email"
               value={filter.email}
               name="email"
+              onChange={handleFilterChange}
+            />
+          </div>
+          <div className="grid w-60 max-w-sm items-center gap-2">
+            <Label htmlFor="phone">Phone</Label>
+            <Input
+              type="text"
+              id="phone"
+              placeholder="Phone number"
+              value={filter.phone}
+              name="phone"
+              onChange={handleFilterChange}
+            />
+          </div>
+          <div className="grid w-60 max-w-sm items-center gap-2">
+            <Label htmlFor="address">Address</Label>
+            <Input
+              type="text"
+              id="address"
+              placeholder="City, province, address..."
+              value={filter.address}
+              name="address"
               onChange={handleFilterChange}
             />
           </div>

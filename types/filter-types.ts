@@ -22,6 +22,8 @@ export interface ProductFilter {
 export interface CustomerFilter {
   name?: string,
   email?: string,
+  phone?: string,
+  address?: string,
 }
 
 export interface InventoryFilter {

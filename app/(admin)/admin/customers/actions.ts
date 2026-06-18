@@ -41,6 +41,28 @@ export async function getCustomers(paginator: Paginator, filter: CustomerFilter)
           mode: 'insensitive',
         },
       }),
+      ...(filter.phone && {
+        phoneNumbers: {
+          some: {
+            phoneNumber: {
+              contains: filter.phone,
+              mode: 'insensitive',
+            },
+          },
+        },
+      }),
+      ...(filter.address && {
+        addresses: {
+          some: {
+            OR: [
+              { houseNo: { contains: filter.address, mode: 'insensitive' } },
+              { addressLine1: { contains: filter.address, mode: 'insensitive' } },
+              { city: { contains: filter.address, mode: 'insensitive' } },
+              { province: { contains: filter.address, mode: 'insensitive' } },
+            ],
+          },
+        },
+      }),
     };
 
     const customers = await prisma.user.findMany({
@@ -49,9 +71,31 @@ export async function getCustomers(paginator: Paginator, filter: CustomerFilter)
         firstName: true,
         lastName: true,
         email: true,
-        isActive: true,
         isVerified: true,
         createdAt: true,
+        phoneNumbers: {
+          select: {
+            phoneNumber: true,
+            countryCode: true,
+            type: true,
+            isDefault: true,
+          },
+          where: { isActive: true },
+          orderBy: { isDefault: 'desc' },
+        },
+        addresses: {
+          select: {
+            houseNo: true,
+            addressLine1: true,
+            addressLine2: true,
+            city: true,
+            province: true,
+            zipcode: true,
+            country: true,
+            isDefault: true,
+          },
+          orderBy: { isDefault: 'desc' },
+        },
       },
       where: whereClause,
       skip,
