@@ -17,12 +17,6 @@ export default async function AdminDashboardLayout({
   const user = await getUserFromCookie();
   
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
       <div className="[--header-height:calc(--spacing(14))]">
         <SidebarProvider className='flex flex-col'>
           <AdminHeader user={user} />
@@ -38,7 +32,5 @@ export default async function AdminDashboardLayout({
           </div>
         </SidebarProvider>
       </div>
-    </ThemeProvider>
-
   );
 }
