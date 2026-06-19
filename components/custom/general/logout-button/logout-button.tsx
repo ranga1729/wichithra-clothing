@@ -45,9 +45,9 @@ export default function Logout() {
       <AlertDialogTrigger asChild>
         <Button 
           className="
-            bg-red-600 
-            text-neutral-50
-            hover:bg-red-700
+            bg-red-700
+            text-neutral-100
+            hover:bg-red-800
           ">
           Logout
         </Button>
@@ -62,14 +62,14 @@ export default function Logout() {
         <AlertDialogFooter>
           <AlertDialogCancel 
             disabled={isPending}
-            className="bg-neutral-500 hover:bg-neutral-600 text-neutral-900 hover:text-neutral-100 dark:bg-neutral-500 dark:hover:bg-neutral-600 dark:text-neutral-900 dark:hover:text-neutral-100"
+            className="bg-neutral-500 hover:bg-neutral-600 text-neutral-100 dark:bg-neutral-500 dark:hover:bg-neutral-600 dark:text-neutral-100"
           >
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction 
             onClick={() => logout()}
             disabled={isPending}
-            className="bg-red-500 hover:bg-red-600 text-neutral-900 hover:text-neutral-100 dark:bg-red-500 dark:hover:bg-red-600 dark:text-neutral-900 dark:hover:text-neutral-100"
+            className="bg-red-700 hover:bg-red-800 text-neutral-100 dark:bg-red-700 dark:hover:bg-red-800 dark:text-neutral-100"
           >
             {isPending ? 'Logging out...' : 'Confirm'}
           </AlertDialogAction>
