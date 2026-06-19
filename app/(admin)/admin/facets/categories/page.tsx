@@ -131,36 +131,35 @@ export default function CategoryPage() {
   return (
     <div>
       <div className="flex flex-col gap-3">
-        <div>
-          <form className="flex flex-col gap-3">
-            <div className="flex flex-row justify-start items-center gap-3 w-full border py-3 px-2 rounded-md">
-              <div className="grid w-60 max-w-sm items-center gap-2">
-                <Label htmlFor="name"> {en.name} </Label>
-                <Input type="text" id="name" placeholder="Name" value={filter.name} name="name" onChange={handleFilterChange} />
-              </div>
-              <div className="grid w-60 max-w-sm items-center gap-2">
-                <Label htmlFor="Slug"> {en.slug} </Label>
-                <Input type="text" id="Slug" placeholder="Slug" value={filter.slug} name="slug" onChange={handleFilterChange} />
-              </div>
-
-              <div className="flex flex-col gap-2 w-60">
-                <Label htmlFor="sort"> {en.sort} </Label>
-                <SortDropDown
-                  id="sort"
-                  sortColumnOptions={SortColumns}
-                  columnValue={sorter.sortColumn}
-                  orderValue={sorter.sortOrder}
-                  onSorterChange ={handleSorterChange}
-                />
-              </div>
-
+        <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-700">
+          <div className="flex flex-row justify-start items-center gap-3 w-full">
+            <div className="grid w-60 max-w-sm items-center gap-2">
+              <Label htmlFor="name"> {en.name} </Label>
+              <Input type="text" id="name" placeholder="Name" value={filter.name} name="name" onChange={handleFilterChange} />
             </div>
-            
-            <div className="flex flex-row gap-2 items-center justify-between">            
-              <ResetFilterButton onClick={handleReset} />
-              <AddNewButton onClick={() => setIsAddNewModalOpen(true)} />
+            <div className="grid w-60 max-w-sm items-center gap-2">
+              <Label htmlFor="Slug"> {en.slug} </Label>
+              <Input type="text" id="Slug" placeholder="Slug" value={filter.slug} name="slug" onChange={handleFilterChange} />
             </div>
-          </form>
+
+            <div className="flex flex-col gap-2 w-60">
+              <Label htmlFor="sort"> {en.sort} </Label>
+              <SortDropDown
+                id="sort"
+                sortColumnOptions={SortColumns}
+                columnValue={sorter.sortColumn}
+                orderValue={sorter.sortOrder}
+                onSorterChange ={handleSorterChange}
+              />
+            </div>
+          </div>
+          <div className="flex flex-row gap-2 items-center justify-start">            
+            <ResetFilterButton onClick={handleReset} />
+          </div>
+        </form>
+        
+        <div className="flex flex-row gap-2 items-center justify-end">            
+          <AddNewButton onClick={() => setIsAddNewModalOpen(true)} />
         </div>
 
         <TableWithPagination 

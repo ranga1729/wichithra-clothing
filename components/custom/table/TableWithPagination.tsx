@@ -135,7 +135,7 @@ const TableWithPagination = forwardRef<TableWithPaginationRef, TableWithPaginati
 
   return (
     <div className={`w-full flex flex-col ${className}`}>
-      <h1 className="text-gray-500 font-semibold text-sm">Total Records : {paginator.totalRecords}</h1>
+      <h1 className="text-gray-500 font-semibold mb-2 text-sm">Total Records : {paginator.totalRecords}</h1>
       <DataTable columns={columns} data={data} />
       <TablePaginator 
         paginatorState={paginator} 

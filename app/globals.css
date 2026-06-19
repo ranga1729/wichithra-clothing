@@ -8,12 +8,13 @@
   --color-koa-black: var(--koa-black);
   --color-koa-charcoal: var(--koa-charcoal);
   --color-koa-blue: var(--koa-blue);
-  --color-koa-blue-light: var(--koa-blue-light);
+  --color-koa-blue-hover: var(--koa-blue-hover);
   --color-koa-gray: var(--koa-gray);
   --color-koa-white: var(--koa-white);
   --color-koa-red: var(--koa-red);
-  --color-koa-red-light: var(--koa-red-light);
+  --color-koa-red-hover: var(--koa-red-hover);
   --color-koa-green: var(--koa-green);
+  --color-koa-green-hover: var(--koa-green-hover);
   --color-koa-yellow: var(--koa-yellow);
   --color-koa-orange: var(--koa-orange);
   --color-koa-purple: var(--koa-purple);
@@ -61,12 +62,13 @@
   --koa-black: #101010;
   --koa-charcoal: #2a2a2a;
   --koa-blue: #3d79be;
-  --koa-blue-light: #5197d6;
+  --koa-blue-hover: #2B5D96;
   --koa-gray: #cccccc;
   --koa-white: #ffffff;
   --koa-red: #D9383A;
-  --koa-red-light: #BC2A2C;
+  --koa-red-hover: #B32729;
   --koa-green: #3DBE6C;
+  --koa-green-hover:#2A9E53;
   --koa-yellow: #E0A928;
   --koa-orange: #E66E2E;
   --koa-purple: #6D59D6;
@@ -92,7 +94,7 @@
   --muted: var(--koa-gray);
   --muted-foreground: var(--koa-charcoal);
   
-  --accent: var(--koa-blue-light);
+  --accent: var(--koa-blue);
   --accent-foreground: var(--koa-white);
   
   --destructive: var(--koa-red);
@@ -102,7 +104,7 @@
   
   /* Charts & Ancillary Elements */
   --chart-1: var(--koa-blue);
-  --chart-2: var(--koa-blue-light);
+  --chart-2: var(--koa-blue);
   --chart-3: var(--koa-charcoal);
   --chart-4: var(--koa-gray);
   --chart-5: var(--koa-black);
@@ -139,17 +141,17 @@
   --muted: var(--koa-charcoal);
   --muted-foreground: var(--koa-gray);
   
-  --accent: var(--koa-blue-light);
+  --accent: var(--koa-blue);
   --accent-foreground: var(--koa-white);
   
   --destructive: var(--koa-red);
   --border: var(--koa-charcoal);
   --input: var(--koa-charcoal);
-  --ring: var(--koa-blue-light);
+  --ring: var(--koa-blue);
   
   /* Charts & Ancillary Elements */
   --chart-1: var(--koa-blue);
-  --chart-2: var(--koa-blue-light);
+  --chart-2: var(--koa-blue);
   --chart-3: var(--koa-gray);
   --chart-4: var(--koa-charcoal);
   --chart-5: var(--koa-white);
@@ -161,7 +163,7 @@
   --sidebar-accent: var(--koa-charcoal);
   --sidebar-accent-foreground: var(--koa-white);
   --sidebar-border: var(--koa-charcoal);
-  --sidebar-ring: var(--koa-blue-light);
+  --sidebar-ring: var(--koa-blue);
 }
 
 @layer base {

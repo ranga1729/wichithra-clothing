@@ -13,8 +13,8 @@ const AddNewButton = (props: Props) => {
     type="button" 
     onClick={props.onClick}
     className="
-      bg-emerald-600
-      hover:bg-emerald-700
+      bg-koa-blue
+      hover:bg-koa-blue-hover
       dark:text-neutral-100
     "
     > 

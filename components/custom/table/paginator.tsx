@@ -35,7 +35,7 @@ export default function TablePaginator(props : Props) {
   };
 
   return <div className="mt-2">
-    <div className="flex justify-center items-center space-x-6 lg:space-x-8 border py-2 rounded-md">
+    <div className="flex justify-center dark:border dark:border-neutral-600 items-center space-x-6 lg:space-x-8 border py-2 rounded-md">
       <div className="flex items-center space-x-2">
         <p className="text-sm font-medium">Rows per page</p>
         <Select
@@ -64,7 +64,7 @@ export default function TablePaginator(props : Props) {
         <Button 
           variant="outline" 
           size="icon" 
-          className="size-8 lg:flex" 
+          className="size-8 lg:flex dark:border dark:border-neutral-700 dark:hover:bg-neutral-700" 
           onClick={() => props.PaginatorSetter((prev) => ({...prev, pageIndex: 0}))} 
           disabled={props.paginatorState.pageIndex === 0 || getTotalPages(props.paginatorState) === 0}
         >
@@ -76,7 +76,7 @@ export default function TablePaginator(props : Props) {
         <Button 
           variant="outline" 
           size="icon" 
-          className="size-8" 
+          className="size-8 dark:border dark:border-neutral-700 dark:hover:bg-neutral-700" 
           onClick={() => props.PaginatorSetter((prev) => ({...prev, pageIndex: prev.pageIndex - 1}))} 
           disabled={props.paginatorState.pageIndex === 0 || getTotalPages(props.paginatorState) === 0}
         >
@@ -88,7 +88,7 @@ export default function TablePaginator(props : Props) {
         <Button 
           variant="outline" 
           size="icon" 
-          className="size-8" 
+          className="size-8 dark:border dark:border-neutral-700 dark:hover:bg-neutral-700" 
           onClick={() => props.PaginatorSetter((prev) => ({...prev, pageIndex: prev.pageIndex + 1}))} 
           disabled={getTotalPages(props.paginatorState) === 0 || props.paginatorState.pageIndex >= getTotalPages(props.paginatorState) - 1}
         >
@@ -100,7 +100,7 @@ export default function TablePaginator(props : Props) {
         <Button 
           variant="outline" 
           size="icon" 
-          className="size-8 lg:flex" 
+          className="size-8 lg:flex dark:border dark:border-neutral-700 dark:hover:bg-neutral-700" 
           onClick={() => props.PaginatorSetter((prev) => ({...prev, pageIndex: Math.max(0, getTotalPages(prev) - 1)}))} 
           disabled={getTotalPages(props.paginatorState) === 0 || props.paginatorState.pageIndex >= getTotalPages(props.paginatorState) - 1}
         >
