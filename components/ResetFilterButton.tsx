@@ -13,9 +13,15 @@ const ResetFilterButton = (props: Props) => {
     type="button" 
     onClick={props.onClick}
     className="
-      bg-sky-600
-      hover:bg-sky-700
+      text-neutral-100
+      bg-neutral-500
+      hover:bg-neutral-600
+      border border-neutral-600
+
       dark:text-neutral-100
+      dark:bg-neutral-600
+      dark:hover:bg-neutral-700
+      dark:border dark:border-neutral-400
     "
     > 
       <RotateCcw /> {en.reset_filters} 
