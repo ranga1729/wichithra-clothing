@@ -24,6 +24,7 @@ export function KoaHeader() {
                 src="/logo/kOA_logo_black.png"
                 alt="KOA Logo"
                 fill
+                sizes="120px"
                 className="object-contain"
               />
             </div>
