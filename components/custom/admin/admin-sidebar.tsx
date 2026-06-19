@@ -11,8 +11,6 @@ import {
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-// import { NavProjects } from "@/components/nav-projects"
-// import { NavSecondary } from "@/components/nav-secondary"
 import {
   Sidebar,
   SidebarContent,
@@ -22,7 +20,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import Image from "next/image"
-import logo from "@/public/images/logo.png"
+import KOA_warrior_face_black from "@/public/logo/warrior_face_black.png"
+import KOA_warrior_face_white from "@/public/logo/warrior_face_white.png"
+import { en } from "@/lib/i18n/en"
+import { useTheme } from "next-themes"
 
 const data = {
   navMain: [
@@ -129,6 +130,13 @@ const data = {
 }
 
 export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <Sidebar
       side="left" variant="sidebar" collapsible="icon"
@@ -141,11 +149,17 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
             <SidebarMenuButton size="lg" asChild className="bg-neutral-200 hover:bg-neutral-200 dark:bg-neutral-800">
               <a href="#">
                 <div className="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Image src={logo} alt={"Wichithra logo"} height={30} width={30} />
+                  {mounted && (
+                    <Image 
+                      src={ resolvedTheme == "dark" ? KOA_warrior_face_white : KOA_warrior_face_black} 
+                      alt={"Wichithra logo"} 
+                      height={30} width={30} 
+                    />
+                  )}
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Wichithra-Clothing</span>
-                  <span className="truncate text-xs">Admin-Dashboard</span>
+                  <span className="truncate font-medium"> {en.company_name} </span>
+                  <span className="truncate text-xs"> {en.company_tagline} </span>
                 </div>
               </a>
             </SidebarMenuButton>

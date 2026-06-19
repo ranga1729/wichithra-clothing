@@ -8,14 +8,8 @@ interface Props {
 
 export default function AdminIndicator(props: Props) {
 
-  const user = {
-    name: "admin-name",
-    email: "admin@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  }
-
   return (
-    <div className="flex flex-row gap-1 pr-3 pl-2 py-1 border rounded-sm">
+    <div className="flex flex-row gap-1 pr-3 pl-2 py-1 border rounded-sm dark:border dark:border-neutral-700">
       <Avatar className="h-8 w-8 rounded-lg items-center justify-center">
         <Shield color="green" size={25}/>
       </Avatar>

@@ -1,6 +1,8 @@
 export const en = {
   token_name: "wichithra-token",
   country_code: "+94",
+  company_name: "KOA",
+  company_tagline: "Unleash the Warrior.",
 
   unauthorized_not_logged_in: "You must be logged in to perform this action.",
   unauthorized_invalid_token: "Your session is invalid or has expired. Please log in again.",

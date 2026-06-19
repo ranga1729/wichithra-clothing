@@ -11,6 +11,12 @@
   --color-koa-blue-light: var(--koa-blue-light);
   --color-koa-gray: var(--koa-gray);
   --color-koa-white: var(--koa-white);
+  --color-koa-red: var(--koa-red);
+  --color-koa-red-light: var(--koa-red-light);
+  --color-koa-green: var(--koa-green);
+  --color-koa-yellow: var(--koa-yellow);
+  --color-koa-orange: var(--koa-orange);
+  --color-koa-purple: var(--koa-purple);
 
   /* Structural UI Mappings */
   --radius-sm: calc(var(--radius) - 4px);
@@ -58,6 +64,12 @@
   --koa-blue-light: #5197d6;
   --koa-gray: #cccccc;
   --koa-white: #ffffff;
+  --koa-red: #D9383A;
+  --koa-red-light: #BC2A2C;
+  --koa-green: #3DBE6C;
+  --koa-yellow: #E0A928;
+  --koa-orange: #E66E2E;
+  --koa-purple: #6D59D6;
 
   --radius: 0.625rem;
   
@@ -83,7 +95,7 @@
   --accent: var(--koa-blue-light);
   --accent-foreground: var(--koa-white);
   
-  --destructive: #d90429;
+  --destructive: var(--koa-red);
   --border: var(--koa-gray);
   --input: var(--koa-gray);
   --ring: var(--koa-blue);
@@ -130,7 +142,7 @@
   --accent: var(--koa-blue-light);
   --accent-foreground: var(--koa-white);
   
-  --destructive: #e53e3e;
+  --destructive: var(--koa-red);
   --border: var(--koa-charcoal);
   --input: var(--koa-charcoal);
   --ring: var(--koa-blue-light);
