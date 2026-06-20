@@ -13,7 +13,7 @@ export function KoaHeader() {
   const [cartCount, setCartCount] = useState(3)
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-koa-blue w-full">
+    <header className="sticky top-0 z-50 bg-white border-b border-koa-blue w-full dark:bg-neutral-700">
       
       {/* Main Header - keep the 7xl margin */}
       <div className="max-w-7xl mx-auto px-4">
@@ -36,7 +36,7 @@ export function KoaHeader() {
               Shop
             </Link>
             <Link href="/collections" className="text-[#101010] font-medium hover:text-[#3D79BE] transition">
-              Collections
+              Categories
             </Link>
             <Link href="/about" className="text-[#101010] font-medium hover:text-[#3D79BE] transition">
               About

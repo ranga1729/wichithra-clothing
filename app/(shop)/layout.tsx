@@ -1,3 +1,5 @@
+import { KoaFeaturedProducts } from "@/components/custom/shop/featured-products";
+import { KoaFeatures } from "@/components/custom/shop/features";
 import { KoaFooter } from "@/components/custom/shop/footer";
 import { KoaHeader } from "@/components/custom/shop/header";
 import { KoaHero } from "@/components/custom/shop/hero";
@@ -46,6 +48,8 @@ export default function ShopFrontLayout({
       <main className="w-full max-w-7xl">
         {children}
       </main>
+      <KoaFeaturedProducts />
+      <KoaFeatures />
       <KoaFooter/>
     </div>
   );

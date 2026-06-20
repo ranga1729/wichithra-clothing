@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export function KoaHero() {
   return (
-    <section className="relative h-96 sm:h-128 md:h-144 lg:h-160 overflow-hidden w-full max-w-7xl">
+    <section className="relative h-96 sm:h-128 md:h-144 lg:h-160 overflow-hidden w-full">
       {/* Background Image */}
       <Image
         src="/hero.png"
