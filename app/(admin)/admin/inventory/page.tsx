@@ -117,8 +117,8 @@ export default function InventoryPage() {
 
   return (
     <div className="flex flex-col gap-3">
-      <form className="flex flex-col gap-3">
-        <div className="flex flex-row flex-wrap justify-start items-end gap-3 w-full border py-3 px-2 rounded-md">
+      <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
+        <div className="flex flex-row flex-wrap justify-start items-end gap-3 w-full">
           <div className="w-60 max-w-sm">
             <SearchableSelect
               items={(products as any[]) ?? []}
@@ -188,11 +188,14 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        <div className="flex flex-row items-center justify-between">
+        <div className="flex flex-row items-center justify-start">
           <ResetFilterButton onClick={handleReset} />
-          <AddNewButton onClick={() => router.push("/admin/inventory/add-new")} />
         </div>
       </form>
+
+      <div className="flex flex-row items-center justify-end">
+        <AddNewButton onClick={() => router.push("/admin/inventory/add-new")} />
+      </div>
 
       <TableWithPagination
         ref={tableRef}

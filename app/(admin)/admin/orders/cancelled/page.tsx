@@ -95,8 +95,8 @@ export default function CancelledOrdersPage() {
 
   return (
     <div className="flex flex-col gap-3">
-      <form className="flex flex-col gap-3">
-        <FieldGroup className="flex flex-row flex-wrap justify-start items-end gap-3 w-full border py-3 px-2 rounded-md">
+      <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
+        <FieldGroup className="flex flex-row flex-wrap justify-start items-end gap-3 w-full">
           
           {/* Order Number */}
           <Field className="grid w-60 max-w-sm items-center gap-2">
@@ -132,7 +132,7 @@ export default function CancelledOrdersPage() {
                 <Button
                   variant="outline"
                   id="date-picker-range"
-                  className="justify-start px-2.5 font-normal"
+                  className="justify-start px-2.5 font-normal bg-transparent dark:border dark:border-neutral-600"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {dateRange?.from ? (

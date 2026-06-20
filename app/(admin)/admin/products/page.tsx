@@ -33,13 +33,6 @@ export default function ProductsPage() {
   const [paginator, setPaginator] = useState<Paginator>(initialPaginator)
   const [filter, setFilter] = useState<ProductFilter>(initiaFilter)
 
-  //implement add new prodcut
-  // focus on add new basic of the products, if they are added then others are ok
-  // check edit modals' mapping before that
-
-  // create a add new modal which allows add basic info only. 
-  // then let the admin edit the product data for further customizations.
-  // dont let add images as well
   const [isAddNewModalOpen, setIsAddNewModalOpen] = useState(false);
 
   const debouncedFilter = useDebounce(filter, 500);
@@ -106,8 +99,8 @@ export default function ProductsPage() {
 
   return (
     <div className="flex flex-col gap-3">
-      <form className="flex flex-col gap-3">
-        <div className="flex flex-row justify-start items-center gap-3 w-full border py-3 px-2 rounded-md">
+      <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
+        <div className="flex flex-row justify-start items-center gap-3 w-full">
           <div className="grid w-60 max-w-sm items-center gap-2">
             <Label htmlFor="name"> {en.name } </Label>
             <Input 
@@ -142,11 +135,14 @@ export default function ProductsPage() {
           </div>
         </div>
         
-        <div className="flex flex-row items-center justify-between">
+        <div className="flex flex-row items-center justify-start">
           <ResetFilterButton onClick={handleReset} />
-          <AddNewButton onClick={() => setIsAddNewModalOpen(true)} />
         </div>
       </form>
+
+      <div className="flex flex-row items-center justify-end">
+        <AddNewButton onClick={() => setIsAddNewModalOpen(true)} />
+      </div>
       
       <TableWithPagination 
         ref={tableRef}

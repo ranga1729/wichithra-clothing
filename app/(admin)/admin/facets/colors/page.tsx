@@ -87,7 +87,7 @@ export default function ColorsPage() {
   
   return (
     <div className="flex flex-col gap-3">
-      <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-700">
+      <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
         <div className="flex flex-row justify-start items-center gap-3 w-full">
           <div className="grid w-60 max-w-sm items-center gap-2">
             <Label htmlFor="name"> {en.name } </Label>

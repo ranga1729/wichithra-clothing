@@ -56,6 +56,7 @@ export default function SearchableSelect<T extends { id?: string }>({
           showClear
           disabled={disabled}
           aria-invalid={!!error}
+          className="dark:border dark:border-neutral-600"
         />
         <ComboboxContent>
           <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>

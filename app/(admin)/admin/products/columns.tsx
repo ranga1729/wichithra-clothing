@@ -40,7 +40,7 @@ export const getColumns = ({
     cell: ({ row }) => {
       const desc = row.original.description;
       return (
-        <div className="max-w-48 truncate text-neutral-500 text-sm">
+        <div className="max-w-100 min-w-100 w-100 text-wrap">
           {desc ?? <span className="text-neutral-300">—</span>}
         </div>
       );
