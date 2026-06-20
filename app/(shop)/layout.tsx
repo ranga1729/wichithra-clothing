@@ -1,8 +1,5 @@
-import { KoaFeaturedProducts } from "@/components/custom/shop/featured-products";
-import { KoaFeatures } from "@/components/custom/shop/features";
 import { KoaFooter } from "@/components/custom/shop/footer";
 import { KoaHeader } from "@/components/custom/shop/header";
-import { KoaHero } from "@/components/custom/shop/hero";
 import { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -44,12 +41,9 @@ export default function ShopFrontLayout({
   return (
     <div className="[--header-height:calc(--spacing(14))] font-sans antialiased bg-background text-foreground min-h-lvh flex flex-col items-center">
       <KoaHeader />
-      <KoaHero />
       <main className="w-full max-w-7xl">
         {children}
       </main>
-      <KoaFeaturedProducts />
-      <KoaFeatures />
       <KoaFooter/>
     </div>
   );
