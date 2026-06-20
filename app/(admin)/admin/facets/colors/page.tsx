@@ -87,8 +87,8 @@ export default function ColorsPage() {
   
   return (
     <div className="flex flex-col gap-3">
-      <form className="flex flex-col gap-3">
-        <div className="flex flex-row justify-start items-center gap-3 w-full border py-3 px-2 rounded-md">
+      <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-700">
+        <div className="flex flex-row justify-start items-center gap-3 w-full">
           <div className="grid w-60 max-w-sm items-center gap-2">
             <Label htmlFor="name"> {en.name } </Label>
             <Input 
@@ -118,9 +118,12 @@ export default function ColorsPage() {
         
         <div className="flex flex-row items-center justify-between">
           <ResetFilterButton onClick={handleReset} />
-          <AddNewButton onClick={() => setIsAddNewModalOpen(true)} />
         </div>
       </form>
+      
+      <div className="flex flex-row items-center justify-end">
+        <AddNewButton onClick={() => setIsAddNewModalOpen(true)} />
+      </div>
 
       <TableWithPagination 
         ref={tableRef}

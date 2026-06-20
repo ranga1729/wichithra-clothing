@@ -3,7 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { Category } from "@/generated/prisma/client"
 import { Paginator } from "@/types/table-types"
 import { ColumnDef } from "@tanstack/react-table"
-import { Copy, Ellipsis, Pencil, ToggleLeft, ToggleRight, Trash } from "lucide-react"
+import { Copy, Ellipsis, ExternalLink, Eye, Pencil, ToggleLeft, ToggleRight, Trash } from "lucide-react"
 import toast from "react-hot-toast"
 
 type ColumnProps = {
@@ -37,7 +37,16 @@ export const getColumns = ({
   {
     accessorKey: "description",
     id: "description",
-    header: () => { return <div className="text-center">Description</div> },
+    header: () => <div className="text-center">Description</div>,
+    cell: ({ row }) => {
+      const description = row.original.description;
+      return (
+        /* 2. Switch to w-full so it matches the <td> element size */
+        <div className="max-w-md text-wrap">
+          {description}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "sizeGuide",
@@ -53,8 +62,21 @@ export const getColumns = ({
         toast.success("Link copied!");
       };
 
+      const handleOpen = () => {
+        window.open(url, "_blank", "noopener,noreferrer");
+      };
+
       return (
-        <div className="flex items-center gap-3 max-w-[400px]">
+        <div className="flex items-center gap-2 min-w-0 max-w-md">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 shrink-0 border p-3 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:active:bg-neutral-500 bg-neutral-200 hover:bg-neutral-300 active:bg-neutral-100"
+            onClick={handleOpen}
+          >
+            <ExternalLink className="h-3.5 w-3.5 " />
+          </Button>
           <Button
             type="button"
             variant="ghost"
@@ -64,7 +86,7 @@ export const getColumns = ({
           >
             <Copy className="h-3.5 w-3.5 " />
           </Button>
-          <span className="truncate text-sm text-muted-foreground flex-1 min-w-0">
+          <span className="flex-1 min-w-0 text-sm text-muted-foreground truncate">
             {url}
           </span>
         </div>
@@ -113,7 +135,7 @@ export const getColumns = ({
         <div className="flex flex-row gap-2 justify-center items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size={'sm'}><Ellipsis /></Button>
+              <Button variant="outline" className="dark:border dark:border-neutral-600 dark:hover:bg-neutral-600" size={'sm'}><Ellipsis /></Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent>

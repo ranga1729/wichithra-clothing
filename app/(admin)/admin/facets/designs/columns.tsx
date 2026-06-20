@@ -45,7 +45,7 @@ export const getColumns = ({
         <div className="flex flex-row gap-2 justify-center items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size={'sm'}><Ellipsis /></Button>
+              <Button variant="outline" className="dark:border dark:border-neutral-600 dark:hover:bg-neutral-600" size={'sm'}><Ellipsis /></Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent>
