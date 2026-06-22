@@ -99,7 +99,7 @@ export function KoaFeaturedProducts() {
   }
 
   return (
-    <section className="py-16 px-4">
+    <section className="py-16 px-4 max-w-7xl">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12">

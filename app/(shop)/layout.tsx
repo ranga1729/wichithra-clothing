@@ -41,7 +41,7 @@ export default function ShopFrontLayout({
   return (
     <div className="[--header-height:calc(--spacing(14))] font-sans antialiased bg-background text-foreground min-h-lvh flex flex-col items-center">
       <KoaHeader />
-      <main className="w-full max-w-7xl">
+      <main className="w-full">
         {children}
       </main>
       <KoaFooter/>

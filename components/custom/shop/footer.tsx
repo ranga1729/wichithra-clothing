@@ -1,5 +1,10 @@
 import Link from 'next/link'
-import { Mail, Share2, Globe } from 'lucide-react'
+
+import facebook from "../../../public/icons/facebook-white.svg"
+import instagrama from "../../../public/icons/instagram-white.svg"
+import whatapp from "../../../public/icons/whatsapp-white.svg"
+
+import Image from 'next/image'
 
 export function KoaFooter() {
   return (
@@ -13,15 +18,15 @@ export function KoaFooter() {
             <p className="text-gray-400 mb-4">
               Premium activewear for warriors. Performance. Style. Attitude.
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center">
               <a href="#" className="hover:text-[#3D79BE] transition">
-                <Mail className="w-5 h-5" />
+                <Image src={facebook} alt='Facebook' width={30} height={30} />
               </a>
               <a href="#" className="hover:text-[#3D79BE] transition">
-                <Share2 className="w-5 h-5" />
+                <Image src={instagrama} alt='Instagram' color='#0866FF' width={35} height={35} />
               </a>
               <a href="#" className="hover:text-[#3D79BE] transition">
-                <Globe className="w-5 h-5" />
+                <Image src={whatapp} alt='WhatsApp' color='#0866FF' width={30} height={30} />
               </a>
             </div>
           </div>
@@ -108,32 +113,17 @@ export function KoaFooter() {
           </div>
         </div>
 
-        {/* Newsletter */}
-        <div className="mb-8 pb-8 border-b border-[#2A2A2A]">
-          <h3 className="text-lg font-semibold mb-4">Stay Updated</h3>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-2 bg-[#2A2A2A] text-white rounded-lg focus:outline-none focus:border-[#3D79BE] focus:ring-1 focus:ring-[#3D79BE]"
-            />
-            <button className="px-6 py-2 bg-[#3D79BE] text-white rounded-lg hover:bg-[#2D5FA3] transition font-semibold">
-              Subscribe
-            </button>
-          </div>
-        </div>
-
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
           <p>&copy; 2024 KOA. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <Link href="/terms" className="hover:text-[#3D79BE] transition">
+            <Link href="/" className="hover:text-[#3D79BE] transition">
               Terms of Service
             </Link>
-            <Link href="/privacy" className="hover:text-[#3D79BE] transition">
+            <Link href="/" className="hover:text-[#3D79BE] transition">
               Privacy Policy
             </Link>
-            <Link href="/cookies" className="hover:text-[#3D79BE] transition">
+            <Link href="/" className="hover:text-[#3D79BE] transition">
               Cookie Policy
             </Link>
           </div>

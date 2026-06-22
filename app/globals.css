@@ -174,3 +174,20 @@
     @apply bg-background text-foreground;
   }
 }
+
+.embla__viewport {
+  overflow: hidden;
+  height: 100%;
+}
+
+.embla__container {
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+  height: 100%;
+}
+
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  height: 100%;
+}
