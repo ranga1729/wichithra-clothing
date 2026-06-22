@@ -79,7 +79,7 @@ export function KoaHero() {
           </Link>
           <Link
             href="/collections"
-            className="px-8 py-3 bg-white text-[#101010] font-semibold rounded-lg hover:bg-[#F3F4F6] transition"
+            className="px-8 py-3 bg-white text-koa-black font-semibold rounded-lg hover:bg-[#F3F4F6] transition"
           >
             View Collections
           </Link>

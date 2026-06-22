@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ShoppingCart, Search } from 'lucide-react'
 import UserAccount from '@/components/user-account'
+import SearchDialog from './search-dialog'
 
 export function KoaHeader() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -49,25 +50,25 @@ export function KoaHeader() {
           <nav className="hidden md:flex items-center gap-8">
             <Link 
               href="/shop" 
-              className={`font-medium transition duration-300 ${isSolidActive ? 'text-[#101010] hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
+              className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
             >
               Shop
             </Link>
             <Link 
               href="/collections" 
-              className={`font-medium transition duration-300 ${isSolidActive ? 'text-[#101010] hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
+              className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
             >
               Categories
             </Link>
             <Link 
               href="/about" 
-              className={`font-medium transition duration-300 ${isSolidActive ? 'text-[#101010] hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
+              className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
             >
               About
             </Link>
             <Link 
               href="/contact" 
-              className={`font-medium transition duration-300 ${isSolidActive ? 'text-[#101010] hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
+              className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
             >
               Contact
             </Link>
@@ -98,24 +99,24 @@ export function KoaHeader() {
               className={`p-2 rounded-lg transition duration-300 ${isSolidActive ? 'hover:bg-[#F3F4F6]' : 'hover:bg-white/10'}`}
               aria-label="Search"
             >
-              <Search className={`w-5 h-5 transition-colors duration-300 ${isSolidActive ? 'text-[#101010]' : 'text-white'}`} />
+              <Search className={`w-5 h-5 transition-colors duration-300 ${isSolidActive ? 'text-koa-black' : 'text-white'}`} />
             </button>
 
             <Link 
               href="/cart" 
               className={`relative p-2 rounded-lg transition duration-300 ${isSolidActive ? 'hover:bg-[#F3F4F6]' : 'hover:bg-white/10'}`}
             >
-              <ShoppingCart className={`w-5 h-5 transition-colors duration-300 ${isSolidActive ? 'text-[#101010]' : 'text-white'}`} />
+              <ShoppingCart className={`w-5 h-5 transition-colors duration-300 ${isSolidActive ? 'text-koa-black' : 'text-white'}`} />
             </Link>
 
-            <div className={isSolidActive ? 'text-[#101010]' : 'text-white'}>
-              <UserAccount />
+            <div className={isSolidActive ? 'text-koa-black' : 'text-white'}>
+              <UserAccount isSolidActive={isSolidActive} />
             </div>
           </div>
         </div>
 
         {/* Search Bar - Expandable */}
-        {isSearchOpen && (
+        {/* {isSearchOpen && (
           <div className={`pb-4 border-t transition-colors duration-300 ${isSolidActive ? 'border-neutral-200' : 'border-white/20'}`}>
             <div className="flex gap-2 pt-4">
               <input
@@ -123,7 +124,7 @@ export function KoaHeader() {
                 placeholder="Search for products..."
                 className={`flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#3D79BE] focus:border-[#3D79BE] transition-colors duration-300 ${
                   isSolidActive 
-                    ? 'bg-[#F3F4F6] text-[#101010] border-[#2A2A2A] placeholder-[#2A2A2A]' 
+                    ? 'bg-[#F3F4F6] text-koa-black border-[#2A2A2A] placeholder-[#2A2A2A]' 
                     : 'bg-white/10 text-white border-white/30 placeholder-white/60'
                 }`}
               />
@@ -132,7 +133,9 @@ export function KoaHeader() {
               </button>
             </div>
           </div>
-        )}
+        )} */}
+
+        <SearchDialog open={isSearchOpen} setIsSearchOpen={setIsSearchOpen} />
       </div>
     </header>
   )

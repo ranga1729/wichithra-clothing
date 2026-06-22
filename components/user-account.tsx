@@ -2,15 +2,18 @@
 
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import Image from 'next/image'
-import user from "@/public/icons/user.svg"
+import { User } from 'lucide-react'
 
-export default function UserAccount() {
+interface Props {
+  isSolidActive: boolean
+}
+
+export default function UserAccount(props:Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="rounded-full h-10 w-10 p-0 border border-neutral-600"> 
-          <Image src={user} alt={'User'} height={30} width={30} />
+        <Button variant="outline" size="icon" className={`bg-transparent rounded-full h-7 w-7 p-0 border-2 border-neutral-600 stroke-2 ${props.isSolidActive ? 'text-koa-black border-koa-black' : 'text-white border-neutral-100'}`}> 
+          <User width={10} height={10} className={`w-5 h-5 transition-colors duration-300 ${props.isSolidActive ? 'text-koa-black' : 'text-white'}`} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

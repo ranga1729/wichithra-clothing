@@ -28,7 +28,7 @@ export function KoaFeatures() {
     <section className="py-16 px-4 bg-[#F3F4F6]">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#101010] mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-koa-black mb-4">
             Why Choose KOA
           </h2>
           <p className="text-lg text-[#2A2A2A]">
@@ -49,7 +49,7 @@ export function KoaFeatures() {
                     <Icon className="w-6 h-6 text-white" />
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-[#101010] mb-2">
+                <h3 className="text-lg font-semibold text-koa-black mb-2">
                   {feature.title}
                 </h3>
                 <p className="text-[#2A2A2A]">

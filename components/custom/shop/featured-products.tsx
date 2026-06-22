@@ -103,7 +103,7 @@ export function KoaFeaturedProducts() {
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#101010] mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-koa-black mb-4">
             Featured Collection
           </h2>
           <p className="text-lg text-[#2A2A2A] max-w-2xl mx-auto">
@@ -147,7 +147,7 @@ export function KoaFeaturedProducts() {
                 <p className="text-sm text-[#5197D6] font-semibold mb-1">
                   {product.category}
                 </p>
-                <h3 className="text-lg font-semibold text-[#101010] mb-2">
+                <h3 className="text-lg font-semibold text-koa-black mb-2">
                   {product.name}
                 </h3>
 
@@ -174,7 +174,7 @@ export function KoaFeaturedProducts() {
 
                 {/* Price and Button */}
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-[#101010]">
+                  <span className="text-2xl font-bold text-koa-black">
                     ${product.price.toFixed(2)}
                   </span>
                   <button className="p-2 bg-[#3D79BE] text-white rounded-lg hover:bg-[#2D5FA3] transition">
