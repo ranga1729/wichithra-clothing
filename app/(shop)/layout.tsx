@@ -1,5 +1,6 @@
 import { KoaFooter } from "@/components/custom/shop/footer";
 import { KoaHeader } from "@/components/custom/shop/header";
+import SearchOverlay from "@/components/custom/shop/SearchOverlay";
 import { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -41,6 +42,7 @@ export default function ShopFrontLayout({
   return (
     <div className="[--header-height:calc(--spacing(14))] font-sans antialiased bg-background text-foreground min-h-lvh flex flex-col items-center">
       <KoaHeader />
+      <SearchOverlay />
       <main className="w-full">
         {children}
       </main>

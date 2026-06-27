@@ -5,10 +5,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ShoppingCart, Search } from 'lucide-react'
 import UserAccount from '@/components/user-account'
-import SearchDialog from './search-dialog'
+import { useSearchStore } from '@/lib/zustand-stores/use-search-store'
 
 export function KoaHeader() {
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const openSearch = useSearchStore((s) => s.openSearch)
   const [cartCount, setCartCount] = useState(3)
   
   // States to track scroll depth and cursor hovering
@@ -95,7 +95,7 @@ export function KoaHeader() {
           {/* Right Section */}
           <div className="flex items-center gap-4 z-20">
             <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              onClick={openSearch}
               className={`p-2 rounded-lg transition duration-300 ${isSolidActive ? 'hover:bg-[#F3F4F6]' : 'hover:bg-white/10'}`}
               aria-label="Search"
             >
@@ -135,7 +135,6 @@ export function KoaHeader() {
           </div>
         )} */}
 
-        <SearchDialog open={isSearchOpen} setIsSearchOpen={setIsSearchOpen} />
       </div>
     </header>
   )
