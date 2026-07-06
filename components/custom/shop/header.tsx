@@ -5,17 +5,22 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ShoppingCart, Search } from 'lucide-react'
 import UserAccount from '@/components/user-account'
-import { useSearchStore } from '@/lib/zustand-stores/use-search-store'
+import { usePathname } from 'next/navigation'
+// import { useSearchStore } from '@/lib/zustand-stores/use-search-store'
 
 export function KoaHeader() {
-  const openSearch = useSearchStore((s) => s.openSearch)
+  //const openSearch = useSearchStore((s) => s.openSearch)
+  const pathname = usePathname();
+  const isHomepage = pathname === '/'
+
   const [cartCount, setCartCount] = useState(3)
-  
-  // States to track scroll depth and cursor hovering
   const [isScrolled, setIsScrolled] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
   useEffect(() => {
+    // Only bind scroll event if we are on the homepage
+    if (!isHomepage) return
+
     const handleScroll = () => {
       if (window.scrollY > 20) {
         setIsScrolled(true)
@@ -26,16 +31,17 @@ export function KoaHeader() {
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [isHomepage])
 
-  // The background becomes white if the page is scrolled down OR if the user hovers over it
-  const isSolidActive = isScrolled || isHovered
+  const isSolidActive = !isHomepage || isScrolled || isHovered
 
   return (
     <header 
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
+      onMouseEnter={() => isHomepage && setIsHovered(true)}
+      onMouseLeave={() => isHomepage && setIsHovered(false)}
+      className={`top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
+        isHomepage ? 'fixed' : 'sticky'
+      } ${
         isSolidActive 
           ? "bg-white border-b border-neutral-200 shadow-sm" 
           : "bg-transparent border-b border-transparent"
@@ -94,13 +100,13 @@ export function KoaHeader() {
 
           {/* Right Section */}
           <div className="flex items-center gap-4 z-20">
-            <button
-              onClick={openSearch}
+            <Link
+              href='/search'
               className={`p-2 rounded-lg transition duration-300 ${isSolidActive ? 'hover:bg-[#F3F4F6]' : 'hover:bg-white/10'}`}
               aria-label="Search"
             >
               <Search className={`w-5 h-5 transition-colors duration-300 ${isSolidActive ? 'text-koa-black' : 'text-white'}`} />
-            </button>
+            </Link>
 
             <Link 
               href="/cart" 
@@ -114,27 +120,6 @@ export function KoaHeader() {
             </div>
           </div>
         </div>
-
-        {/* Search Bar - Expandable */}
-        {/* {isSearchOpen && (
-          <div className={`pb-4 border-t transition-colors duration-300 ${isSolidActive ? 'border-neutral-200' : 'border-white/20'}`}>
-            <div className="flex gap-2 pt-4">
-              <input
-                type="text"
-                placeholder="Search for products..."
-                className={`flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#3D79BE] focus:border-[#3D79BE] transition-colors duration-300 ${
-                  isSolidActive 
-                    ? 'bg-[#F3F4F6] text-koa-black border-[#2A2A2A] placeholder-[#2A2A2A]' 
-                    : 'bg-white/10 text-white border-white/30 placeholder-white/60'
-                }`}
-              />
-              <button className="px-6 py-2 bg-[#3D79BE] text-white rounded-lg hover:bg-[#2D5FA3] transition">
-                Search
-              </button>
-            </div>
-          </div>
-        )} */}
-
       </div>
     </header>
   )
