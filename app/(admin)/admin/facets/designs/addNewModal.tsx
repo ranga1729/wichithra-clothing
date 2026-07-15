@@ -25,8 +25,7 @@ export default function AddNewModal(props: Props) {
   const queryClient = useQueryClient();
 
   const {
-    register, handleSubmit,
-    getValues, reset,
+    register, handleSubmit, reset,
     formState: { errors },
   } = useForm<DesignSchema>({
     resolver: zodResolver(designSchema),

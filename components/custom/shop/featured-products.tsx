@@ -175,7 +175,7 @@ export function KoaFeaturedProducts() {
                 {/* Price and Button */}
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-koa-black">
-                    ${product.price.toFixed(2)}
+                    Rs. {product.price.toFixed(2)}
                   </span>
                   <button className="p-2 bg-[#3D79BE] text-white rounded-lg hover:bg-[#2D5FA3] transition">
                     <ShoppingCart className="w-5 h-5" />

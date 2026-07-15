@@ -45,24 +45,19 @@ export async function deleteTempFile(path: string): Promise<void> {
  * @returns         - { finalPath, publicUrl }
  */
 export async function moveTempToPermanent(
-  tempPath: string,
-  folder: string,
-  filename: string
+  tempPath: string, folder: string, filename: string
 ): Promise<{ finalPath: string; publicUrl: string }> {
   const supabase = createSuperbaseAdminClient();
   const ext = tempPath.split(".").pop();
   const finalPath = `${folder}/${filename}.${ext}`;
 
-  //if there's already an image with under
-  //this id, delete it first, then move the new image
+  //if there's already an image with under this id, delete it first, then move the new image
   await supabase.storage
     .from(SUPABASE_BUCKET)
     .remove([finalPath])
     .catch(() => null);
   
-  const { error } = await supabase.storage
-    .from(SUPABASE_BUCKET)
-    .move(tempPath, finalPath);
+  const { error } = await supabase.storage.from(SUPABASE_BUCKET).move(tempPath, finalPath);
 
   if (error) throw new Error(error.message);
 
