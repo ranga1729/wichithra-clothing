@@ -6,14 +6,16 @@ import Link from 'next/link'
 import { ShoppingCart, Search } from 'lucide-react'
 import UserAccount from '@/components/user-account'
 import { usePathname } from 'next/navigation'
-// import { useSearchStore } from '@/lib/zustand-stores/use-search-store'
+import { Button } from '@/components/ui/button'
+import { useCartStore } from '@/lib/zustand-stores/cart-store'
+import CartSheet from '@/components/custom/shop/cart-sheet'
 
 export function KoaHeader() {
-  //const openSearch = useSearchStore((s) => s.openSearch)
   const pathname = usePathname();
   const isHomepage = pathname === '/'
+  const setCartOpen = useCartStore((s) => s.setOpen)
+  const cartCount = useCartStore((s) => s.items.length)
 
-  const [cartCount, setCartCount] = useState(3)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
@@ -108,12 +110,17 @@ export function KoaHeader() {
               <Search className={`w-5 h-5 transition-colors duration-300 ${isSolidActive ? 'text-koa-black' : 'text-white'}`} />
             </Link>
 
-            <Link 
-              href="/cart" 
+            <Button 
               className={`relative p-2 rounded-lg transition duration-300 ${isSolidActive ? 'hover:bg-[#F3F4F6]' : 'hover:bg-white/10'}`}
+              onClick={() => setCartOpen(true)}
             >
               <ShoppingCart className={`w-5 h-5 transition-colors duration-300 ${isSolidActive ? 'text-koa-black' : 'text-white'}`} />
-            </Link>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-neutral-900 px-1 text-[10px] font-medium text-white">
+                  {cartCount}
+                </span>
+              )}
+            </Button>
 
             <div className={isSolidActive ? 'text-koa-black' : 'text-white'}>
               <UserAccount isSolidActive={isSolidActive} />
@@ -121,6 +128,7 @@ export function KoaHeader() {
           </div>
         </div>
       </div>
+      <CartSheet />
     </header>
   )
 }

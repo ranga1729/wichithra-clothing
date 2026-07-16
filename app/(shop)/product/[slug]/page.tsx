@@ -4,16 +4,17 @@ import { useMemo, useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'next/navigation'
 import { Loader2, ShoppingCart, Zap, ChevronDown, ChevronUp } from 'lucide-react'
-import toast from 'react-hot-toast'
 import { ClothingSize } from '@/generated/prisma/enums'
 import { getProductBySlug } from '@/app/(shop)/product/[slug]/action'
 import { ProductDetailColor } from '@/schemas/shop-schemas'
+import { useCartStore } from '@/lib/zustand-stores/cart-store'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import ProductGallery from '@/components/custom/shop/product-gallery'
 import SizeSelector from '@/components/custom/shop/size-selector'
 import ColorSelector from '@/components/custom/shop/color-selector'
+import toast from 'react-hot-toast'
 
 export default function ProductPage() {
   const params = useParams()
@@ -136,9 +137,27 @@ export default function ProductPage() {
     )
   }, [])
 
+  const addItem = useCartStore((s) => s.addItem)
+
   const handleAddToCart = useCallback(() => {
-    toast.error('Coming soon!')
-  }, [])
+    if (!selectedVariant || !product) return
+
+    const primaryImage = product.productImages.find((img) => img.isPrimary)
+      ?? product.productImages[0]
+
+    addItem({
+      id: selectedVariant.id,
+      productId: product.id,
+      productName: product.name,
+      productSlug: product.slug,
+      categoryName: product.category.name,
+      variantId: selectedVariant.id,
+      size: selectedSize!,
+      color: selectedVariant.color,
+      imageUrl: primaryImage?.imageUrl ?? '',
+      price: Number(selectedVariant.sellingPrice),
+    })
+  }, [product, selectedVariant, selectedSize, addItem])
 
   const handleBuyNow = useCallback(() => {
     toast.error('Coming soon!')
