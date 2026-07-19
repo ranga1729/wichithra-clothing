@@ -11,7 +11,7 @@ export class AuthError extends Error {
 }
 
 export async function requireAuth(customMessage?: string) {
-  const token = (await cookies()).get(en.token_name)?.value;
+  const token = (await cookies()).get(process.env.TOKEN_NAME!)?.value;
   if (!token) throw new AuthError(customMessage ?? en.unauthorized_not_logged_in);
 
   const payload = verifyToken(token);

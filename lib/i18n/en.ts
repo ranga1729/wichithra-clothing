@@ -1,5 +1,4 @@
 export const en = {
-  token_name: "wichithra-token",
   country_code: "+94",
   company_name: "KOA",
   company_tagline: "Unleash the Warrior.",
