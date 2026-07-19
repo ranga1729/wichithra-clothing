@@ -408,5 +408,50 @@ export type NewOrderSchema = z.infer<typeof newOrderSchema>
 export type OngoingOrderSchema = z.infer<typeof ongoingOrderSchema>
 export type CompletedOrderSchema = z.infer<typeof completedOrderSchema>
 export type CancelledOrderSchema = z.infer<typeof cancelledOrderSchema>
-
 export type CustomerSchema = z.infer<typeof customerSchema>
+
+// Collections
+export const createCollectionSchema = z.object({
+  name: z
+    .string("Enter a valid name")
+    .min(1, "Name is required")
+    .max(100, "Name can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  slug: z
+    .string("Enter a valid slug")
+    .min(1, "Slug is required")
+    .max(100, "Slug can not exceed 100 characters")
+    .transform((val) => val.trim()),
+  description: z
+    .string()
+    .optional(),
+})
+
+export const collectionSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  description: z.string().nullable(),
+  isActive: z.boolean(),
+  createdAt: z.coerce.date(),
+})
+
+export const collectionProductSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  gender: GenderSchema,
+  ageGroup: AgeGroupSchema,
+  category: z.object({
+    name: z.string(),
+  }),
+  productImages: z.array(z.object({
+    imageUrl: z.string(),
+    isPrimary: z.boolean(),
+    sortOrder: z.number().int(),
+  })),
+})
+
+export type CreateCollectionSchema = z.infer<typeof createCollectionSchema>
+export type CollectionSchema = z.infer<typeof collectionSchema>
+export type CollectionProductSchema = z.infer<typeof collectionProductSchema>

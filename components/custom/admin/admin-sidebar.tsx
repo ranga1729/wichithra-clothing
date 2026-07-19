@@ -6,6 +6,7 @@ import {
   ListCollapse,
   ListOrdered,
   Shirt,
+  SquareLibrary,
   SquaresExclude,
   UserRound,
 } from "lucide-react"
@@ -61,6 +62,12 @@ const data = {
       title: "Products",
       url: "/admin/products",
       icon: Shirt,
+      isActive: true,
+    },
+    {
+      title: "Collections",
+      url: "/admin/collections",
+      icon: SquareLibrary,
       isActive: true,
     },
     {

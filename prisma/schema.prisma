@@ -175,6 +175,7 @@ model Product {
   productImages  ProductImage[]
   productTags    ProductTag[]
   productReviews ProductReview[]
+  productCollections ProductCollection[]
 
   @@index([categoryId])
   @@index([isFeatured])
@@ -483,6 +484,38 @@ model Payment {
 
   @@index([orderId])
   @@map("payments")
+}
+
+model Collection {
+  id          String              @id @default(uuid()) @db.Uuid
+  name        String              @unique @db.VarChar(100)
+  slug        String              @unique @db.VarChar(100)
+  description String?             @db.Text
+  isActive    Boolean             @default(true)
+  deletedAt   DateTime?           @db.Timestamptz(6)
+  createdAt   DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime            @updatedAt @db.Timestamptz(6)
+
+  // Relationships
+  productCollections ProductCollection[]
+
+  @@index([deletedAt])
+  @@map("collections")
+}
+
+model ProductCollection {
+  id           String    @id @default(uuid()) @db.Uuid
+  productId    String    @db.Uuid
+  collectionId String    @db.Uuid
+  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
+
+  // Relationships
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, collectionId])
+  @@index([collectionId])
+  @@map("product_collections")
 }
 
 //ENUMS
