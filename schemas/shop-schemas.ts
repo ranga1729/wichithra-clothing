@@ -15,6 +15,40 @@ export const search_result_color = z.object({
     .optional()
 })
 
+// Search Filters
+export const search_filters_schema = z.object({
+  category: z.array(z.string()).optional(),
+  design: z.array(z.string()).optional(),
+  color: z.array(z.string()).optional(),
+  size: z.array(sizes).optional(),
+  minPrice: z.coerce.number().min(0).optional(),
+  maxPrice: z.coerce.number().min(0).optional(),
+})
+
+export const search_filter_option = z.object({
+  name: z.string(),
+  value: z.string(),
+})
+
+export const search_filter_options_schema = z.object({
+  categories: z.array(search_filter_option),
+  designs: z.array(search_filter_option),
+  colors: z.array(z.object({
+    name: z.string(),
+    hexCode: z.string().nullable(),
+    swatchImageUrl: z.string().nullable(),
+  })),
+  sizes: z.array(sizes),
+  priceRange: z.object({
+    min: z.number(),
+    max: z.number(),
+  }),
+})
+
+export type SearchFilters = z.infer<typeof search_filters_schema>
+export type SearchFilterOption = z.infer<typeof search_filter_option>
+export type SearchFilterOptions = z.infer<typeof search_filter_options_schema>
+
 export const product_search_result = z.object({
   id: z.uuid(),
   name: z.string(),
