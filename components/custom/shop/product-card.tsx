@@ -1,7 +1,7 @@
 'use client'
 
 import { ProductSearchResult } from "@/schemas/shop-schemas";
-import { PackageOpen, Shirt } from "lucide-react";
+import { Shirt } from "lucide-react";
 import Link from "next/link";
 import Image from 'next/image'
 

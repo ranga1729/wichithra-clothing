@@ -154,6 +154,8 @@ model Product {
   description        String?       @db.Text
   categoryId         String        @db.Uuid
   sizeGuide          String?       @db.VarChar(500) // overrides Category.sizeGuide when set
+  costPrice          Decimal       @db.Decimal(10, 2) @default(0)
+  sellingPrice       Decimal       @db.Decimal(10, 2) @default(0)
   gender             GenderTarget  @default(UNISEX)
   ageGroup           AgeGroup      @default(ADULT)
   brand              String?       @db.VarChar(100) @default("Wichithra")
@@ -191,8 +193,6 @@ model ProductVariant {
   colorId      String        @db.Uuid
   size         ClothingSize  @default(OS)
   sku          String        @unique @db.VarChar(100)
-  costPrice    Decimal       @db.Decimal(10, 2)
-  sellingPrice Decimal       @db.Decimal(10, 2)
   isActive     Boolean       @default(true)
   deletedAt    DateTime?     @db.Timestamptz(6)
   createdAt    DateTime      @default(now()) @db.Timestamptz(6)

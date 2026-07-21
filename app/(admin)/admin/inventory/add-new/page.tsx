@@ -53,8 +53,6 @@ export default function AddNewInventoryItem() {
       colorId: "",
       size: "" as ClothingSize,
       sku: "",
-      costPrice: undefined as any,
-      sellingPrice: undefined as any,
       isActive: true,
       quantity: 0,
       lowStockThreshold: 5,
@@ -319,42 +317,6 @@ export default function AddNewInventoryItem() {
               <span className="text-sm text-red-500">{errors.sku.message as string}</span>
             )}
           </Field>
-
-          <FieldGroup className="flex flex-row flex-wrap gap-4">
-            <Field className="flex flex-col gap-2 flex-1 min-w-[180px]">
-              <Label htmlFor="sellingPrice">Selling Price (LKR) *</Label>
-              <Input
-                id="sellingPrice"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                {...register("sellingPrice")}
-              />
-              {errors.sellingPrice && (
-                <span className="text-sm text-red-500">
-                  {errors.sellingPrice.message as string}
-                </span>
-              )}
-            </Field>
-
-            <Field className="flex flex-col gap-2 flex-1 min-w-[180px]">
-              <Label htmlFor="costPrice">Cost Price (LKR)</Label>
-              <Input
-                id="costPrice"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                {...register("costPrice")}
-              />
-              {errors.costPrice && (
-                <span className="text-sm text-red-500">
-                  {errors.costPrice.message as string}
-                </span>
-              )}
-            </Field>
-          </FieldGroup>
 
           <FieldGroup className="flex flex-row flex-wrap gap-6">
             <Field className="flex flex-row items-center gap-3 flex-1 min-w-[200px]">

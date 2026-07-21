@@ -50,6 +50,8 @@ export async function getProducts(paginator: Paginator, filter: ProductFilter):P
         name: true,
         slug: true,
         description: true,
+        costPrice: true,
+        sellingPrice: true,
         discountPercentage: true,
         isFeatured: true,
         status: true,
@@ -118,6 +120,8 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
         brand: true,
         material: true,
         careInstructions: true,
+        costPrice: true,
+        sellingPrice: true,
         discountPercentage: true,
         isFeatured: true,
         status: true,
@@ -165,8 +169,6 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
             productId: true,
             colorId: true,
             sku: true,
-            costPrice: true,
-            sellingPrice: true,
             isActive: true,
             color: {
               select: {
@@ -250,6 +252,8 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
         material: validatedData.material,
         careInstructions: validatedData.careInstructions,
         description: validatedData.description,
+        costPrice: validatedData.costPrice,
+        sellingPrice: validatedData.sellingPrice,
         discountPercentage: validatedData.discountPercentage,
         gender: validatedData.gender,
         ageGroup: validatedData.ageGroup,
@@ -485,12 +489,16 @@ export async function createNewProduct(data: BasicProductInfoSchema):Promise<Api
         slug: validatedData.slug,
         brand: validatedData.brand,
         material: validatedData.material,
+        costPrice: validatedData.costPrice,
+        sellingPrice: validatedData.sellingPrice,
         discountPercentage: validatedData.discountPercentage,
         careInstructions: validatedData.careInstructions,
         description: validatedData.description,
         gender: validatedData.gender,
         ageGroup: validatedData.ageGroup,
         categoryId: validatedData.category.id,
+        metaDescription: validatedData.description,
+        metaTitle: validatedData.name
       }
     });
 

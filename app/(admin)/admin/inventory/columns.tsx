@@ -82,32 +82,6 @@ export const getColumns = ({
     ),
   },
   {
-    id: "costPrice",
-    header: () => <div className="text-center">Cost Price</div>,
-    cell: ({ row }) => {
-      const price = row.original.variant.costPrice
-      return (
-        <div className="text-right">
-          {price != null ? `${price} LKR` : "—"}
-        </div>
-      )
-    },
-  },
-  {
-    id: "sellingPrice",
-    header: () => <div className="text-center">Selling Price</div>,
-    cell: ({ row }) => (
-      <div className="text-right">{row.original.variant.sellingPrice} LKR</div>
-    ),
-  },
-  {
-    id: "discountPercentage",
-    header: () => <div className="text-center">Discount</div>,
-    cell: ({ row }) => (
-      <div className="text-right">{row.original.variant.product.discountPercentage}%</div>
-    ),
-  },
-  {
     id: "lowStockThreshold",
     header: () => <div className="text-center">Low Stock At</div>,
     cell: ({ row }) => (

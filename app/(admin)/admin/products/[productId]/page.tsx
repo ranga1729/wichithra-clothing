@@ -69,6 +69,8 @@ export default function ProductDetailPage() {
       material: product?.material || "",
       careInstructions: product?.careInstructions || "",
       description: product?.description || "",
+      costPrice: product?.costPrice ?? 0,
+      sellingPrice: product?.sellingPrice ?? 0,
       discountPercentage: product?.discountPercentage ?? 0,
       metaTitle: product?.metaTitle || "",
       metaDescription: product?.metaDescription || "",
@@ -89,6 +91,8 @@ export default function ProductDetailPage() {
       setValue("material", product.material);
       setValue("careInstructions", product.careInstructions);
       setValue("description", product.description);
+      setValue("costPrice", product.costPrice);
+      setValue("sellingPrice", product.sellingPrice);
       setValue("discountPercentage", product.discountPercentage);
       setValue("metaTitle", product.metaTitle ?? "");
       setValue("metaDescription", product.metaDescription ?? "");
@@ -120,6 +124,8 @@ export default function ProductDetailPage() {
       (currentFormData.material ?? "") === (product.material ?? "") &&
       (currentFormData.careInstructions ?? "") === (product.careInstructions ?? "") &&
       currentFormData.description === product.description &&
+      Number(currentFormData.costPrice) === Number(product.costPrice) &&
+      Number(currentFormData.sellingPrice) === Number(product.sellingPrice) &&
       Number(currentFormData.discountPercentage) === Number(product.discountPercentage) &&
       currentFormData.ageGroup === product.ageGroup &&
       currentFormData.gender === product.gender &&
@@ -356,6 +362,47 @@ export default function ProductDetailPage() {
                   </SelectContent>
                 </Select>
               </Field>        
+            </FieldGroup>
+
+            <FieldGroup className="flex flex-row flex-wrap gap-4">
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="edit-sellingPrice">Selling Price (LKR)</Label>
+                <div className="flex flex-col">
+                  <Input
+                    id="edit-sellingPrice"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    {...register("sellingPrice")}
+                    disabled={isPending}
+                  />
+                  {errors.sellingPrice && (
+                    <span className="text-sm text-red-500">
+                      {errors.sellingPrice.message as string}
+                    </span>
+                  )}
+                </div>
+              </Field>
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="edit-costPrice">Cost Price (LKR)</Label>
+                <div className="flex flex-col">
+                  <Input
+                    id="edit-costPrice"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    {...register("costPrice")}
+                    disabled={isPending}
+                  />
+                  {errors.costPrice && (
+                    <span className="text-sm text-red-500">
+                      {errors.costPrice.message as string}
+                    </span>
+                  )}
+                </div>
+              </Field>
             </FieldGroup>
 
             <FieldGroup className="flex flex-row flex-wrap gap-4">

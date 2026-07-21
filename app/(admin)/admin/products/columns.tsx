@@ -97,6 +97,28 @@ export const getColumns = ({
     }
   },
   {
+    id: "costPrice",
+    header: () => { return <div className="text-center">Cost Price</div> },
+    cell: ({row}) => {
+      return (
+        <div className="text-right">
+          {row.original.costPrice} LKR
+        </div>
+      )
+    }
+  },
+  {
+    id: "sellingPrice",
+    header: () => { return <div className="text-center">Selling Price</div> },
+    cell: ({row}) => {
+      return (
+        <div className="text-right">
+          {row.original.sellingPrice} LKR
+        </div>
+      )
+    }
+  },
+  {
     id: "isFeatured",
     header: () => { return <div className="text-center">Is Featured</div> },
     cell: ({ row }) => {

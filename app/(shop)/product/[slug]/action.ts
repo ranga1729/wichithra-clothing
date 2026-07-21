@@ -23,6 +23,7 @@ export async function getProductBySlug(slug: string): Promise<ApiResponse<Produc
         brand: true,
         material: true,
         careInstructions: true,
+        sellingPrice: true,
         discountPercentage: true,
         gender: true,
         ageGroup: true,
@@ -49,7 +50,6 @@ export async function getProductBySlug(slug: string): Promise<ApiResponse<Produc
           select: {
             id: true,
             size: true,
-            sellingPrice: true,
             isActive: true,
             color: {
               select: {

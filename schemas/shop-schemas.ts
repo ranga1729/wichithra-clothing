@@ -72,7 +72,6 @@ export const product_detail_color = z.object({
 export const product_detail_variant = z.object({
   id: z.uuid(),
   size: sizes,
-  sellingPrice: z.number(),
   isActive: z.boolean(),
   color: product_detail_color,
 })
@@ -94,6 +93,7 @@ export const product_detail = z.object({
   brand: z.string(),
   material: z.string().nullable(),
   careInstructions: z.string().nullable(),
+  sellingPrice: z.number(),
   discountPercentage: z.number(),
   gender: z.string(),
   ageGroup: z.string(),

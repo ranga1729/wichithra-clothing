@@ -29,8 +29,7 @@ export default function AddNewModal(props: Props) {
   const queryClient = useQueryClient();
 
   const {
-    register, reset,
-    setValue, watch, handleSubmit,
+    register, reset, setValue, watch,
     formState: { errors },
   } = useForm<BasicProductInfoSchema>({
     resolver: zodResolver(basicProductInfoSchema) as any,
@@ -44,6 +43,8 @@ export default function AddNewModal(props: Props) {
       material: "",
       careInstructions: "",
       description: "",
+      costPrice: 0,
+      sellingPrice: 0,
       discountPercentage: 0,
     },
   });
@@ -58,6 +59,15 @@ export default function AddNewModal(props: Props) {
     const selected = categorySelectorData?.find((c: any) => c.slug === val);
     if (selected) setValue("category", { id: selected.id, name: selected.name, slug: selected.slug });
   };
+
+  const handleCancel = () => {
+    props.onOpenChange(false);
+    reset();
+  }
+
+  const handleSave = () => {
+    createProduct(currentFormData);
+  }
 
   const { data: categorySelectorData } = useQuery({
     queryKey: ["categorySelectorData"],
@@ -89,7 +99,7 @@ export default function AddNewModal(props: Props) {
     }
   }) 
 
-  const onSubmit = (data: BasicProductInfoSchema) => createProduct(data)
+  // const onSubmit = (data: BasicProductInfoSchema) => createProduct(data)
   
   return (
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
@@ -101,7 +111,7 @@ export default function AddNewModal(props: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form>
           <FieldGroup >
             <FieldGroup className="flex flex-row flex-wrap gap-4">
               <Field className="flex flex-col gap-2 flex-1">
@@ -135,6 +145,24 @@ export default function AddNewModal(props: Props) {
                     </span>
                   )}
                 </div>
+              </Field>
+            </FieldGroup>
+            <FieldGroup className="flex flex-row flex-wrap gap-4">
+              <Field className="flex flex-col gap-2">
+                <Label htmlFor="edit-description"> {en.description} </Label>
+                <div> 
+                  <Textarea
+                    id="edit-description"
+                    placeholder="Description of this product"
+                    {...register("description")}
+                    disabled= {isPending}
+                  />
+                  {errors.description && (
+                    <span className="text-sm text-red-500">
+                      {errors.description.message as string}
+                    </span>
+                  )}
+                </div> 
               </Field>
             </FieldGroup>
             <FieldGroup className="flex flex-row flex-wrap gap-4">
@@ -225,6 +253,46 @@ export default function AddNewModal(props: Props) {
               </Field>
             </FieldGroup>
             <FieldGroup className="flex flex-row flex-wrap gap-4">
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="edit-sellingPrice">Selling Price (LKR)</Label>
+                <div className="flex flex-col">
+                  <Input
+                    id="edit-sellingPrice"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    {...register("sellingPrice")}
+                    disabled={isPending}
+                  />
+                  {errors.sellingPrice && (
+                    <span className="text-sm text-red-500">
+                      {errors.sellingPrice.message as string}
+                    </span>
+                  )}
+                </div>
+              </Field>
+              <Field className="flex flex-col gap-2 flex-1">
+                <Label htmlFor="edit-costPrice">Cost Price (LKR)</Label>
+                <div className="flex flex-col">
+                  <Input
+                    id="edit-costPrice"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    {...register("costPrice")}
+                    disabled={isPending}
+                  />
+                  {errors.costPrice && (
+                    <span className="text-sm text-red-500">
+                      {errors.costPrice.message as string}
+                    </span>
+                  )}
+                </div>
+              </Field>
+            </FieldGroup>
+            <FieldGroup className="flex flex-row flex-wrap gap-4">
               <Field className="flex flex-col gap-2 flex-2 items-center justify-center">
                   <div className="flex items-center justify-between gap-2">
                     <Label htmlFor="slider-demo-temperature">{en.discount_precentage}</Label>
@@ -244,46 +312,29 @@ export default function AddNewModal(props: Props) {
               </Field>
             </FieldGroup>
             <FieldGroup className="flex lg:flex-row sm:flex-col">
-            <Field className="flex flex-col gap-2">
-              <Label htmlFor="edit-careinstructions"> {en.careInstructions} </Label>
-              <div className="flex flex-col">
-                <Textarea
-                  id="edit-careinstructions"
-                  placeholder="Care instruction for this product"
-                  {...register("careInstructions")}
-                  disabled= {isPending}
-                />
-                {errors.careInstructions && (
-                  <span className="text-sm text-red-500">
-                    {errors.careInstructions.message as string}
-                  </span>
-                )}
-              </div>
-            </Field>
-            <Field className="flex flex-col gap-2">
-              <Label htmlFor="edit-description"> {en.description} </Label>
-              <div> 
-                <Textarea
-                  id="edit-description"
-                  placeholder="Description of this product"
-                  {...register("description")}
-                  disabled= {isPending}
-                />
-                {errors.description && (
-                  <span className="text-sm text-red-500">
-                    {errors.description.message as string}
-                  </span>
-                )}
-              </div> 
-            </Field>
+              <Field className="flex flex-col gap-2">
+                <Label htmlFor="edit-careinstructions"> {en.careInstructions} </Label>
+                <div className="flex flex-col">
+                  <Textarea
+                    id="edit-careinstructions"
+                    placeholder="Care instruction for this product"
+                    {...register("careInstructions")}
+                    disabled= {isPending}
+                  />
+                  {errors.careInstructions && (
+                    <span className="text-sm text-red-500">
+                      {errors.careInstructions.message as string}
+                    </span>
+                  )}
+                </div>
+              </Field>
           </FieldGroup>
-          </FieldGroup>
-
-          <DialogFooter className="mt-6">
-            <SaveButton isPending={isPending} />
-            <CancelButton onClick={() => props.onOpenChange(false)} isPending={isPending} />
-          </DialogFooter>
+          </FieldGroup>          
         </form>
+          <DialogFooter className="mt-6">
+            <SaveButton onClick={handleSave} isPending={isPending} />
+            <CancelButton onClick={handleCancel} isPending={isPending} />
+          </DialogFooter>
       </DialogContent>
     </Dialog>
   )

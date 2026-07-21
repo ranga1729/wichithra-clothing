@@ -97,33 +97,21 @@ export default function ProductPage() {
   }, [product, selectedSize, selectedColor])
 
   const priceInfo = useMemo(() => {
-    if (!product) return { min: 0, max: 0, hasDiscount: false, discountPct: 0 }
-    const prices = product.variants.map((v) => Number(v.sellingPrice))
-    const min = Math.min(...prices)
-    const max = Math.max(...prices)
+    if (!product) return { base: 0, hasDiscount: false, discountPct: 0 }
+    const base = Number(product.sellingPrice)
     const discountPct = Number(product.discountPercentage)
-    return { min, max, hasDiscount: discountPct > 0, discountPct }
+    return { base, hasDiscount: discountPct > 0, discountPct }
   }, [product])
 
   const currentPrice = useMemo(() => {
-    if (selectedVariant) {
-      const base = Number(selectedVariant.sellingPrice)
-      if (priceInfo.hasDiscount) {
-        return {
-          original: base,
-          discounted: base * (1 - priceInfo.discountPct / 100),
-        }
-      }
-      return { original: base, discounted: null }
-    }
     if (priceInfo.hasDiscount) {
       return {
-        original: priceInfo.min,
-        discounted: priceInfo.min * (1 - priceInfo.discountPct / 100),
+        original: priceInfo.base,
+        discounted: priceInfo.base * (1 - priceInfo.discountPct / 100),
       }
     }
-    return { original: priceInfo.min, discounted: null }
-  }, [selectedVariant, priceInfo])
+    return { original: priceInfo.base, discounted: null }
+  }, [priceInfo])
 
   const handleSizeSelect = useCallback((size: ClothingSize) => {
     setSelectedSize((prev) => 
@@ -155,7 +143,7 @@ export default function ProductPage() {
       size: selectedSize!,
       color: selectedVariant.color,
       imageUrl: primaryImage?.imageUrl ?? '',
-      price: Number(selectedVariant.sellingPrice),
+      price: Number(product.sellingPrice),
     })
   }, [product, selectedVariant, selectedSize, addItem])
 

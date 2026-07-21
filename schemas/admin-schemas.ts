@@ -114,8 +114,6 @@ const variantSchema = z.object({
   productId: z.uuid(),
   colorId: z.uuid(),
   sku: z.string(),
-  costPrice: z.coerce.number().nullable(),
-  sellingPrice: z.coerce.number(),
   isActive: z.boolean(),
   color: colorSelectSchema,
   size: ClothingSizeSchema,
@@ -167,6 +165,8 @@ export const simpleProductSchema = z.object({
   description: z.string().nullable(),
   gender: GenderSchema,
   ageGroup: AgeGroupSchema,
+  costPrice: z.coerce.number(),
+  sellingPrice: z.coerce.number(),
   discountPercentage: z
     .coerce
     .number()
@@ -193,6 +193,16 @@ export const basicProductInfoSchema = z.object({
   category: categorySelectSchema,
   gender: GenderSchema,
   ageGroup: AgeGroupSchema,
+  costPrice: z
+    .coerce
+    .number()
+    .min(0)
+    .default(0),
+  sellingPrice: z
+    .coerce
+    .number()
+    .min(0)
+    .default(0),
   discountPercentage: z
     .coerce
     .number()
@@ -203,8 +213,8 @@ export const basicProductInfoSchema = z.object({
   brand: z.string().nullable(),
   material: z.string().nullable(),
   careInstructions: z.string().nullable(),
-  metaTitle: z.string().max(200).nullable(),
-  metaDescription: z.string().nullable(),
+  metaTitle: z.string().max(200).optional(),
+  metaDescription: z.string().optional(),
 });
 
 // Inventory
@@ -216,8 +226,6 @@ export const inventorySchema = z.object({
   variant: z.object({
     id: z.uuid(),
     sku: z.string(),
-    costPrice: z.coerce.number(),
-    sellingPrice: z.coerce.number(),
     isActive: z.boolean(),
     product: z.object({
       id: z.uuid(),
@@ -247,14 +255,6 @@ export const createInventoryItemSchema = z.object({
     .min(1, "SKU is required")
     .max(100, "SKU cannot exceed 100 characters")
     .transform((val) => val.trim()),
-  costPrice: z
-    .coerce
-    .number()
-    .positive("Cost price must be positive"),
-  sellingPrice: z
-    .coerce
-    .number()
-    .positive("Selling price must be positive"),
   isActive: z.boolean().default(true),
   quantity: z
     .coerce
@@ -272,15 +272,6 @@ export const createInventoryItemSchema = z.object({
 });
 
 export const updateInventoryItemSchema = z.object({
-  costPrice: z
-    .coerce
-    .number()
-    .positive("Cost price must be positive")
-    .optional(),
-  sellingPrice: z
-    .coerce
-    .number()
-    .positive("Selling price must be positive"),
   isActive: z.boolean().default(true),
   quantity: z
     .coerce

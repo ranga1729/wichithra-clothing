@@ -28,8 +28,6 @@ export async function getInventoryItemByVariantId(variantId: string): Promise<Ap
           select: {
             id: true,
             sku: true,
-            costPrice: true,
-            sellingPrice: true,
             isActive: true,
             product: {
               select: {
@@ -76,8 +74,6 @@ export async function updateInventoryItem(variantId: string, data: UpdateInvento
       await tx.productVariant.update({
         where: { id: variantId },
         data: {
-          costPrice: validatedData.costPrice ?? undefined,
-          sellingPrice: validatedData.sellingPrice,
           isActive: validatedData.isActive,
         },
       });
@@ -129,8 +125,6 @@ export async function getInventory(paginator: Paginator, filter: InventoryFilter
           select: {
             id: true,
             sku: true,
-            costPrice: true,
-            sellingPrice: true,
             isActive: true,
             product: {
               select: {
@@ -341,8 +335,6 @@ export async function createInventoryItem(data: CreateInventoryItemSchema): Prom
           colorId: validatedData.colorId,
           size: validatedData.size,
           sku: validatedData.sku,
-          costPrice: validatedData.costPrice,
-          sellingPrice: validatedData.sellingPrice,
           isActive: validatedData.isActive,
         },
       });

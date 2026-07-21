@@ -61,22 +61,15 @@ function buildSearchWhere(query: string, filters?: SearchFilters): Prisma.Produc
     }
 
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-      const priceCondition: Prisma.ProductVariantWhereInput = {
-        ...notDeleted,
-        isActive: true,
-      }
-
       const sellingPriceCondition: Record<string, number> = {}
       if (filters.minPrice !== undefined) sellingPriceCondition.gte = filters.minPrice
       if (filters.maxPrice !== undefined) sellingPriceCondition.lte = filters.maxPrice
 
       if (Object.keys(sellingPriceCondition).length > 0) {
-        ;(priceCondition as any).sellingPrice = sellingPriceCondition
+        conditions.push({
+          sellingPrice: sellingPriceCondition,
+        })
       }
-
-      conditions.push({
-        variants: { some: priceCondition },
-      })
     }
   }
 
@@ -100,13 +93,13 @@ export async function searchProducts(q: string, filters?: SearchFilters,): Promi
         name: true,
         slug: true,
         status: true,
+        sellingPrice: true,
         category: {
           select: { name: true },
         },
         variants: {
           where: { ...notDeleted, isActive: true },
           select: {
-            sellingPrice: true,
             size: true,
             color: {
               select: {
@@ -143,8 +136,7 @@ export async function searchProducts(q: string, filters?: SearchFilters,): Promi
       }
       const aggregatedColors = Array.from(colorMap.values())
 
-      const numericPrices = p.variants.map((v) => Number(v.sellingPrice))
-      const basePrice = numericPrices.length > 0 ? Math.min(...numericPrices) : 0
+      const basePrice = Number(p.sellingPrice)
       const primaryImage =
         p.productImages.find((image) => image.isPrimary === true) ?? p.productImages[0]
 
@@ -216,8 +208,8 @@ export async function getSearchFilterOptions(): Promise<ApiResponse<SearchFilter
         orderBy: { size: "asc" },
       }),
 
-      prisma.productVariant.aggregate({
-        where: { ...notDeleted, isActive: true, product: activeProductWhere },
+      prisma.product.aggregate({
+        where: { ...notDeleted, status: { in: ["AVAILABLE", "OUTOFSTOCK"] } },
         _min: { sellingPrice: true },
         _max: { sellingPrice: true },
       }),
