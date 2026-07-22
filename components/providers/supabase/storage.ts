@@ -93,3 +93,19 @@ export function getPublicUrl(storagePath: string): string {
   const { data } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(storagePath);
   return data.publicUrl;
 }
+
+/**
+ * Extracts the storage path from a Supabase public URL.
+ * Returns null if the URL doesn't match the expected format.
+ */
+export function extractStoragePathFromUrl(publicUrl: string): string | null {
+  try {
+    const url = new URL(publicUrl);
+    const marker = `/object/public/${SUPABASE_BUCKET}/`;
+    const idx = url.pathname.indexOf(marker);
+    if (idx === -1) return null;
+    return decodeURIComponent(url.pathname.substring(idx + marker.length));
+  } catch {
+    return null;
+  }
+}

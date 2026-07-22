@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { updateCategoryById, updateCategorySizeGuide, removeCategorySizeGuide } from "./action";
+import { updateCategoryById } from "./action";
+import { uploadTempFile, deleteTempFile } from "@/components/providers/supabase/storage";
 import toast from "react-hot-toast";
 import { LoaderCircle } from "lucide-react";
 import { en } from "@/lib/i18n/en";
@@ -26,8 +27,9 @@ interface Props {
 export default function UpdateModal(props: Props) {
   const queryClient = useQueryClient();
   const [filePreview, setFilePreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [tempPath, setTempPath] = useState<string | null>(null);
   const [sizeGuideMarkedForRemoval, setSizeGuideMarkedForRemoval] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const {
     register, handleSubmit,
@@ -52,8 +54,9 @@ export default function UpdateModal(props: Props) {
       setValue("slug", props.selectedCategory.slug);
       setValue("description", props.selectedCategory.description || "");
       setValue("sortOrder", props.selectedCategory.sortOrder || 0);
+      setValue("sizeGuide", props.selectedCategory.sizeGuide || null);
       setFilePreview(props.selectedCategory.sizeGuide || null);
-      setSelectedFile(null);
+      setTempPath(null);
       setSizeGuideMarkedForRemoval(false);
     }
   }, [props.selectedCategory?.id, props.selectedCategory?.sizeGuide, props.isModalOpen]);
@@ -62,14 +65,14 @@ export default function UpdateModal(props: Props) {
     if (!props.isModalOpen) {
       reset();
       setFilePreview(null);
-      setSelectedFile(null);
+      setTempPath(null);
       setSizeGuideMarkedForRemoval(false);
     }
   }, [props.isModalOpen, reset]);
 
   const hasChanges = useMemo(() => {
     if (!props.selectedCategory) return false;
-    const sizeGuideChanged = selectedFile !== null || sizeGuideMarkedForRemoval;
+    const sizeGuideChanged = tempPath !== null || sizeGuideMarkedForRemoval;
     return (
       currentFormData.name !== props.selectedCategory.name ||
       currentFormData.slug !== props.selectedCategory.slug ||
@@ -77,28 +80,45 @@ export default function UpdateModal(props: Props) {
       currentFormData.sortOrder !== (props.selectedCategory.sortOrder || 0) ||
       sizeGuideChanged
     );
-  }, [currentFormData, props.selectedCategory, selectedFile, sizeGuideMarkedForRemoval]);
+  }, [currentFormData, props.selectedCategory, tempPath, sizeGuideMarkedForRemoval]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
-    setSelectedFile(file);
-    setFilePreview(URL.createObjectURL(file));
-    setSizeGuideMarkedForRemoval(false);
-    e.target.value = "";
+
+    setIsUploading(true);
+    try {
+      const { path, url } = await uploadTempFile(file);
+      if (tempPath) {
+        deleteTempFile(tempPath).catch(() => null);
+      }
+      setTempPath(path);
+      setFilePreview(url);
+      setValue("sizeGuide", url, { shouldDirty: true });
+      setSizeGuideMarkedForRemoval(false);
+    } catch (err: any) {
+      toast.error(err.message || en.failed_to_upload_image);
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
+    }
   };
 
   const handleRemoveFile = () => {
-    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
-    setSelectedFile(null);
+    if (tempPath) {
+      deleteTempFile(tempPath).catch(() => null);
+    }
+    setTempPath(null);
     setFilePreview(null);
+    setValue("sizeGuide", null, { shouldDirty: true });
     if (props.selectedCategory?.sizeGuide) setSizeGuideMarkedForRemoval(true);
   };
 
   const handleClose = () => {
-    if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
-    setSelectedFile(null);
+    if (tempPath) {
+      deleteTempFile(tempPath).catch(() => null);
+    }
+    setTempPath(null);
     setSizeGuideMarkedForRemoval(false);
     props.onOpenChange(false);
     reset();
@@ -106,23 +126,10 @@ export default function UpdateModal(props: Props) {
   };
 
   const { mutate: updateCategory, isPending } = useMutation({
-    mutationFn: async (data: UpdateCategorySchema) => {
-      const response = await updateCategoryById(data);
-      if (!response.success) return response;
-      if (selectedFile) {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        const sizeGuideRes = await updateCategorySizeGuide(props.selectedCategory!.id, formData);
-        if (!sizeGuideRes.success) toast.error(sizeGuideRes.error || en.failed_to_upload_image);
-      } else if (sizeGuideMarkedForRemoval) {
-        await removeCategorySizeGuide(props.selectedCategory!.id);
-      }
-      return response;
-    },
+    mutationFn: (data: UpdateCategorySchema) => updateCategoryById(data),
     onSuccess: (response) => {
       if (response.success) {
-        if (filePreview && filePreview.startsWith("blob:")) URL.revokeObjectURL(filePreview);
-        setSelectedFile(null);
+        setTempPath(null);
         setSizeGuideMarkedForRemoval(false);
         handleClose();
         queryClient.invalidateQueries({ queryKey: ["categories"] });
@@ -138,12 +145,12 @@ export default function UpdateModal(props: Props) {
 
   const onSubmit = (data: UpdateCategorySchema) => updateCategory(data);
 
-  const isBusy = isPending;
+  const isBusy = isPending || isUploading;
 
   const isExistingImage =
     filePreview !== null &&
     filePreview === props.selectedCategory?.sizeGuide &&
-    selectedFile === null;
+    tempPath === null;
 
   return (
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
@@ -211,7 +218,13 @@ export default function UpdateModal(props: Props) {
                 </Field>
               </FieldGroup>
 
-              {filePreview && (
+              {isUploading && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+                  <LoaderCircle className="animate-spin w-4 h-4" />
+                  Uploading...
+                </div>
+              )}
+              {filePreview && !isUploading && (
                 <div className="relative mt-2 border rounded-lg p-2">
                   <img
                     src={filePreview}

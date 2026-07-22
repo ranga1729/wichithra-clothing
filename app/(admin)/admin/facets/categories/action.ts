@@ -4,11 +4,9 @@ import { includingDeleted, notDeleted, prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
 import { CategoryFilter } from "@/types/filter-types";
 import { Paginator, Sorter } from "@/types/table-types";
-import { promises as fs } from 'fs';
-import path from "path";
 import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
-import { SUPABASE_BUCKET, SUPABASE_FOLDERS, uploadImage, deleteImage } from "@/components/providers/supabase/storage";
+import { SUPABASE_FOLDERS, deleteImage, moveTempToPermanent, extractStoragePathFromUrl } from "@/components/providers/supabase/storage";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
 import { Prisma } from "@/generated/prisma/client";
 import { CategoryListResponseSchema, CreateCategoryResponseSchema, DeleteCategoryResponseSchema, UpdateCategoryResponseSchema } from "@/schemas/server-action-responses";
@@ -91,7 +89,6 @@ export async function createCategory(newCategory: BaseCategorySchema): Promise<A
     await requireRole(["admin", "super-admin"]);
 
     const validatedData = baseCategorySchema.parse(newCategory);
-    let sizeGuidePath: string | undefined = undefined;
 
     const existingCategories = await prisma.category.findMany({
       where: {
@@ -163,6 +160,34 @@ export async function createCategory(newCategory: BaseCategorySchema): Promise<A
         success: false,
         error: en.failed_to_create_category,
       };
+    }
+
+    let finalSizeGuideUrl: string | null = null;
+
+    if (validatedData.sizeGuide) {
+      try {
+        const tempPath = extractStoragePathFromUrl(validatedData.sizeGuide);
+        if (tempPath && tempPath.startsWith(`${SUPABASE_FOLDERS.TEMP}/`)) {
+          const { publicUrl } = await moveTempToPermanent(
+            tempPath,
+            SUPABASE_FOLDERS.SIZE_GUIDES,
+            category.id
+          );
+          finalSizeGuideUrl = publicUrl;
+        } else {
+          finalSizeGuideUrl = validatedData.sizeGuide;
+        }
+      } catch (err) {
+        console.error( en.failed_to_move_size_guide_image + ": " + err);
+      }
+    }
+
+    if (finalSizeGuideUrl) {
+      await prisma.category.update({
+        where: { id: category.id },
+        data: { sizeGuide: finalSizeGuideUrl },
+      });
+      category.sizeGuide = finalSizeGuideUrl;
     }
 
     revalidatePath("/admin/categories");
@@ -345,13 +370,46 @@ export async function updateCategoryById(category: UpdateCategorySchema): Promis
 
     let finalSizeGuideUrl: string | null = existingCategory.sizeGuide;
 
+    if (validatedData.sizeGuide === null && existingCategory.sizeGuide) {
+      try {
+        const oldPath = extractStoragePathFromUrl(existingCategory.sizeGuide);
+        if (oldPath) await deleteImage(oldPath).catch(() => null);
+      } catch { /* ignore */ }
+      finalSizeGuideUrl = null;
+    } else if (
+      validatedData.sizeGuide &&
+      validatedData.sizeGuide !== existingCategory.sizeGuide
+    ) {
+      try {
+        const tempPath = extractStoragePathFromUrl(validatedData.sizeGuide);
+        if (tempPath && tempPath.startsWith(`${SUPABASE_FOLDERS.TEMP}/`)) {
+          if (existingCategory.sizeGuide) {
+            try {
+              const oldPath = extractStoragePathFromUrl(existingCategory.sizeGuide);
+              if (oldPath) await deleteImage(oldPath).catch(() => null);
+            } catch { /* ignore */ }
+          }
+          const { publicUrl } = await moveTempToPermanent(
+            tempPath,
+            SUPABASE_FOLDERS.SIZE_GUIDES,
+            validatedData.id
+          );
+          finalSizeGuideUrl = publicUrl;
+        } else {
+          finalSizeGuideUrl = validatedData.sizeGuide;
+        }
+      } catch (err) {
+        console.error(en.failed_to_move_size_guide_image + ": " + err);
+      }
+    }
+
     const updatedCategory = await prisma.category.update({
       where: { id: validatedData.id },
       data: {
         name: validatedData.name,
         slug: validatedData.slug,
         description: validatedData.description,
-        sizeGuide: validatedData.sizeGuide ?? existingCategory.sizeGuide,
+        sizeGuide: finalSizeGuideUrl,
         isActive: validatedData.isActive,
         sortOrder: validatedData.sortOrder,
       },
@@ -389,81 +447,6 @@ export async function updateCategoryById(category: UpdateCategorySchema): Promis
       success: false, 
       error: en.failed_to_update_category 
     };
-  }
-}
-
-export async function updateCategorySizeGuide(categoryId: string, formData: FormData): Promise<ApiResponse> {
-  try {
-    await requireRole(["admin", "super-admin"]);
-
-    const file = formData.get("file") as File;
-    if (!file || !file.size) return { success: false, error: en.failed_to_upload_image };
-
-    const category = await prisma.category.findUnique({
-      where: { id: categoryId, ...notDeleted },
-      select: { id: true, sizeGuide: true },
-    });
-    if (!category) return { success: false, error: en.category_doesnt_exist };
-
-    if (category.sizeGuide) {
-      try {
-        const oldUrl = new URL(category.sizeGuide);
-        const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
-        if (oldPath) await deleteImage(oldPath).catch(() => null);
-      } catch { /* ignore URL parse errors */ }
-    }
-
-    const ext = file.name.split(".").pop();
-    const storagePath = `${SUPABASE_FOLDERS.SIZE_GUIDES}/${categoryId}.${ext}`;
-    const publicUrl = await uploadImage(file, storagePath, file.type);
-
-    await prisma.category.update({
-      where: { id: categoryId },
-      data: { sizeGuide: publicUrl },
-    });
-
-    revalidatePath("/admin/categories");
-    return { success: true, data: { imageUrl: publicUrl } };
-
-  } catch (error: any) {
-    if (error instanceof AuthError) throw error;
-    console.error("Error updating category size guide:", error.message);
-    if (error instanceof Error) return { success: false, error: error.message };
-    return { success: false, error: en.failed_to_upload_image };
-  }
-}
-
-export async function removeCategorySizeGuide(categoryId: string): Promise<ApiResponse> {
-  try {
-    await requireRole(["admin", "super-admin"]);
-
-    const category = await prisma.category.findUnique({
-      where: { id: categoryId, ...notDeleted },
-      select: { id: true, sizeGuide: true },
-    });
-    if (!category) return { success: false, error: en.category_doesnt_exist };
-
-    if (category.sizeGuide) {
-      try {
-        const url = new URL(category.sizeGuide);
-        const storagePath = url.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
-        if (storagePath) await deleteImage(storagePath).catch(() => null);
-      } catch { /* ignore URL parse errors */ }
-    }
-
-    await prisma.category.update({
-      where: { id: categoryId },
-      data: { sizeGuide: null },
-    });
-
-    revalidatePath("/admin/categories");
-    return { success: true };
-
-  } catch (error: any) {
-    if (error instanceof AuthError) throw error;
-    console.error("Error removing category size guide:", error.message);
-    if (error instanceof Error) return { success: false, error: error.message };
-    return { success: false, error: en.failed_to_remove_image };
   }
 }
 
@@ -567,18 +550,4 @@ export async function getCategorySelectorData():Promise<ApiResponse> {
       error: en.product_update_failed,
     };
   }
-}
-
-
-function getMimeType(filePath: string): string {
-  const ext = path.extname(filePath).toLowerCase();
-  const mimeTypes: { [key: string]: string } = {
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
-    '.gif': 'image/gif',
-    '.webp': 'image/webp',
-    '.svg': 'image/svg+xml',
-  };
-  return mimeTypes[ext] || 'image/jpeg';
 }

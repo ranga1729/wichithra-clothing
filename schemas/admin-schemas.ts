@@ -27,20 +27,19 @@ export const baseCategorySchema = z.object({
     .number()
     .int("Must be an integer")
     .min(0, "Must be zero or greater"),
+  sizeGuide: z.string().nullish(),
 })
 export type BaseCategorySchema = z.input<typeof baseCategorySchema>
 
 export const getCategorySchema = baseCategorySchema.extend({
   id: z.uuid(),
   isActive: z.boolean(),
-  sizeGuide: z.string().nullish(),
 })
 export type GetCategorySchema = z.infer<typeof getCategorySchema>
 
 export const deleteCategorySchema = baseCategorySchema.extend({
   id: z.uuid(),
   isActive: z.boolean(),
-  sizeGuide: z.string().nullish(),
   deletedAt: z.date().nullish(),
 })
 export type DeleteCategorySchema = z.infer<typeof deleteCategorySchema>
@@ -48,9 +47,10 @@ export type DeleteCategorySchema = z.infer<typeof deleteCategorySchema>
 export const updateCategorySchema = baseCategorySchema.extend({
   id: z.uuid(),
   isActive: z.boolean(),
-  sizeGuide: z.string().nullish(),
 })
 export type UpdateCategorySchema = z.input<typeof updateCategorySchema>
+
+
 
 export const designSchema = z.object({
   name: z

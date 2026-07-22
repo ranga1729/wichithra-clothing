@@ -225,5 +225,6 @@ export const en = {
   confirm_delete_collection_description: "Are you sure you want to delete this collection? This action cannot be undone.",
   no_search_result_found : "No search result found.",
 
-  category_is_assigned_to_products: "Category is assigned to products. Can not be deleted."
+  category_is_assigned_to_products: "Category is assigned to products. Can not be deleted.",
+  failed_to_move_size_guide_image : "Failed to move size-guide image from temp folder."
 }
