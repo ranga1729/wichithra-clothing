@@ -18,7 +18,7 @@ import ResetFilterButton from "@/components/ResetFilterButton";
 import AddNewButton from "@/components/AddNewButton";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
-import EditModal from "./EditModal";
+import UpdateModal from "./UpdateModal";
 
 const InitialSorter:Sorter = {
   sortColumn: "name",
@@ -194,7 +194,7 @@ export default function CategoryPage() {
       </div>
 
       <AddNewModal isModalOpen={isAddNewModalOpen} onOpenChange={setIsAddNewModalOpen} />
-      <EditModal isModalOpen={isEditModalOpen} onOpenChange={setIsEditModalOpen} selectedCategory={selectedCategory} />
+      <UpdateModal isModalOpen={isEditModalOpen} onOpenChange={setIsEditModalOpen} selectedCategory={selectedCategory} />
     </div>
   );
 }

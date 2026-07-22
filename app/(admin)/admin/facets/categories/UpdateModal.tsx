@@ -6,7 +6,6 @@ import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CategorySchema, categorySchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -16,6 +15,7 @@ import { LoaderCircle } from "lucide-react";
 import { en } from "@/lib/i18n/en";
 import { Category } from "@/generated/prisma/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateCategorySchema, UpdateCategorySchema } from "@/schemas/admin-schemas";
 
 interface Props {
   isModalOpen: boolean;
@@ -23,7 +23,7 @@ interface Props {
   selectedCategory?: Category;
 }
 
-export default function EditModal(props: Props) {
+export default function UpdateModal(props: Props) {
   const queryClient = useQueryClient();
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -33,8 +33,8 @@ export default function EditModal(props: Props) {
     register, handleSubmit,
     setValue, reset, watch,
     formState: { errors },
-  } = useForm<CategorySchema>({
-    resolver: zodResolver(categorySchema),
+  } = useForm<UpdateCategorySchema>({
+    resolver: zodResolver(updateCategorySchema),
     mode: "onChange",
     defaultValues: {
       name: "",
@@ -106,8 +106,8 @@ export default function EditModal(props: Props) {
   };
 
   const { mutate: updateCategory, isPending } = useMutation({
-    mutationFn: async (data: CategorySchema) => {
-      const response = await updateCategoryById(props.selectedCategory!.id, data);
+    mutationFn: async (data: UpdateCategorySchema) => {
+      const response = await updateCategoryById(data);
       if (!response.success) return response;
       if (selectedFile) {
         const formData = new FormData();
@@ -136,7 +136,7 @@ export default function EditModal(props: Props) {
     },
   });
 
-  const onSubmit = (data: CategorySchema) => updateCategory(data);
+  const onSubmit = (data: UpdateCategorySchema) => updateCategory(data);
 
   const isBusy = isPending;
 

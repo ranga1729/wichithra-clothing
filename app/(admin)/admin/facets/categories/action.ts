@@ -6,16 +6,18 @@ import { CategoryFilter } from "@/types/filter-types";
 import { Paginator, Sorter } from "@/types/table-types";
 import { promises as fs } from 'fs';
 import path from "path";
-import { CategorySchema, categorySchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
 import { SUPABASE_BUCKET, SUPABASE_FOLDERS, uploadImage, deleteImage } from "@/components/providers/supabase/storage";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
+import { Prisma } from "@/generated/prisma/client";
+import { CategoryListResponseSchema, CreateCategoryResponseSchema, DeleteCategoryResponseSchema, UpdateCategoryResponseSchema } from "@/schemas/server-action-responses";
+import { baseCategorySchema, BaseCategorySchema, updateCategorySchema, UpdateCategorySchema } from "@/schemas/admin-schemas";
 
 // create a method to check slug conflicts. 
 // remove name unique constrains.
 
-export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter):Promise<ApiResponse> {
+export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter) : Promise<ApiResponse<CategoryListResponseSchema>> {
   try {
     await requireRole(["admin", "super-admin"]);
 
@@ -23,7 +25,7 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
 
-    const whereClause: any = {
+    const whereClause: Prisma.CategoryWhereInput = {
       ...notDeleted,
       ...(filter.name && {
         name: {
@@ -41,40 +43,37 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
 
     const validSortOrder = ['asc', 'desc'].includes(sorter.sortOrder as string) ? sorter.sortOrder as string : 'asc';
     const sortableColumns = ["name", "slug", "sortOrder"];
-    const orderBy = sortableColumns.includes(sorter.sortColumn as string) ? {[sorter.sortColumn as string]: validSortOrder} : undefined;
+    const orderBy: Prisma.CategoryOrderByWithRelationInput | undefined = sortableColumns.includes(sorter.sortColumn as string) ? {[sorter.sortColumn as string]: validSortOrder} : undefined;
 
-    const categories = await prisma.category.findMany({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true,
-        sizeGuide: true,
-        sortOrder: true,
-        isActive: true,
-      },
-      where: whereClause,
-      orderBy: orderBy,
-      skip: skip,
-      take: pageSize
-    })
+    const [categories, totalRecords] = await prisma.$transaction([
+      prisma.category.findMany({
+        select:{
+          id:true,
+          name:true,
+          slug:true,
+          description:true,
+          sizeGuide:true,
+          sortOrder:true,
+          isActive:true
+        },
+        where:whereClause,
+        orderBy,
+        skip:skip,
+        take:pageSize
+      }),
 
-    const totalRecords = await prisma.category.count({
-      where: whereClause
-    })
 
-    if(!categories) {
-      return {
-        success: false,
-        error: en.data_retrieval_failed
-      }
-    }
+      prisma.category.count({
+        where:whereClause
+      })
+
+    ]);
 
     return {
-      success: true,
+      success:true,
       data: {
-        categories : categories,
-        totalRecords : totalRecords
+        categories: categories,
+        totalRecords: totalRecords
       }
     };
 
@@ -82,24 +81,24 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
     if (error instanceof AuthError) throw error;
     return { 
       success: false,
-      error: error.message || en.data_retrieval_failed 
+      error: error.message ?? en.data_retrieval_failed 
     };
   }
 }
 
-export async function createCategory(newCategory: CategorySchema):Promise<ApiResponse> {
+export async function createCategory(newCategory: BaseCategorySchema): Promise<ApiResponse<CreateCategoryResponseSchema>> {
   try {
     await requireRole(["admin", "super-admin"]);
 
-    const validatedData = categorySchema.parse(newCategory);
+    const validatedData = baseCategorySchema.parse(newCategory);
     let sizeGuidePath: string | undefined = undefined;
 
-    const conflicts = await prisma.category.findMany({
+    const existingCategories = await prisma.category.findMany({
       where: {
         ...includingDeleted,
         OR : [
-          {name: newCategory.name},
-          {slug: newCategory.slug}
+          {name: {equals: validatedData.name, mode:"insensitive"}},
+          {slug: {equals: validatedData.slug, mode:"insensitive"}}
         ]
       },
       select: {
@@ -110,27 +109,14 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
       }
     });
 
-    if(conflicts.length > 0) {
+    if(existingCategories.length > 0) {
 
       //non soft-deleted conflicts
-      const activeConflicts = conflicts.filter((cat) => cat.deletedAt === null);
+      const activeConflicts = existingCategories.filter((cat) => cat.deletedAt === null);
+      
       if(activeConflicts.length > 0) {
-        const nameConflicts = activeConflicts.find((cat) => cat.name === validatedData.name);
         const slugConflicts = activeConflicts.find((cat) => cat.slug === validatedData.slug);
 
-        if(nameConflicts && slugConflicts) {
-          return {
-            success: false,
-            error: en.name_and_slug_already_exists
-          }
-        }
-
-        if(nameConflicts) {
-          return {
-            success: false,
-            error: en.name_already_exists
-          }
-        }
         if(slugConflicts) {
           return {
             success: false,
@@ -140,15 +126,18 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
       }
 
       //soft-deleted conflicts
-      const softDeletedConflicts = conflicts.filter((cat) => cat.deletedAt !== null);
+      const softDeletedConflicts = existingCategories.filter((cat) => cat.deletedAt !== null);
       
-      // make this correct. 
+      if(softDeletedConflicts.length > 0) {
+        const slugConflicts = softDeletedConflicts.find((cat) => cat.slug === validatedData.slug);
 
-      // await prisma.category.deleteMany({
-      //   where: {
-      //     id: {in: softDeletedConflicts}
-      //   }
-      // })
+        if(slugConflicts) {
+          return {
+            success: false,
+            error: en.slug_already_exists_in_a_deleted_record
+          }
+        }
+      }
     }
 
     const category = await prisma.category.create({
@@ -157,6 +146,15 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
         slug: validatedData.slug,
         description: validatedData.description,
         sortOrder: validatedData.sortOrder,
+      },
+      select: {
+        id:true,
+        name:true,
+        slug:true,
+        description:true,
+        sizeGuide:true,
+        sortOrder:true,
+        isActive:true
       }
     });
 
@@ -168,22 +166,17 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
     }
 
     revalidatePath("/admin/categories");
-
+  
     return {
       success: true,
-      data: { categoryId: category.id },
-      message: en.category_created_successfully,
+      data: {
+        category: category
+      },
+      message: en.category_created_successfully
     };
-  } catch (error) {
+  } catch (error:any) {
     if (error instanceof AuthError) throw error;
     console.error(en.failed_to_create_category + ": ", error);
-    
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
     
     return {
       success: false,
@@ -192,17 +185,22 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
   }
 }
 
-export async function deleteCategoryById(id: string):Promise<ApiResponse> {
+export async function deleteCategoryById(id: string) : Promise<ApiResponse<DeleteCategoryResponseSchema>> {
   try {
     await requireRole(["admin", "super-admin"]);
 
-    const category = await prisma.category.findUnique({
+    const category = await prisma.category.findFirst({
       where: {id : id, ...notDeleted},
       select: {
-        id: true,
-        sizeGuide: true,
+        id:true,
+        _count: {
+          where: {...notDeleted},
+          select: {
+            products: true
+          }
+        }
       }
-    })
+    });
 
     if(!category) {
       return {
@@ -211,10 +209,28 @@ export async function deleteCategoryById(id: string):Promise<ApiResponse> {
       }
     }
 
+    if(category._count.products > 0) {
+       return {
+        success: false,
+        error: en.category_is_assigned_to_products
+      }
+    }
+
     const deletedCategory = await prisma.category.update({
       where: { id: category.id },
       data: {
-       deletedAt: new Date()
+        isActive: true,
+        deletedAt: new Date()
+      },
+      select: {
+        id: true,
+        name:true,
+        slug:true,
+        description:true,
+        sizeGuide:true,
+        sortOrder:true,
+        isActive:true,
+        deletedAt: true,
       }
     });
 
@@ -225,40 +241,36 @@ export async function deleteCategoryById(id: string):Promise<ApiResponse> {
       }
     }
 
-    if(deletedCategory.sizeGuide) {
-      const imagePath = path.join(
-        process.cwd(),
-        "public",
-        deletedCategory.sizeGuide
-      )
+    // if(deletedCategory.sizeGuide) {
+    //   const imagePath = path.join(
+    //     process.cwd(),
+    //     "public",
+    //     deletedCategory.sizeGuide
+    //   )
       
-      try {
-        await fs.unlink(imagePath);
-      } catch(error) {
-        return { 
-            success: true, 
-            message: en.category_deleted_image_not_exist 
-        };
-      }
+    //   try {
+    //     await fs.unlink(imagePath);
+    //   } catch(error) {
+    //     return { 
+    //         success: true, 
+    //         message: en.category_deleted_image_not_exist 
+    //     };
+    //   }
       
-    }
+    // }
     
     revalidatePath('/admin/categories');
 
     return {
       success: true,
+      data: {
+        category: deletedCategory
+      },
       message: en.category_deleted
     }
   } catch(error) {
     if (error instanceof AuthError) throw error;
     console.error(en.Failed_to_delete_category + ": ", error);
-    
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
     
     return {
       success: false,
@@ -267,80 +279,116 @@ export async function deleteCategoryById(id: string):Promise<ApiResponse> {
   }
 }
 
-export async function updateCategoryById(id: string, updatedData: CategorySchema): Promise<ApiResponse> {
+export async function updateCategoryById(category: UpdateCategorySchema): Promise<ApiResponse<UpdateCategoryResponseSchema>> {
   try {
     await requireRole(["admin", "super-admin"]);
 
-    const validatedData = categorySchema.parse(updatedData);
+    const validatedData = updateCategorySchema.parse(category);
 
     const existingCategory = await prisma.category.findUnique({
-      where: { id, ...notDeleted },
+      where: { id: validatedData.id, ...notDeleted },
       select: { id: true, sizeGuide: true },
     });
 
     if (!existingCategory) {
-      return { success: false, error: en.category_doesnt_exist };
+      return { 
+        success: false, 
+        error: en.category_doesnt_exist 
+      };
     }
 
     const conflicts = await prisma.category.findMany({
       where: {
         ...includingDeleted,
-        id: { not: id },
+        id: { not: validatedData.id },
         OR: [
-          { name: updatedData.name }, 
-          { slug: updatedData.slug }
+          { slug: {equals: validatedData.name, mode: "insensitive"} }
         ],
       },
       select: { 
         id: true, 
-        name: true, 
         slug: true, 
         deletedAt: true 
       },
     });
 
-    if (conflicts.length > 0) {
-      const activeConflicts = conflicts.filter((cat) => cat.deletedAt === null);
+    if(conflicts.length > 0) {
 
-      if (activeConflicts.length > 0) {
-        const nameConflict = activeConflicts.find((cat) => cat.name === validatedData.name);
-        const slugConflict = activeConflicts.find((cat) => cat.slug === validatedData.slug);
-        
-        if (nameConflict && slugConflict) return { success: false, error: en.name_and_slug_already_exists };
-        if (nameConflict) return { success: false, error: en.name_already_exists };
-        if (slugConflict) return { success: false, error: en.slug_already_exists };
+      //non soft-deleted conflicts
+      const activeConflicts = conflicts.filter((cat) => cat.deletedAt === null);
+      
+      if(activeConflicts.length > 0) {
+        const slugConflicts = activeConflicts.find((cat) => cat.slug === validatedData.slug);
+
+        if(slugConflicts) {
+          return {
+            success: false,
+            error: en.slug_already_exists
+          }
+        }
       }
 
-      await prisma.category.deleteMany({
-        where: { id: { in: conflicts.map((c) => c.id) } },
-      });
+      //soft-deleted conflicts
+      const softDeletedConflicts = conflicts.filter((cat) => cat.deletedAt !== null);
+      
+      if(softDeletedConflicts.length > 0) {
+        const slugConflicts = softDeletedConflicts.find((cat) => cat.slug === validatedData.slug);
+
+        if(slugConflicts) {
+          return {
+            success: false,
+            error: en.slug_already_exists_in_a_deleted_record
+          }
+        }
+      }
     }
 
     let finalSizeGuideUrl: string | null = existingCategory.sizeGuide;
 
     const updatedCategory = await prisma.category.update({
-      where: { id: existingCategory.id },
+      where: { id: validatedData.id },
       data: {
         name: validatedData.name,
         slug: validatedData.slug,
         description: validatedData.description,
+        sizeGuide: validatedData.sizeGuide ?? existingCategory.sizeGuide,
+        isActive: validatedData.isActive,
         sortOrder: validatedData.sortOrder,
-        sizeGuide: finalSizeGuideUrl,
       },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        isActive: true,
+        sortOrder: true,
+        sizeGuide: true,
+      }
     });
 
     if (!updatedCategory) {
-      return { success: false, error: en.failed_to_update_category };
+      return { 
+        success: false, 
+        error: en.failed_to_update_category };
     }
 
     revalidatePath("/admin/categories");
-    return { success: true, message: en.category_updated_successfully, data: { updatedCategory } };
+    return { 
+      success: true, 
+      data: {
+        category: updatedCategory
+      },
+      message: en.category_updated_successfully
+    };
 
   } catch (error) {
     if (error instanceof AuthError) throw error;
     console.error(en.failed_to_update_category + ": ", error);
-    if (error instanceof Error) return { success: false, error: error.message };
-    return { success: false, error: en.failed_to_update_category };
+
+    return { 
+      success: false, 
+      error: en.failed_to_update_category 
+    };
   }
 }
 

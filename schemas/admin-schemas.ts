@@ -1,3 +1,4 @@
+import { createCategory } from "@/app/(admin)/admin/facets/categories/action";
 import { AgeGroup, ClothingSize, GenderTarget, PaymentStatus, ProductStatus } from "@/generated/prisma/enums";
 import * as z from "zod"
 
@@ -8,7 +9,7 @@ export const AgeGroupSchema = z.enum(AgeGroup)
 export const GenderSchema = z.enum(GenderTarget)
 export const ClothingSizeSchema = z.enum(ClothingSize)
 
-export const categorySchema = z.object({
+export const baseCategorySchema = z.object({
   name: z
     .string("Enter a valid name")
     .min(1, "Name is required")
@@ -21,12 +22,35 @@ export const categorySchema = z.object({
     .transform((val) => val.trim()),
   description: z
     .string()
-    .optional(),
+    .nullish(),
   sortOrder: z  
     .number()
     .int("Must be an integer")
     .min(0, "Must be zero or greater"),
 })
+export type BaseCategorySchema = z.input<typeof baseCategorySchema>
+
+export const getCategorySchema = baseCategorySchema.extend({
+  id: z.uuid(),
+  isActive: z.boolean(),
+  sizeGuide: z.string().nullish(),
+})
+export type GetCategorySchema = z.infer<typeof getCategorySchema>
+
+export const deleteCategorySchema = baseCategorySchema.extend({
+  id: z.uuid(),
+  isActive: z.boolean(),
+  sizeGuide: z.string().nullish(),
+  deletedAt: z.date().nullish(),
+})
+export type DeleteCategorySchema = z.infer<typeof deleteCategorySchema>
+
+export const updateCategorySchema = baseCategorySchema.extend({
+  id: z.uuid(),
+  isActive: z.boolean(),
+  sizeGuide: z.string().nullish(),
+})
+export type UpdateCategorySchema = z.input<typeof updateCategorySchema>
 
 export const designSchema = z.object({
   name: z
@@ -380,7 +404,6 @@ export const customerSchema = z.object({
   })),
 })
 
-export type CategorySchema = z.input<typeof categorySchema>
 export type DesignSchema = z.infer<typeof designSchema>
 export type ColorSchema = z.infer<typeof colorSchema>
 

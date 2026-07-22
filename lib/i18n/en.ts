@@ -172,9 +172,13 @@ export const en = {
   failed_to_load_color_filter_data: "Failed to load color filter data",
   failed_to_load_category_filter_data: "Failed to load category filter data",
 
-  name_already_exists: "Name already exists",
-  slug_already_exists: "Slug already exists",
-  name_and_slug_already_exists: "Name and slug already exists",
+  name_already_exists: "Name already exists. Pick another name.",
+  slug_already_exists: "Slug already exists. Pick another slug.",
+  name_and_slug_already_exists: "Name and slug already exists. Pick another name and slug.",
+
+  name_already_exists_in_a_deleted_record: "Name exists in a deleted record. Pick another name.",
+  slug_already_exists_in_a_deleted_record: "Slug exists in a deleted record. Pick another slug.",
+  name_and_slug_exists_in_a_deleted_record: "Name and slug exists in a deleted record. Pick another name and slug.",
 
   inventory_data_retrieval_failed: "Failed to fetch inventory data",
   failed_to_load_inventory_filter_data: "Failed to load inventory filter data",
@@ -220,4 +224,6 @@ export const en = {
   confirm_delete_collection: "Delete collection",
   confirm_delete_collection_description: "Are you sure you want to delete this collection? This action cannot be undone.",
   no_search_result_found : "No search result found.",
+
+  category_is_assigned_to_products: "Category is assigned to products. Can not be deleted."
 }

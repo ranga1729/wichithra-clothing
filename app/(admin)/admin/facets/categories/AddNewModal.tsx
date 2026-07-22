@@ -4,7 +4,6 @@ import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { categorySchema, CategorySchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -14,6 +13,7 @@ import { en } from "@/lib/i18n/en";
 import SaveButton from "@/components/SaveButton";
 import CancelButton from "@/components/CancelButton";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { baseCategorySchema, BaseCategorySchema } from "@/schemas/admin-schemas";
 
 interface Props {
   isModalOpen: boolean;
@@ -29,8 +29,8 @@ export default function AddNewModal(props: Props) {
     register, handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CategorySchema>({
-    resolver: zodResolver(categorySchema),
+  } = useForm<BaseCategorySchema>({
+    resolver: zodResolver(baseCategorySchema),
     mode: "onBlur",
     defaultValues: {
       name: "",
@@ -63,12 +63,12 @@ export default function AddNewModal(props: Props) {
   }
 
   const { mutate: createNewCategory, isPending } = useMutation({
-    mutationFn: async (data: CategorySchema) => {
+    mutationFn: async (data: BaseCategorySchema) => {
       const response = await createCategory(data);
-      if (response.success && selectedFile && response.data?.categoryId) {
+      if (response.success && selectedFile && response.data?.category.id) {
         const formData = new FormData();
         formData.append("file", selectedFile);
-        const sizeGuideRes = await updateCategorySizeGuide(response.data.categoryId, formData);
+        const sizeGuideRes = await updateCategorySizeGuide(response.data.category.id, formData);
         if (!sizeGuideRes.success) toast.error(sizeGuideRes.error || en.failed_to_upload_image);
       }
       return response;
@@ -91,7 +91,7 @@ export default function AddNewModal(props: Props) {
     }
   })
 
-  const onSubmit = (data: CategorySchema) => createNewCategory(data);
+  const onSubmit = (data: BaseCategorySchema) => createNewCategory(data);
 
   return (
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>
