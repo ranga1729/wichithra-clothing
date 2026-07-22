@@ -35,10 +35,10 @@ export default function CollectionsManagement() {
     <div className="flex flex-col gap-3">
 
       {/* Page header */}
-      <Item variant="outline">
+      <Item variant="muted">
         <ItemContent>
-          <ItemTitle className="text-2xl font-semibold">Collections</ItemTitle>
-          <ItemDescription className="font-semibold">
+          <ItemTitle className="text-2xl">Collections</ItemTitle>
+          <ItemDescription>
             Organize your inventory by creating themed collections and grouping related products for the storefront.
           </ItemDescription>
         </ItemContent>

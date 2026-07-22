@@ -12,6 +12,9 @@ import { en } from "@/lib/i18n/en";
 import { SUPABASE_BUCKET, SUPABASE_FOLDERS, uploadImage, deleteImage } from "@/components/providers/supabase/storage";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
 
+// create a method to check slug conflicts. 
+// remove name unique constrains.
+
 export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter):Promise<ApiResponse> {
   try {
     await requireRole(["admin", "super-admin"]);
@@ -91,7 +94,7 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
     const validatedData = categorySchema.parse(newCategory);
     let sizeGuidePath: string | undefined = undefined;
 
-    const existingCategories = await prisma.category.findMany({
+    const conflicts = await prisma.category.findMany({
       where: {
         ...includingDeleted,
         OR : [
@@ -107,10 +110,10 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
       }
     });
 
-    if(existingCategories.length > 0) {
-      //non soft-deleted conflicts
-      const activeConflicts = existingCategories.filter((cat) => cat.deletedAt === null);
+    if(conflicts.length > 0) {
 
+      //non soft-deleted conflicts
+      const activeConflicts = conflicts.filter((cat) => cat.deletedAt === null);
       if(activeConflicts.length > 0) {
         const nameConflicts = activeConflicts.find((cat) => cat.name === validatedData.name);
         const slugConflicts = activeConflicts.find((cat) => cat.slug === validatedData.slug);
@@ -121,6 +124,7 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
             error: en.name_and_slug_already_exists
           }
         }
+
         if(nameConflicts) {
           return {
             success: false,
@@ -135,13 +139,16 @@ export async function createCategory(newCategory: CategorySchema):Promise<ApiRes
         }
       }
 
-      const softDeletedId = existingCategories.map((cat) => cat.id);
+      //soft-deleted conflicts
+      const softDeletedConflicts = conflicts.filter((cat) => cat.deletedAt !== null);
       
-      await prisma.category.deleteMany({
-        where: {
-          id: {in: softDeletedId}
-        }
-      })
+      // make this correct. 
+
+      // await prisma.category.deleteMany({
+      //   where: {
+      //     id: {in: softDeletedConflicts}
+      //   }
+      // })
     }
 
     const category = await prisma.category.create({

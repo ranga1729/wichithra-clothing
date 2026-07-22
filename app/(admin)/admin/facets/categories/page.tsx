@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import SortDropDown from "@/components/custom/general/SortDropDown";
 import { CategoryFilter } from "@/types/filter-types";
-import EditModal from "./editModal";
 import { en } from "@/lib/i18n/en";
 import AddNewModal from "./AddNewModal";
 import { Category } from "@/generated/prisma/client";
@@ -18,6 +17,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import ResetFilterButton from "@/components/ResetFilterButton";
 import AddNewButton from "@/components/AddNewButton";
 import { useDebounce } from "@/hooks/useDebounce";
+import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
+import EditModal from "./EditModal";
 
 const InitialSorter:Sorter = {
   sortColumn: "name",
@@ -74,7 +75,7 @@ export default function CategoryPage() {
     }));
   }
 
-  // react queries  
+  // Fetch category data to the table  
   const { data, isPending, error, isError } = useQuery({
     queryKey: ['categories', 'list', {
       pageSize: paginator.pageSize, 
@@ -92,6 +93,7 @@ export default function CategoryPage() {
     placeholderData: (prevData) => prevData,
   })
 
+  // delete category
   const { mutate: deleteCategory } = useMutation({
     mutationFn: (id: string) => deleteCategoryById(id),
     onSuccess: (response) => {
@@ -107,6 +109,7 @@ export default function CategoryPage() {
     }
   })
 
+  // toggle active status
   const { mutate: toggleActiveStatus } = useMutation({
     mutationFn: (id: string) => toggleActiveStatusById(id),
     onSuccess: (response) => {
@@ -131,6 +134,18 @@ export default function CategoryPage() {
   return (
     <div>
       <div className="flex flex-col gap-3">
+
+        {/* Page header */}
+        <Item variant="muted">
+          <ItemContent>
+            <ItemTitle className="text-2xl">Categories</ItemTitle>
+            <ItemDescription>
+              The fundamental structural geometry and cut of an apparel item (ex: T-Shirt, Skirt, Shorts) that serves as the base entity for a product.
+            </ItemDescription>
+          </ItemContent>
+        </Item>
+      
+        {/* filters and sorters */}
         <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
           <div className="flex flex-row justify-start items-center gap-3 w-full">
             <div className="grid w-60 max-w-sm items-center gap-2">
