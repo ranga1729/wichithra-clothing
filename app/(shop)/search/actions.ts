@@ -12,7 +12,7 @@ function buildSearchWhere(query: string, filters?: SearchFilters): Prisma.Produc
     {
       ...notDeleted,
       status: {
-        in: ["DRAFT", "AVAILABLE", "OUTOFSTOCK", "DISCONTINUED"],
+        in: ["AVAILABLE", "OUTOFSTOCK"],
       },
     },
   ]
@@ -76,50 +76,73 @@ function buildSearchWhere(query: string, filters?: SearchFilters): Prisma.Produc
   return { AND: conditions }
 }
 
-export async function searchProducts(q: string, filters?: SearchFilters,): Promise<ApiResponse<ProductSearchResult[]>> {
+function buildOrderBy(sortColumn?: string, sortOrder?: string): Prisma.ProductOrderByWithRelationInput {
+  const dir = sortOrder === "desc" ? "desc" : "asc"
+  switch (sortColumn) {
+    case "price":
+      return { sellingPrice: dir }
+    case "recently_added":
+      return { createdAt: dir }
+    default:
+      return { name: dir }
+  }
+}
+
+export async function searchProducts(
+  q: string,
+  filters?: SearchFilters,
+  page: number = 0,
+  pageSize: number = 20,
+  sortColumn?: string,
+  sortOrder?: string,
+): Promise<ApiResponse<{ products: ProductSearchResult[]; totalRecords: number }>> {
   try {
     const query = q?.trim() ?? ""
-
-    if (!query && !filters) {
-      return { success: true, data: [] }
-    }
-
     const where = buildSearchWhere(query, filters)
+    const orderBy = buildOrderBy(sortColumn, sortOrder)
 
-    const products = await prisma.product.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        status: true,
-        sellingPrice: true,
-        category: {
-          select: { name: true },
-        },
-        variants: {
-          where: { ...notDeleted, isActive: true },
-          select: {
-            size: true,
-            color: {
-              select: {
-                id: true,
-                name: true,
-                hexCode: true,
-                swatchImageUrl: true,
+    const skip = Math.max(0, page) * pageSize
+    const take = Math.max(1, pageSize)
+
+    const [products, totalRecords] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          status: true,
+          sellingPrice: true,
+          category: {
+            select: { name: true },
+          },
+          variants: {
+            where: { ...notDeleted, isActive: true },
+            select: {
+              size: true,
+              color: {
+                select: {
+                  id: true,
+                  name: true,
+                  hexCode: true,
+                  swatchImageUrl: true,
+                },
               },
             },
           },
-        },
-        productImages: {
-          select: {
-            imageUrl: true,
-            isPrimary: true,
+          productImages: {
+            select: {
+              imageUrl: true,
+              isPrimary: true,
+            },
           },
         },
-      },
-      orderBy: { name: "asc" },
-    })
+        orderBy,
+        skip,
+        take,
+      }),
+      prisma.product.count({ where }),
+    ])
 
     const results: ProductSearchResult[] = products.map((p) => {
       const baseSizes = Array.from(new Set(p.variants.map((v) => v.size)))
@@ -153,7 +176,7 @@ export async function searchProducts(q: string, filters?: SearchFilters,): Promi
       }
     })
 
-    return { success: true, data: results }
+    return { success: true, data: { products: results, totalRecords } }
   } catch (error: unknown) {
     console.error(error)
     const message = error instanceof Error ? error.message : en.something_went_wrong

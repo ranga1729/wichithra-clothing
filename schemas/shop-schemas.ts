@@ -23,6 +23,8 @@ export const search_filters_schema = z.object({
   size: z.array(sizes).optional(),
   minPrice: z.coerce.number().min(0).optional(),
   maxPrice: z.coerce.number().min(0).optional(),
+  sortColumn: z.enum(["name", "price", "recently_added"]).optional(),
+  sortOrder: z.enum(["asc", "desc"]).optional(),
 })
 
 export const search_filter_option = z.object({

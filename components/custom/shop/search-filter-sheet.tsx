@@ -14,7 +14,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 import { useShopFiltersStore } from "@/lib/zustand-stores/shop-filters-store"
 import { useSearchFilterOptions } from "@/hooks/use-search-filter-options"
@@ -29,6 +38,17 @@ interface SearchFilterSheetProps {
   onApply: () => void
 }
 
+const SORT_COLUMNS = [
+  { name: "Name", value: "name" },
+  { name: "Price", value: "price" },
+  { name: "Recently Added", value: "recently_added" },
+]
+
+const SORT_ORDERS = [
+  { name: "ASC", value: "asc" },
+  { name: "DESC", value: "desc" },
+]
+
 export function SearchFilterSheet({
   open,
   onOpenChange,
@@ -42,11 +62,15 @@ export function SearchFilterSheet({
     selectedColors,
     selectedSizes,
     priceRange,
+    sortColumn,
+    sortOrder,
     toggleCategory,
     toggleDesign,
     toggleColor,
     toggleSize,
     setPriceRange,
+    setSortColumn,
+    setSortOrder,
     reset,
   } = useShopFiltersStore()
 
@@ -71,6 +95,42 @@ export function SearchFilterSheet({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-4">
+          {/* Sort Section — outside accordion */}
+          <div className="mb-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
+            <Label className="mb-2 block text-sm font-medium">Sort By</Label>
+            <div className="flex flex-row items-center gap-2">
+              <Select value={sortColumn} onValueChange={setSortColumn}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Column" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {SORT_COLUMNS.map((col) => (
+                      <SelectItem key={col.value} value={col.value}>
+                        {col.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger className="w-24">
+                  <SelectValue placeholder="Order" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {SORT_ORDERS.map((ord) => (
+                      <SelectItem key={ord.value} value={ord.value}>
+                        {ord.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />

@@ -8,12 +8,16 @@ interface ShopFiltersState {
   selectedColors: string[]
   selectedSizes: ClothingSize[]
   priceRange: [number, number]
+  sortColumn: string
+  sortOrder: string
   setOpen: (open: boolean) => void
   toggleCategory: (name: string) => void
   toggleDesign: (slug: string) => void
   toggleColor: (name: string) => void
   toggleSize: (size: ClothingSize) => void
   setPriceRange: (range: [number, number]) => void
+  setSortColumn: (col: string) => void
+  setSortOrder: (order: string) => void
   initializeFromUrl: (params: {
     category?: string[]
     design?: string[]
@@ -21,6 +25,8 @@ interface ShopFiltersState {
     size?: ClothingSize[]
     minPrice?: number
     maxPrice?: number
+    sortColumn?: string
+    sortOrder?: string
   }) => void
   reset: () => void
 }
@@ -32,6 +38,8 @@ const initialState = {
   selectedColors: [],
   selectedSizes: [],
   priceRange: [0, 0] as [number, number],
+  sortColumn: "name",
+  sortOrder: "asc",
 }
 
 export const useShopFiltersStore = create<ShopFiltersState>()((set) => ({
@@ -69,6 +77,10 @@ export const useShopFiltersStore = create<ShopFiltersState>()((set) => ({
 
   setPriceRange: (range) => set({ priceRange: range }),
 
+  setSortColumn: (col) => set({ sortColumn: col }),
+
+  setSortOrder: (order) => set({ sortOrder: order }),
+
   initializeFromUrl: (params) =>
     set({
       selectedCategories: params.category ?? [],
@@ -79,6 +91,8 @@ export const useShopFiltersStore = create<ShopFiltersState>()((set) => ({
         params.minPrice ?? 0,
         params.maxPrice ?? 0,
       ],
+      sortColumn: params.sortColumn ?? "name",
+      sortOrder: params.sortOrder ?? "asc",
     }),
 
   reset: () =>
@@ -88,5 +102,7 @@ export const useShopFiltersStore = create<ShopFiltersState>()((set) => ({
       selectedColors: [],
       selectedSizes: [],
       priceRange: [0, 0],
+      sortColumn: "name",
+      sortOrder: "asc",
     }),
 }))
