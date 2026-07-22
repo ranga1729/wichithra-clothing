@@ -94,7 +94,7 @@ model PhoneNumber {
 
 model Category {
   id          String   @id @default(uuid()) @db.Uuid
-  name        String   @unique @db.VarChar(100)
+  name        String   @db.VarChar(100)
   slug        String   @unique @db.VarChar(100)
   description String?  @db.Text
   sizeGuide   String?  @db.VarChar(500)
@@ -113,7 +113,7 @@ model Category {
 
 model Design {
   id          String   @id @default(uuid()) @db.Uuid
-  name        String   @unique @db.VarChar(100)
+  name        String   @db.VarChar(100)
   slug        String   @unique @db.VarChar(100)
   description String?  @db.Text
   isActive    Boolean  @default(true)
@@ -131,7 +131,7 @@ model Design {
 
 model Color {
   id             String    @id @default(uuid()) @db.Uuid
-  name           String    @unique @db.VarChar(50)
+  name           String    @unique @db.VarChar(100)
   hexCode        String?   @db.Char(6)
   swatchImageUrl String?   @db.VarChar(500)
   isActive       Boolean   @default(true)
@@ -404,22 +404,35 @@ model Order {
 model OrderItem {
   id             String   @id @default(uuid()) @db.Uuid
   orderId        String   @db.Uuid
-  inventoryId    String   @db.Uuid
-  // Snapshot fields — preserve state at purchase time
+  inventoryId    String?  @db.Uuid
+
+  // Loose relational IDs for historical tracing (no strict FK constraints)
+  variantId      String?  @db.Uuid 
+  productId      String?  @db.Uuid  
+
+  // Snapshot Fields
   sku            String   @db.VarChar(100)
   productName    String   @db.VarChar(200)
+  productSlug    String   @default("legacy-product") @db.VarChar(200)
+  categoryName   String   @default("Uncategorized") @db.VarChar(100)
+  categorySlug   String   @default("uncategorized") @db.VarChar(100)
   sizeName       String   @db.VarChar(10)
-  colorName      String   @db.VarChar(50)
-  imageUrl       String?  @db.VarChar(500)
+  colorName      String   @db.VarChar(100)
+  colorHexCode   String?   @db.Char(6)
+  swatchImageUrl String?   @db.Char(6)
+  brandName      String?   @db.VarChar(100)
+  primaryImageUrl  String?  @db.VarChar(500)
   quantity       Int
   unitPrice      Decimal  @db.Decimal(10, 2)
+  gender         GenderTarget @default(UNISEX)
+  ageGroup       AgeGroup     @default(ADULT)
   discountAmount Decimal  @default(0) @db.Decimal(10, 2)
   totalPrice     Decimal  @db.Decimal(10, 2)
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
 
   // Relationships
   order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  inventory Inventory @relation(fields: [inventoryId], references: [id])
+  inventory Inventory? @relation(fields: [inventoryId], references: [id], onDelete: SetNull)
   //returnItems ReturnItem[]
 
   @@index([orderId])
@@ -488,7 +501,7 @@ model Payment {
 
 model Collection {
   id          String              @id @default(uuid()) @db.Uuid
-  name        String              @unique @db.VarChar(100)
+  name        String              @db.VarChar(100)
   slug        String              @unique @db.VarChar(100)
   description String?             @db.Text
   isActive    Boolean             @default(true)

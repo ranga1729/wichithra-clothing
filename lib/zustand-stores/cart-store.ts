@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { ClothingSize } from "@/generated/prisma/enums"
+import { ClothingSize, GenderTarget, AgeGroup } from "@/generated/prisma/enums"
 import toast from "react-hot-toast"
 
 export interface CartItem {
@@ -9,7 +9,9 @@ export interface CartItem {
   productName: string
   productSlug: string
   categoryName: string
+  categorySlug: string
   variantId: string
+  inventoryId: string | null
   size: ClothingSize
   color: {
     id: string
@@ -17,6 +19,9 @@ export interface CartItem {
     hexCode: string | null
     swatchImageUrl: string | null
   }
+  brandName: string | null
+  gender: GenderTarget
+  ageGroup: AgeGroup
   imageUrl: string
   price: number
 }
