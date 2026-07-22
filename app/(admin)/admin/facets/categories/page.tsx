@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import SortDropDown from "@/components/custom/general/SortDropDown";
 import { CategoryFilter } from "@/types/filter-types";
-import EditModal from "./editModal";
+import EditModal from "./EditModal";
 import { en } from "@/lib/i18n/en";
 import AddNewModal from "./AddNewModal";
 import { Category } from "@/generated/prisma/client";

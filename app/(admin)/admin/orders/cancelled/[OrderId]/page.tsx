@@ -173,10 +173,10 @@ export default function OrderItemsPage({ params }: {params: Promise<{ OrderId: s
               {order.orderItems.map((item: any) => (
                 <TableRow key={item.id}>
                   <TableCell>
-                    {item.imageUrl ? (
+                    {item.primaryImageUrl ? (
                       <div className="relative h-30 w-30 rounded-md overflow-hidden border border-neutral-200">
                         <Image
-                          src={item.imageUrl}
+                          src={item.primaryImageUrl}
                           alt={item.productName}
                           fill
                           className="object-cover"

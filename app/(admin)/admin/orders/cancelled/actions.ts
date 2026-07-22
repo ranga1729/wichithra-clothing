@@ -134,7 +134,7 @@ export async function getOrderItems(orderId: string): Promise<ApiResponse> {
             productName: true,
             sizeName: true,
             colorName: true,
-            imageUrl: true,
+            primaryImageUrl: true,
             quantity: true,
             unitPrice: true,
             discountAmount: true,
