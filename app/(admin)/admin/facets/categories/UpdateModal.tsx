@@ -39,10 +39,12 @@ export default function UpdateModal(props: Props) {
     resolver: zodResolver(updateCategorySchema),
     mode: "onChange",
     defaultValues: {
+      id: "",
       name: "",
       slug: "",
       description: "",
       sortOrder: 0,
+      isActive: true,
     },
   });
 
@@ -50,10 +52,12 @@ export default function UpdateModal(props: Props) {
 
   useEffect(() => {
     if (props.selectedCategory && props.isModalOpen) {
+      setValue("id", props.selectedCategory.id);
       setValue("name", props.selectedCategory.name);
       setValue("slug", props.selectedCategory.slug);
       setValue("description", props.selectedCategory.description || "");
       setValue("sortOrder", props.selectedCategory.sortOrder || 0);
+      setValue("isActive", props.selectedCategory.isActive);
       setValue("sizeGuide", props.selectedCategory.sizeGuide || null);
       setFilePreview(props.selectedCategory.sizeGuide || null);
       setTempPath(null);

@@ -12,8 +12,79 @@ import { Prisma } from "@/generated/prisma/client";
 import { CategoryListResponseSchema, CreateCategoryResponseSchema, DeleteCategoryResponseSchema, UpdateCategoryResponseSchema } from "@/schemas/server-action-responses";
 import { baseCategorySchema, BaseCategorySchema, updateCategorySchema, UpdateCategorySchema } from "@/schemas/admin-schemas";
 
-// create a method to check slug conflicts. 
-// remove name unique constrains.
+// ─── Helper: Slug conflict check ─────────────────────────────────────────────
+// Returns an error message string if a conflict exists, or null if slug is safe.
+async function checkSlugConflicts(slug: string, excludeId?: string): Promise<string | null> {
+  const where: Prisma.CategoryWhereInput = {
+    ...includingDeleted,
+    ...(excludeId && { id: { not: excludeId } }),
+    OR: [
+      { slug: { equals: slug, mode: "insensitive" } },
+    ],
+  };
+
+  const conflicts = await prisma.category.findMany({
+    where,
+    select: { id: true, slug: true, deletedAt: true },
+  });
+
+  if (conflicts.length === 0) return null;
+
+  const activeConflict = conflicts.find((c) => c.deletedAt === null);
+  if (activeConflict) return en.slug_already_exists;
+
+  const softDeletedConflict = conflicts.find((c) => c.deletedAt !== null);
+  if (softDeletedConflict) return en.slug_already_exists_in_a_deleted_record;
+
+  return null;
+}
+
+// ─── Helper: Process size guide (temp → permanent, or removal) ────────────────
+// Returns the final sizeGuide URL to persist in the DB.
+async function processSizeGuide(newUrl: string | null | undefined, entityId: string,oldUrl: string | null): Promise<string | null> {
+  // Removal: newUrl is null, old existed → delete old file
+  if (newUrl === null && oldUrl) {
+    try {
+      const oldPath = extractStoragePathFromUrl(oldUrl);
+      if (oldPath) await deleteImage(oldPath).catch(() => null);
+    } catch { /* ignore */ }
+    return null;
+  }
+
+  // Replacement or new: newUrl differs from old
+  if (newUrl && newUrl !== oldUrl) {
+    // Delete old file if one existed
+    if (oldUrl) {
+      try {
+        const oldPath = extractStoragePathFromUrl(oldUrl);
+        if (oldPath) await deleteImage(oldPath).catch(() => null);
+      } catch { /* ignore */ }
+    }
+
+    // If it's a temp URL, move to permanent
+    try {
+      const tempPath = extractStoragePathFromUrl(newUrl);
+      if (tempPath && tempPath.startsWith(`${SUPABASE_FOLDERS.TEMP}/`)) {
+        const { publicUrl } = await moveTempToPermanent(
+          tempPath,
+          SUPABASE_FOLDERS.SIZE_GUIDES,
+          entityId
+        );
+        return publicUrl;
+      }
+    } catch (err) {
+      console.error("Failed to move size guide from temp:", err);
+    }
+
+    // Not a temp URL (or move failed) — use as-is
+    return newUrl;
+  }
+
+  // No change
+  return oldUrl;
+}
+
+// ─── Public server actions ───────────────────────────────────────────────────
 
 export async function getCategories(paginator: Paginator, filter: CategoryFilter, sorter: Sorter) : Promise<ApiResponse<CategoryListResponseSchema>> {
   try {
@@ -90,51 +161,13 @@ export async function createCategory(newCategory: BaseCategorySchema): Promise<A
 
     const validatedData = baseCategorySchema.parse(newCategory);
 
-    const existingCategories = await prisma.category.findMany({
-      where: {
-        ...includingDeleted,
-        OR : [
-          {name: {equals: validatedData.name, mode:"insensitive"}},
-          {slug: {equals: validatedData.slug, mode:"insensitive"}}
-        ]
-      },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        deletedAt: true
-      }
-    });
+    const slugError = await checkSlugConflicts(validatedData.slug);
 
-    if(existingCategories.length > 0) {
-
-      //non soft-deleted conflicts
-      const activeConflicts = existingCategories.filter((cat) => cat.deletedAt === null);
-      
-      if(activeConflicts.length > 0) {
-        const slugConflicts = activeConflicts.find((cat) => cat.slug === validatedData.slug);
-
-        if(slugConflicts) {
-          return {
-            success: false,
-            error: en.slug_already_exists
-          }
-        }
-      }
-
-      //soft-deleted conflicts
-      const softDeletedConflicts = existingCategories.filter((cat) => cat.deletedAt !== null);
-      
-      if(softDeletedConflicts.length > 0) {
-        const slugConflicts = softDeletedConflicts.find((cat) => cat.slug === validatedData.slug);
-
-        if(slugConflicts) {
-          return {
-            success: false,
-            error: en.slug_already_exists_in_a_deleted_record
-          }
-        }
-      }
+    if (slugError) {
+      return { 
+        success: false, 
+        error: slugError 
+      };
     }
 
     const category = await prisma.category.create({
@@ -162,27 +195,13 @@ export async function createCategory(newCategory: BaseCategorySchema): Promise<A
       };
     }
 
-    let finalSizeGuideUrl: string | null = null;
+    const finalSizeGuideUrl = await processSizeGuide(
+      validatedData.sizeGuide,
+      category.id,
+      null
+    );
 
-    if (validatedData.sizeGuide) {
-      try {
-        const tempPath = extractStoragePathFromUrl(validatedData.sizeGuide);
-        if (tempPath && tempPath.startsWith(`${SUPABASE_FOLDERS.TEMP}/`)) {
-          const { publicUrl } = await moveTempToPermanent(
-            tempPath,
-            SUPABASE_FOLDERS.SIZE_GUIDES,
-            category.id
-          );
-          finalSizeGuideUrl = publicUrl;
-        } else {
-          finalSizeGuideUrl = validatedData.sizeGuide;
-        }
-      } catch (err) {
-        console.error( en.failed_to_move_size_guide_image + ": " + err);
-      }
-    }
-
-    if (finalSizeGuideUrl) {
+    if (finalSizeGuideUrl !== validatedData.sizeGuide) {
       await prisma.category.update({
         where: { id: category.id },
         data: { sizeGuide: finalSizeGuideUrl },
@@ -265,24 +284,6 @@ export async function deleteCategoryById(id: string) : Promise<ApiResponse<Delet
         error: en.Failed_to_delete_category
       }
     }
-
-    // if(deletedCategory.sizeGuide) {
-    //   const imagePath = path.join(
-    //     process.cwd(),
-    //     "public",
-    //     deletedCategory.sizeGuide
-    //   )
-      
-    //   try {
-    //     await fs.unlink(imagePath);
-    //   } catch(error) {
-    //     return { 
-    //         success: true, 
-    //         message: en.category_deleted_image_not_exist 
-    //     };
-    //   }
-      
-    // }
     
     revalidatePath('/admin/categories');
 
@@ -322,86 +323,19 @@ export async function updateCategoryById(category: UpdateCategorySchema): Promis
       };
     }
 
-    const conflicts = await prisma.category.findMany({
-      where: {
-        ...includingDeleted,
-        id: { not: validatedData.id },
-        OR: [
-          { slug: {equals: validatedData.name, mode: "insensitive"} }
-        ],
-      },
-      select: { 
-        id: true, 
-        slug: true, 
-        deletedAt: true 
-      },
-    });
-
-    if(conflicts.length > 0) {
-
-      //non soft-deleted conflicts
-      const activeConflicts = conflicts.filter((cat) => cat.deletedAt === null);
-      
-      if(activeConflicts.length > 0) {
-        const slugConflicts = activeConflicts.find((cat) => cat.slug === validatedData.slug);
-
-        if(slugConflicts) {
-          return {
-            success: false,
-            error: en.slug_already_exists
-          }
-        }
-      }
-
-      //soft-deleted conflicts
-      const softDeletedConflicts = conflicts.filter((cat) => cat.deletedAt !== null);
-      
-      if(softDeletedConflicts.length > 0) {
-        const slugConflicts = softDeletedConflicts.find((cat) => cat.slug === validatedData.slug);
-
-        if(slugConflicts) {
-          return {
-            success: false,
-            error: en.slug_already_exists_in_a_deleted_record
-          }
-        }
-      }
+    const slugError = await checkSlugConflicts(validatedData.slug, validatedData.id);
+    if (slugError) { 
+      return { 
+        success: false, 
+        error: slugError 
+      }; 
     }
 
-    let finalSizeGuideUrl: string | null = existingCategory.sizeGuide;
-
-    if (validatedData.sizeGuide === null && existingCategory.sizeGuide) {
-      try {
-        const oldPath = extractStoragePathFromUrl(existingCategory.sizeGuide);
-        if (oldPath) await deleteImage(oldPath).catch(() => null);
-      } catch { /* ignore */ }
-      finalSizeGuideUrl = null;
-    } else if (
-      validatedData.sizeGuide &&
-      validatedData.sizeGuide !== existingCategory.sizeGuide
-    ) {
-      try {
-        const tempPath = extractStoragePathFromUrl(validatedData.sizeGuide);
-        if (tempPath && tempPath.startsWith(`${SUPABASE_FOLDERS.TEMP}/`)) {
-          if (existingCategory.sizeGuide) {
-            try {
-              const oldPath = extractStoragePathFromUrl(existingCategory.sizeGuide);
-              if (oldPath) await deleteImage(oldPath).catch(() => null);
-            } catch { /* ignore */ }
-          }
-          const { publicUrl } = await moveTempToPermanent(
-            tempPath,
-            SUPABASE_FOLDERS.SIZE_GUIDES,
-            validatedData.id
-          );
-          finalSizeGuideUrl = publicUrl;
-        } else {
-          finalSizeGuideUrl = validatedData.sizeGuide;
-        }
-      } catch (err) {
-        console.error(en.failed_to_move_size_guide_image + ": " + err);
-      }
-    }
+    const finalSizeGuideUrl = await processSizeGuide(
+      validatedData.sizeGuide,
+      validatedData.id,
+      existingCategory.sizeGuide
+    );
 
     const updatedCategory = await prisma.category.update({
       where: { id: validatedData.id },
