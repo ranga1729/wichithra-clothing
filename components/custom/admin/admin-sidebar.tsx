@@ -32,9 +32,35 @@ const data = {
   navMain: [
     {
       title: "Analytics",
-      url: "/admin/analytics",
+      url: "/admin/analytics/sales",
       icon: ChartNoAxesCombined,
       isActive: true,
+      items: [
+        {
+          title: "Sales Analytics",
+          url: "/admin/analytics/sales",
+        },
+        {
+          title: "Product Analytics",
+          url: "/admin/analytics/products",
+        },
+        {
+          title: "Inventory Analytics",
+          url: "/admin/analytics/inventory",
+        },
+        {
+          title: "Order Analytics",
+          url: "/admin/analytics/order",
+        },
+        {
+          title: "Payment Analytics",
+          url: "/admin/analytics/payment",
+        },
+        {
+          title: "Customer Analytics",
+          url: "/admin/analytics/customer",
+        },
+      ],
     },
     {
       title: "Orders",
