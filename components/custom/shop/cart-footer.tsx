@@ -1,12 +1,20 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/zustand-stores/cart-store'
 import { Button } from '@/components/ui/button'
 
 export default function CartFooter() {
+  const router = useRouter()
   const clearCart = useCartStore((s) => s.clearCart)
+  const setOpen = useCartStore((s) => s.setOpen)
   const totalPrice = useCartStore((s) => s.totalPrice)
   const items = useCartStore((s) => s.items)
+
+  const handleCheckout = () => {
+    setOpen(false)
+    router.push('/billing')
+  }
 
   return (
     <div className="shrink-0 border-t">
@@ -24,6 +32,7 @@ export default function CartFooter() {
           <Button
             size="sm"
             disabled={items.length === 0}
+            onClick={handleCheckout}
           >
             Checkout
           </Button>

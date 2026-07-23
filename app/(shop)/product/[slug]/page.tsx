@@ -2,9 +2,9 @@
 
 import { useMemo, useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Loader2, ShoppingCart, ChevronDown, ChevronUp } from 'lucide-react'
-import { ClothingSize } from '@/generated/prisma/enums'
+import { AgeGroup, ClothingSize, GenderTarget } from '@/generated/prisma/enums'
 import { getProductBySlug } from '@/app/(shop)/product/[slug]/action'
 import { ProductDetailColor } from '@/schemas/shop-schemas'
 import { useCartStore } from '@/lib/zustand-stores/cart-store'
@@ -19,6 +19,7 @@ import toast from 'react-hot-toast'
 
 export default function ProductPage() {
   const params = useParams()
+  const router = useRouter()
   const slug = params?.slug as string | undefined
   const [selectedSize, setSelectedSize] = useState<ClothingSize | null>(null)
   const [selectedColor, setSelectedColor] = useState<ProductDetailColor | null>(null)
@@ -161,8 +162,8 @@ export default function ProductPage() {
       size: selectedSize!,
       color: selectedVariant.color,
       brandName: product.brand,
-      gender: product.gender,
-      ageGroup: product.ageGroup,
+      gender: product.gender as GenderTarget,
+      ageGroup: product.ageGroup as AgeGroup,
       imageUrl: primaryImage?.imageUrl ?? '',
       price: Number(product.sellingPrice),
       quantity,
@@ -170,8 +171,32 @@ export default function ProductPage() {
   }, [product, selectedVariant, selectedSize, quantity, addItem])
 
   const handleBuyNow = useCallback(() => {
-    toast.error('Coming soon!')
-  }, [])
+    if (!selectedVariant || !product || quantity === 0) return
+
+    const primaryImage = product.productImages.find((img) => img.isPrimary)
+      ?? product.productImages[0]
+
+    addItem({
+      id: selectedVariant.id,
+      productId: product.id,
+      productName: product.name,
+      productSlug: product.slug,
+      categoryName: product.category.name,
+      categorySlug: product.category.slug,
+      variantId: selectedVariant.id,
+      inventoryId: null,
+      size: selectedSize!,
+      color: selectedVariant.color,
+      brandName: product.brand,
+      gender: product.gender as GenderTarget,
+      ageGroup: product.ageGroup as AgeGroup,
+      imageUrl: primaryImage?.imageUrl ?? '',
+      price: Number(product.sellingPrice),
+      quantity,
+    }, quantity)
+
+    router.push('/billing')
+  }, [product, selectedVariant, selectedSize, quantity, addItem, router])
 
   const outOfStock = product && product.variants.length === 0
 

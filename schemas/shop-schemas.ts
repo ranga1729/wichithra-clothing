@@ -114,3 +114,60 @@ export type ProductDetail = z.infer<typeof product_detail>
 export type ProductDetailColor = z.infer<typeof product_detail_color>
 export type ProductDetailVariant = z.infer<typeof product_detail_variant>
 export type ProductDetailImage = z.infer<typeof product_detail_image>
+
+// Checkout
+export const shipping_address_schema = z.object({
+  houseNo: z
+    .string()
+    .min(1, "House number is required.")
+    .transform((val) => val.trim()),
+  addressLine1: z
+    .string()
+    .min(2, "Address Line 1 is required.")
+    .transform((val) => val.trim()),
+  addressLine2: z
+    .string()
+    .transform((val) => val.trim() === "" ? undefined : val.trim())
+    .optional(),
+  city: z
+    .string()
+    .min(2, "City is required.")
+    .transform((val) => val.trim()),
+  province: z
+    .string()
+    .min(2, "Province is required.")
+    .transform((val) => val.trim()),
+  zipCode: z
+    .string()
+    .regex(/^[0-9]{5}$/, "Zip code must be 5 digits.")
+    .transform((val) => val.trim()),
+  country: z
+    .string()
+    .min(2, "Country is required.")
+    .default("Sri Lanka")
+    .transform((val) => val.trim()),
+})
+
+export const payment_details_schema = z.object({
+  cardNumber: z
+    .string()
+    .min(1, "Card number is required.")
+    .regex(/^[0-9]{16}$/, "Card number must be 16 digits."),
+  expiryDate: z
+    .string()
+    .min(1, "Expiry date is required.")
+    .regex(/^(0[1-9]|1[0-2])\/([0-9]{2})$/, "Expiry date must be in MM/YY format."),
+  cvv: z
+    .string()
+    .min(1, "CVV is required.")
+    .regex(/^[0-9]{3,4}$/, "CVV must be 3 or 4 digits."),
+})
+
+export const checkout_schema = z.object({
+  shippingAddress: shipping_address_schema,
+  payment: payment_details_schema,
+})
+
+export type ShippingAddress = z.infer<typeof shipping_address_schema>
+export type PaymentDetails = z.infer<typeof payment_details_schema>
+export type CheckoutForm = z.infer<typeof checkout_schema>
