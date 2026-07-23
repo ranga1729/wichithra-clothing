@@ -9,6 +9,7 @@ export const AgeGroupSchema = z.enum(AgeGroup)
 export const GenderSchema = z.enum(GenderTarget)
 export const ClothingSizeSchema = z.enum(ClothingSize)
 
+// Category management
 export const baseCategorySchema = z.object({
   name: z
     .string("Enter a valid name")
@@ -50,23 +51,39 @@ export const updateCategorySchema = baseCategorySchema.extend({
 })
 export type UpdateCategorySchema = z.input<typeof updateCategorySchema>
 
-
-
-export const designSchema = z.object({
+// Design management
+export const baseDesignSchema = z.object({
   name: z
     .string("Enter a valid name")
     .min(1, "Name is required")
-    .max(100, "Name can not exceed 100 characters")
+    .max(100, "Name cannot exceed 100 characters")
     .transform((val) => val.trim()),
   slug: z
     .string("Enter a valid slug")
     .min(1, "Slug is required")
-    .max(100, "Slug can not exceed 100 characters")
+    .max(100, "Slug cannot exceed 100 characters")
     .transform((val) => val.trim()),
-  description: z
-    .string()
-    .optional(),
-})
+  description: z.string().nullish(),
+});
+export type BaseDesignSchema = z.input<typeof baseDesignSchema>;
+
+export const getDesignSchema = baseDesignSchema.extend({
+  id: z.uuid(),
+  isActive: z.boolean(),
+});
+export type GetDesignSchema = z.infer<typeof getDesignSchema>;
+
+export const updateDesignSchema = baseDesignSchema.extend({
+  id: z.uuid(),
+  isActive: z.boolean(),
+});
+export type UpdateDesignSchema = z.input<typeof updateDesignSchema>;
+
+export const deleteDesignSchema = getDesignSchema.extend({
+  deletedAt: z.date().nullable(),
+});
+export type DeleteDesignSchema = z.infer<typeof deleteDesignSchema>;
+
 
 export const colorSchema = z.object({
   name: z
@@ -404,7 +421,7 @@ export const customerSchema = z.object({
   })),
 })
 
-export type DesignSchema = z.infer<typeof designSchema>
+// export type DesignSchema = z.infer<typeof designSchema>
 export type ColorSchema = z.infer<typeof colorSchema>
 
 export type ProductSchema = z.infer<typeof productSchema>

@@ -1,15 +1,46 @@
 'use server'
 
-import { notDeleted, prisma } from "@/lib/prisma";
+import { includingDeleted, notDeleted, prisma } from "@/lib/prisma";
 import { ApiResponse } from "@/types/auth-types";
 import { DesignFilter } from "@/types/filter-types";
 import { Paginator, Sorter } from "@/types/table-types";
-import { DesignSchema, designSchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
+import { Prisma } from "@/generated/prisma/client";
+import { CreateDesignResponseSchema, DeleteDesignResponseSchema, DesignListResponseSchema, UpdateDesignResponseSchema } from "@/schemas/server-action-responses";
+import { baseDesignSchema, BaseDesignSchema, updateDesignSchema, UpdateDesignSchema } from "@/schemas/admin-schemas";
+import { date } from "zod";
 
-export async function getDesign(paginator: Paginator, filter: DesignFilter, sorter: Sorter):Promise<ApiResponse> {
+// ─── Helper: Slug conflict check (soft-delete aware) ──────────────────────
+async function checkSlugConflicts(
+  slug: string,
+  excludeId?: string
+): Promise<string | null> {
+  const where: Prisma.DesignWhereInput = {
+    ...includingDeleted,
+    ...(excludeId && { id: { not: excludeId } }),
+    OR: [{ slug: { equals: slug, mode: "insensitive" } }],
+  };
+
+  const conflicts = await prisma.design.findMany({
+    where,
+    select: { id: true, slug: true, deletedAt: true },
+  });
+
+  if (conflicts.length === 0) return null;
+
+  const activeConflict = conflicts.find((c) => c.deletedAt === null);
+  if (activeConflict) return en.slug_already_exists;
+
+  const softDeletedConflict = conflicts.find((c) => c.deletedAt !== null);
+  if (softDeletedConflict) return en.slug_already_exists_in_a_deleted_record;
+
+  return null;
+}
+
+// GET Designs
+export async function getDesigns(paginator: Paginator, filter: DesignFilter, sorter: Sorter): Promise<ApiResponse<DesignListResponseSchema>> {
   try {
     await requireRole(["admin", "super-admin"]);
 
@@ -17,156 +48,98 @@ export async function getDesign(paginator: Paginator, filter: DesignFilter, sort
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
 
-    const whereClause: any = {
+    const whereClause: Prisma.DesignWhereInput = {
       ...notDeleted,
       ...(filter.name && {
-        name: {
-          contains: filter.name as string,
-          mode: 'insensitive'
-        }
+        name: { contains: filter.name, mode: "insensitive" },
       }),
       ...(filter.slug && {
-        slug: {
-          contains: filter.slug as string,
-          mode: 'insensitive'
-        }
-      })
-    }
+        slug: { contains: filter.slug, mode: "insensitive" },
+      }),
+    };
 
-    const validSortOrder = ['asc', 'desc'].includes(sorter.sortOrder as string) ? sorter.sortOrder as string : 'asc';
+    const validSortOrder = ["asc", "desc"].includes(sorter.sortOrder) ? (sorter.sortOrder as Prisma.SortOrder) : "asc";
     const sortableColumns = ["name", "slug"];
-    const orderBy = sortableColumns.includes(sorter.sortColumn as string) ? {[sorter.sortColumn as string]: validSortOrder} : undefined;
+    const orderBy: Prisma.DesignOrderByWithRelationInput | undefined = sortableColumns.includes(sorter.sortColumn) ? { [sorter.sortColumn]: validSortOrder } : undefined;
 
-    const designs = await prisma.design.findMany({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true,
-      },
-      where: whereClause,
-      orderBy: orderBy,
-      skip: skip,
-      take: pageSize
-    })
-
-    const totalRecords = await prisma.design.count({
-      where: whereClause
-    })
-
-    if(!designs) {
-      return {
-        success: false,
-        error: en.data_retrieval_failed
-      }
-    }
+    const [designs, totalRecords] = await prisma.$transaction([
+      prisma.design.findMany({
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          isActive: true,
+        },
+        where: whereClause,
+        orderBy,
+        skip,
+        take: pageSize,
+      }),
+      prisma.design.count({ where: whereClause }),
+    ]);
 
     return {
       success: true,
-      data: {
-        designs : designs,
-        totalRecords : totalRecords
-      }
+      data: { 
+        designs: designs,
+        totalRecords: totalRecords
+      },
     };
-
-  } catch(error:any) {
+  } catch (error: any) {
     if (error instanceof AuthError) throw error;
-    return { 
+    console.error(en.failed_to_create_category + ": ", error);
+
+    return {
       success: false,
-      error: error.message || en.data_retrieval_failed 
+      error: error.message ?? en.data_retrieval_failed,
     };
   }
 }
 
-export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse> {
+//CREATE Design
+export async function createDesign(newDesign: BaseDesignSchema): Promise<ApiResponse<CreateDesignResponseSchema>> {
   try {
     await requireRole(["admin", "super-admin"]);
 
-    const validatedData = designSchema.parse(newDesign);
+    const validatedData = baseDesignSchema.parse(newDesign);
 
-    const existingDesings = await prisma.design.findMany({
-      where: {
-        OR: [
-          {name: newDesign.name},
-          {slug: newDesign.slug}
-        ]
-      },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        deletedAt: true
-      }
-    });
+    const slugError = await checkSlugConflicts(validatedData.slug);
 
-    if(existingDesings.length > 0) {
-      const activeConflicts = existingDesings.filter((design) => design.deletedAt === null);
-
-      if(activeConflicts.length > 0) {
-        const nameConflicts = activeConflicts.find((design) => design.name === validatedData.name);
-        const slugConflicts = activeConflicts.find((design) => design.slug === validatedData.slug);
-
-        if(nameConflicts && slugConflicts) {
-          return {
-            success: false,
-            error: en.name_and_slug_already_exists
-          }
-        }
-        if(nameConflicts) {
-          return {
-            success: false,
-            error: en.name_already_exists
-          }
-        }
-        if(slugConflicts) {
-          return {
-            success: false,
-            error: en.slug_already_exists
-          }
-        }
-      }
-
-      const softDeletedId = existingDesings.map((design) => design.id);
-
-      await prisma.design.deleteMany({
-        where: {
-          id: {in: softDeletedId}
-        }
-      })
+    if (slugError) {
+      return { 
+        success: false, 
+        error: slugError 
+      };
     }
 
     const design = await prisma.design.create({
       data: {
         name: validatedData.name,
         slug: validatedData.slug,
-        description: validatedData.description,
-      }
+        description: validatedData.description ?? null,
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        isActive: true,
+      },
     });
-
-    if(!design) {
-      return {
-        success: false,
-        error: en.failed_to_create_design,
-      };
-    }
 
     revalidatePath("/admin/design");
 
     return {
       success: true,
+      data: { 
+        design: design
+      },
       message: en.design_created_successfully,
     };
-  } catch (error:any) {
+  } catch (error: any) {
     if (error instanceof AuthError) throw error;
-    console.error("Error creating design:", error.message);
-    
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-    
+    console.error("Create design error:", error);
     return {
       success: false,
       error: en.failed_to_create_design,
@@ -174,57 +147,66 @@ export async function createDesign(newDesign: DesignSchema):Promise<ApiResponse>
   }
 }
 
-export async function deleteDesign(id: string):Promise<ApiResponse> {
+// DELETE Design (Soft Delete)
+export async function deleteDesignById(id: string): Promise<ApiResponse<DeleteDesignResponseSchema>> {
   try {
     await requireRole(["admin", "super-admin"]);
 
-    const design = await prisma.design.findUnique({
-      where: {id : id},
+    const design = await prisma.design.findFirst({
+      where: { id : id, ...notDeleted },
       select: {
         id: true,
-      }
-    })
+        _count: {
+          select: { 
+            productDesigns: true 
+          },
+        },
+      },
+    });
 
-    if(!design) {
+    if (!design) {
+      return { 
+        success: false, 
+        error: en.design_doesnt_exist 
+      };
+    }
+
+    if (design._count.productDesigns > 0) {
       return {
         success: false,
-        error: en.design_doesnt_exist
-      }
+        error: en.design_is_assigned_to_products,
+      };
     }
 
     const deletedDesign = await prisma.design.update({
-      where: {
-        id: design.id
-      },
+      where: { id: design.id },
       data: {
+        isActive: false,
         deletedAt: new Date(),
-      }
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        isActive: true,
+        deletedAt: true,
+      },
     });
 
-    if(!deletedDesign) {
-      return {
-        success: false,
-        error: en.design_delete_failed
-      }
-    }
-    
-    revalidatePath('/admin/categories');
+    revalidatePath("/admin/design");
 
     return {
       success: true,
-      message: en.design_deleted_successfully
-    }
-  } catch(error:any) {
+      data: { 
+        design: deletedDesign 
+      },
+      message: en.design_deleted_successfully,
+    };
+  } catch (error: any) {
     if (error instanceof AuthError) throw error;
-    console.error("Error deleting design:", error.message);
-    
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-    
+    console.error("Delete design error:", error);
+
     return {
       success: false,
       error: en.design_delete_failed,
@@ -232,116 +214,66 @@ export async function deleteDesign(id: string):Promise<ApiResponse> {
   }
 }
 
-export async function updateDesignById(id: string, updatedDesign: DesignSchema): Promise<ApiResponse> {
+// ─── UPDATE Design ──────────────────────────────────────────────────────────
+export async function updateDesignById(updatedDesign: UpdateDesignSchema): Promise<ApiResponse<UpdateDesignResponseSchema>> {
   try {
     await requireRole(["admin", "super-admin"]);
-    
-    const validatedData = designSchema.parse(updatedDesign);
+
+    const validatedData = updateDesignSchema.parse(updatedDesign);
 
     const existingDesign = await prisma.design.findUnique({
-      where: { id: id, },
-      select: {
-        id: true,
-      }
+      where: { id: validatedData.id, ...notDeleted },
+      select: { id: true },
     });
 
     if (!existingDesign) {
-      return {
-        success: false,
-        error: en.design_doesnt_exist
+      return { 
+        success: false, 
+        error: en.design_doesnt_exist 
       };
     }
 
-    const conflicts = await prisma.design.findMany({
-      where: {
-        id: {not: id},
-        OR: [
-          {name: updatedDesign.name},
-          {slug: updatedDesign.slug}
-        ],
+    const slugError = await checkSlugConflicts(validatedData.slug, validatedData.id);
+    if (slugError) {
+      return { success: false, error: slugError };
+    }
+
+    const design = await prisma.design.update({
+      where: { id: validatedData.id },
+      data: {
+        name: validatedData.name,
+        slug: validatedData.slug,
+        description: validatedData.description ?? null,
+        isActive: validatedData.isActive,
+        updatedAt: new Date(),
       },
       select: {
         id: true,
         name: true,
         slug: true,
-        deletedAt: true
-      }
+        description: true,
+        isActive: true,
+        deletedAt: true,
+      },
     });
-
-    if(conflicts.length > 0) {
-      const activeConflicts = conflicts.filter((design) => design.deletedAt === null);
-
-      if(activeConflicts.length > 0 ) {
-        const nameConflicts = activeConflicts.find((design) => design.name === validatedData.name);
-        const slugConflicts = activeConflicts.find((design) => design.slug === validatedData.slug);
-
-        if(nameConflicts && slugConflicts) {
-          return {
-            success: false,
-            error: en.name_and_slug_already_exists
-          }
-        }
-
-        if(nameConflicts) {
-          return {
-            success: false,
-            error: en.name_already_exists
-          }
-        }
-        if(slugConflicts) {
-          return {
-            success: false,
-            error: en.slug_already_exists
-          }
-        }
-      }
-
-      const softDeletedId = conflicts.map((design) => design.id);
-
-      await prisma.design.deleteMany({
-        where: {
-          id: {in: softDeletedId}
-        }
-      })
-    }
-
-    const design = await prisma.design.update({
-      where: { id: existingDesign.id },
-      data: {
-        name: validatedData.name,
-        slug: validatedData.slug,
-        description: validatedData.description,
-      }
-    });
-
-    if (!design) {
-      return {
-        success: false,
-        error: en.design_update_failed,
-      };
-    }
 
     revalidatePath("/admin/design");
 
     return {
       success: true,
+      data: { 
+        design  : design
+      },
       message: en.design_updated_successfully,
-      data: { design: design }
     };
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof AuthError) throw error;
-    console.error("Error updating design:", error);
-    
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-    
+    console.error("Update design error:", error);
+
     return {
       success: false,
       error: en.design_update_failed,
     };
   }
 }
+

@@ -226,5 +226,6 @@ export const en = {
   no_search_result_found : "No search result found.",
 
   category_is_assigned_to_products: "Category is assigned to products. Can not be deleted.",
-  failed_to_move_size_guide_image : "Failed to move size-guide image from temp folder."
+  failed_to_move_size_guide_image : "Failed to move size-guide image from temp folder.",
+  design_is_assigned_to_products : "Design is assigned to products. Unassign them first before deleting.",
 }

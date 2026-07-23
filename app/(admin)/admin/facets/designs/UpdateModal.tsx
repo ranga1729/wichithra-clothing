@@ -3,7 +3,6 @@ import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { designSchema, DesignSchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -14,6 +13,7 @@ import { Design } from "@/generated/prisma/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import SaveButton from "@/components/SaveButton";
 import CancelButton from "@/components/CancelButton";
+import { updateDesignSchema, UpdateDesignSchema } from "@/schemas/admin-schemas";
 
 interface Props {
   isModalOpen: boolean;
@@ -21,7 +21,7 @@ interface Props {
   selectedDesign?: Design;
 }
 
-export default function EditModal(props: Props) {
+export default function UpdateModal(props: Props) {
   const queryClient = useQueryClient();
   const [prevData, setPrevData] = useState<Design>();
 
@@ -29,8 +29,8 @@ export default function EditModal(props: Props) {
     register, handleSubmit,
     setValue, reset, watch,
     formState: { errors },
-  } = useForm<DesignSchema>({
-    resolver: zodResolver(designSchema),
+  } = useForm<UpdateDesignSchema>({
+    resolver: zodResolver(updateDesignSchema),
     mode: "onChange",
     defaultValues: {
       name: "",
@@ -72,7 +72,7 @@ export default function EditModal(props: Props) {
 
   // react query
   const { mutate: updateDesign, isPending } = useMutation({
-    mutationFn: ({id, data}:{id: string, data: DesignSchema}) => updateDesignById(id, data),
+    mutationFn: ({data}:{data: UpdateDesignSchema}) => updateDesignById(data),
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['designs'] });
@@ -89,7 +89,7 @@ export default function EditModal(props: Props) {
     },
   });
 
-  const onSubmit = (data: DesignSchema) => updateDesign({id: prevData?.id!, data: data})
+  const onSubmit = (data: UpdateDesignSchema) => updateDesign({id: prevData?.id!, data: data})
   
   return (
     <Dialog open={props.isModalOpen} onOpenChange={handleCancel}>

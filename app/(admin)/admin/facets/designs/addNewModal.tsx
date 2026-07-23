@@ -1,20 +1,17 @@
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { designSchema, DesignSchema } from "@/schemas/admin-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { createDesign } from "./action";
 import toast from "react-hot-toast";
-import { LoaderCircle } from "lucide-react";
 import { en } from "@/lib/i18n/en";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import SaveButton from "@/components/SaveButton";
 import CancelButton from "@/components/CancelButton";
+import { baseDesignSchema, BaseDesignSchema } from "@/schemas/admin-schemas";
 
 interface Props {
   isModalOpen: boolean;
@@ -27,8 +24,8 @@ export default function AddNewModal(props: Props) {
   const {
     register, handleSubmit, reset,
     formState: { errors },
-  } = useForm<DesignSchema>({
-    resolver: zodResolver(designSchema),
+  } = useForm<BaseDesignSchema>({
+    resolver: zodResolver(baseDesignSchema),
     mode: "onBlur",
     defaultValues: {
       name: "",
@@ -37,25 +34,6 @@ export default function AddNewModal(props: Props) {
     },
   });
 
-  // const onSubmit = async (data: DesignSchema) => {
-  //   try {
-  //     setIsSubmitting(true);
-  //     const newDesign = getValues();
-  //     const result = await createDesign(newDesign);
-
-  //     if (result.success) {
-  //       toast.success(en.design_created_successfully);
-  //       reset();
-  //       props.onOpenChange(false);
-  //     } else {
-  //       toast.error(result.error || en.failed_to_create_design);
-  //     }
-  //   } catch (error) {
-  //     toast.error(en.failed_to_create_design);
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
 
   const handleCancel = () => {
     props.onOpenChange(false);
@@ -64,7 +42,7 @@ export default function AddNewModal(props: Props) {
 
   // react queries
   const {mutate: createNewColor, isPending } = useMutation({
-    mutationFn: (data: DesignSchema) => createDesign(data),
+    mutationFn: (data: BaseDesignSchema) => createDesign(data),
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ['designs'] });
@@ -80,7 +58,7 @@ export default function AddNewModal(props: Props) {
     }
   });
 
-  const onSubmit = (data: DesignSchema) => createNewColor(data);
+  const onSubmit = (data: BaseDesignSchema) => createNewColor(data);
 
   return (
     <Dialog open={props.isModalOpen} onOpenChange={props.onOpenChange}>

@@ -148,6 +148,8 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
 
   } catch(error:any) {
     if (error instanceof AuthError) throw error;
+    console.error(en.failed_to_create_category + ": ", error);
+
     return { 
       success: false,
       error: error.message ?? en.data_retrieval_failed 
@@ -238,7 +240,6 @@ export async function deleteCategoryById(id: string) : Promise<ApiResponse<Delet
       select: {
         id:true,
         _count: {
-          where: {...notDeleted},
           select: {
             products: true
           }
@@ -346,6 +347,7 @@ export async function updateCategoryById(category: UpdateCategorySchema): Promis
         sizeGuide: finalSizeGuideUrl,
         isActive: validatedData.isActive,
         sortOrder: validatedData.sortOrder,
+        updatedAt: new Date(),
       },
       select: {
         id: true,
