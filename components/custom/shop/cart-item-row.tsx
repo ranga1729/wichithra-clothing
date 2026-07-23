@@ -66,8 +66,13 @@ export default function CartItemRow({ item }: CartItemRowProps) {
         >
           <X className="h-3 w-3" />
         </Button>
+        {item.quantity > 1 && (
+          <span className="text-xs text-muted-foreground">
+            {item.quantity} × Rs {item.price.toFixed(2)}
+          </span>
+        )}
         <span className="text-sm font-semibold whitespace-nowrap">
-          Rs {item.price.toFixed(2)}
+          Rs {(item.price * item.quantity).toFixed(2)}
         </span>
       </div>
     </Link>

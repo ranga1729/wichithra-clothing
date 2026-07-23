@@ -15,6 +15,9 @@ export default function CartSheet() {
   const isOpen = useCartStore((s) => s.isOpen)
   const setOpen = useCartStore((s) => s.setOpen)
   const items = useCartStore((s) => s.items)
+  const totalItems = useCartStore((s) => s.totalItems)
+
+  const count = totalItems()
 
   return (
     <Sheet open={isOpen} onOpenChange={setOpen}>
@@ -22,9 +25,9 @@ export default function CartSheet() {
         <SheetHeader className="border-b px-4 py-4">
           <SheetTitle className="text-lg">
             My Cart
-            {items.length > 0 && (
+            {count > 0 && (
               <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({items.length} {items.length === 1 ? 'item' : 'items'})
+                ({count} {count === 1 ? 'item' : 'items'})
               </span>
             )}
           </SheetTitle>

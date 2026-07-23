@@ -24,12 +24,14 @@ export interface CartItem {
   ageGroup: AgeGroup
   imageUrl: string
   price: number
+  quantity: number
 }
 
 interface CartState {
   items: CartItem[]
   isOpen: boolean
-  addItem: (item: CartItem) => void
+  addItem: (item: CartItem, quantity?: number) => void
+  updateItemQuantity: (variantId: string, quantity: number) => void
   removeItem: (variantId: string) => void
   clearCart: () => void
   setOpen: (open: boolean) => void
@@ -49,12 +51,20 @@ export const useCartStore = create<CartState>()(
       items: [],
       isOpen: false,
 
-      addItem: (item) => {
+      addItem: (item, quantity = 1) => {
         const { items } = get()
         const maxItems = getMaxItems()
 
-        if (items.some((i) => i.variantId === item.variantId)) {
-          toast.error("This item is already in your cart")
+        const existing = items.find((i) => i.variantId === item.variantId)
+
+        if (existing) {
+          const newQty = existing.quantity + quantity
+          set({
+            items: items.map((i) =>
+              i.variantId === item.variantId ? { ...i, quantity: newQty } : i,
+            ),
+          })
+          toast.success("Cart updated")
           return
         }
 
@@ -63,8 +73,20 @@ export const useCartStore = create<CartState>()(
           return
         }
 
-        set({ items: [...items, item] })
+        set({ items: [...items, { ...item, quantity }] })
         toast.success("Added to cart")
+      },
+
+      updateItemQuantity: (variantId, quantity) => {
+        if (quantity <= 0) {
+          set({ items: get().items.filter((i) => i.variantId !== variantId) })
+          return
+        }
+        set({
+          items: get().items.map((i) =>
+            i.variantId === variantId ? { ...i, quantity } : i,
+          ),
+        })
       },
 
       removeItem: (variantId) => {
@@ -79,9 +101,9 @@ export const useCartStore = create<CartState>()(
         set({ isOpen: open })
       },
 
-      totalItems: () => get().items.length,
+      totalItems: () => get().items.reduce((sum, item) => sum + item.quantity, 0),
 
-      totalPrice: () => get().items.reduce((sum, item) => sum + item.price, 0),
+      totalPrice: () => get().items.reduce((sum, item) => sum + item.price * item.quantity, 0),
     }),
     {
       name: "KOA-Cart",

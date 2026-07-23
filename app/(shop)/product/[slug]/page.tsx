@@ -3,7 +3,7 @@
 import { useMemo, useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'next/navigation'
-import { Loader2, ShoppingCart, Zap, ChevronDown, ChevronUp } from 'lucide-react'
+import { Loader2, ShoppingCart, ChevronDown, ChevronUp } from 'lucide-react'
 import { ClothingSize } from '@/generated/prisma/enums'
 import { getProductBySlug } from '@/app/(shop)/product/[slug]/action'
 import { ProductDetailColor } from '@/schemas/shop-schemas'
@@ -14,6 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import ProductGallery from '@/components/custom/shop/product-gallery'
 import SizeSelector from '@/components/custom/shop/size-selector'
 import ColorSelector from '@/components/custom/shop/color-selector'
+import QuantitySelector from '@/components/custom/shop/quantity-selector'
 import toast from 'react-hot-toast'
 
 export default function ProductPage() {
@@ -22,6 +23,7 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState<ClothingSize | null>(null)
   const [selectedColor, setSelectedColor] = useState<ProductDetailColor | null>(null)
   const [careOpen, setCareOpen] = useState(false)
+  const [quantity, setQuantity] = useState(0)
 
   // query
   const { data, isLoading, isError } = useQuery({
@@ -60,13 +62,19 @@ export default function ProductPage() {
       return Array.from(
         new Set(
           product.variants
-            .filter((v) => v.color.id === selectedColor.id)
+            .filter((v) => v.color.id === selectedColor.id && v.stock > 0)
             .map((v) => v.size),
         ),
       )
     }
-    return allSizes
-  }, [product, selectedColor, allSizes])
+    return Array.from(
+      new Set(
+        product.variants
+          .filter((v) => v.stock > 0)
+          .map((v) => v.size),
+      ),
+    )
+  }, [product, selectedColor])
 
   const availableColors = useMemo(() => {
     if (!product) {
@@ -76,14 +84,20 @@ export default function ProductPage() {
     if (selectedSize) {
       const map = new Map<string, ProductDetailColor>()
       for (const variant of product.variants) {
-        if (variant.size === selectedSize && !map.has(variant.color.id)) {
+        if (variant.size === selectedSize && variant.stock > 0 && !map.has(variant.color.id)) {
           map.set(variant.color.id, variant.color)
         }
       }
       return Array.from(map.values()).map((c) => c.id)
     }
-    return allColors.map((c) => c.id)
-  }, [product, selectedSize, allColors])
+    const map = new Map<string, ProductDetailColor>()
+    for (const variant of product.variants) {
+      if (variant.stock > 0 && !map.has(variant.color.id)) {
+        map.set(variant.color.id, variant.color)
+      }
+    }
+    return Array.from(map.values()).map((c) => c.id)
+  }, [product, selectedSize])
 
   const selectedVariant = useMemo(() => {
     if (!product || !selectedSize || !selectedColor) {
@@ -117,18 +131,20 @@ export default function ProductPage() {
     setSelectedSize((prev) => 
       (prev === size ? null : size)
     )
+    setQuantity(0)
   }, [])
 
   const handleColorSelect = useCallback((color: ProductDetailColor) => {
     setSelectedColor((prev) => (
       prev?.id === color.id ? null : color)
     )
+    setQuantity(0)
   }, [])
 
   const addItem = useCartStore((s) => s.addItem)
 
   const handleAddToCart = useCallback(() => {
-    if (!selectedVariant || !product) return
+    if (!selectedVariant || !product || quantity === 0) return
 
     const primaryImage = product.productImages.find((img) => img.isPrimary)
       ?? product.productImages[0]
@@ -149,8 +165,9 @@ export default function ProductPage() {
       ageGroup: product.ageGroup,
       imageUrl: primaryImage?.imageUrl ?? '',
       price: Number(product.sellingPrice),
-    })
-  }, [product, selectedVariant, selectedSize, addItem])
+      quantity,
+    }, quantity)
+  }, [product, selectedVariant, selectedSize, quantity, addItem])
 
   const handleBuyNow = useCallback(() => {
     toast.error('Coming soon!')
@@ -193,6 +210,15 @@ export default function ProductPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 lg:text-3xl">
             {product.name}
           </h1>
+
+          <div className="flex items-center gap-2 text-sm text-neutral-500">
+            <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 font-medium text-neutral-600">
+              {product.gender}
+            </span>
+            <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 font-medium text-neutral-600">
+              {product.ageGroup}
+            </span>
+          </div>
 
           {product.description && (
             <p className="leading-relaxed text-neutral-600">
@@ -277,26 +303,48 @@ export default function ProductPage() {
           )}
 
           {!outOfStock && (
-            <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-              <Button
-                variant="outline"
-                size="lg"
-                className="flex-1 gap-2"
-                onClick={handleAddToCart}
-                disabled={!selectedVariant}
-              >
-                <ShoppingCart className="h-4 w-4" />
-                Add to Cart
-              </Button>
-              <Button
-                size="lg"
-                className="flex-1 gap-2"
-                onClick={handleBuyNow}
-                disabled={!selectedVariant}
-              >
-                Buy Now
-              </Button>
-            </div>
+            <>
+              {selectedVariant && selectedVariant.stock <= 0 && (
+                <div className="rounded-md bg-neutral-100 px-4 py-3 text-sm font-medium text-neutral-600">
+                  Out of Stock for this variant
+                </div>
+              )}
+
+              {selectedVariant && selectedVariant.stock > 0 && (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-neutral-500">Quantity</span>
+                  <QuantitySelector
+                    value={quantity}
+                    onChange={setQuantity}
+                    max={selectedVariant.stock}
+                  />
+                  <span className="text-xs text-neutral-400">
+                    {selectedVariant.stock} available
+                  </span>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="flex-1 gap-2"
+                  onClick={handleAddToCart}
+                  disabled={!selectedVariant || selectedVariant.stock <= 0 || quantity === 0}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  Add to Cart
+                </Button>
+                <Button
+                  size="lg"
+                  className="flex-1 gap-2"
+                  onClick={handleBuyNow}
+                  disabled={!selectedVariant || selectedVariant.stock <= 0 || quantity === 0}
+                >
+                  Buy Now
+                </Button>
+              </div>
+            </>
           )}
         </div>
       </div>

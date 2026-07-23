@@ -59,6 +59,12 @@ export async function getProductBySlug(slug: string): Promise<ApiResponse<Produc
                 swatchImageUrl: true,
               },
             },
+            inventory: {
+              select: {
+                quantity: true,
+                reservedQuantity: true,
+              },
+            },
           },
           orderBy: [
             { size: 'asc' },
@@ -75,7 +81,14 @@ export async function getProductBySlug(slug: string): Promise<ApiResponse<Produc
       };
     }
 
-    const serialized = JSON.parse(JSON.stringify(product)) as ProductDetail;
+    const variantsWithStock = product.variants.map((v) => ({
+      ...v,
+      stock: (v.inventory?.quantity ?? 0) - (v.inventory?.reservedQuantity ?? 0),
+    }))
+
+    const serialized = JSON.parse(
+      JSON.stringify({ ...product, variants: variantsWithStock })
+    ) as ProductDetail;
 
     return {
       success: true,

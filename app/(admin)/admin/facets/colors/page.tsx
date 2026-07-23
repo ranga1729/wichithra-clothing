@@ -6,7 +6,6 @@ import { initialPaginator, Paginator } from "@/types/table-types";
 import { useRef, useState } from "react";
 import { getColumns } from "./columns";
 import { en } from "@/lib/i18n/en";
-import AddNewModal from "./AddNewModal";
 import EditModal from "./UpdateModal";
 import { ColorFilter } from "@/types/filter-types";
 import { Label } from "@/components/ui/label";
@@ -18,6 +17,7 @@ import toast from "react-hot-toast";
 import ResetFilterButton from "@/components/ResetFilterButton";
 import AddNewButton from "@/components/AddNewButton";
 import { useDebounce } from "@/hooks/useDebounce";
+import AddNewModal from "./AddNewModal";
 
 const InitiaFilter:ColorFilter = {
   name : "",

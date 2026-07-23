@@ -76,6 +76,7 @@ export const product_detail_variant = z.object({
   size: sizes,
   isActive: z.boolean(),
   color: product_detail_color,
+  stock: z.number(),
 })
 
 export const product_detail_image = z.object({
