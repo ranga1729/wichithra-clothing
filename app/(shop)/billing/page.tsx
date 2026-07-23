@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
+import type { Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, ShieldCheck, Shirt } from 'lucide-react'
 import { useCartStore } from '@/lib/zustand-stores/cart-store'
@@ -37,7 +38,7 @@ export default function BillingPage() {
   })
 
   const form = useForm<CheckoutForm>({
-    resolver: zodResolver(checkout_schema),
+    resolver: zodResolver(checkout_schema) as unknown as Resolver<CheckoutForm>,
     mode: 'onChange',
     defaultValues: {
       shippingAddress: {
@@ -301,8 +302,7 @@ export default function BillingPage() {
                     />
                     {form.formState.errors.payment?.expiryDate && (
                       <p className="text-xs text-red-600">
-                        {form.formState.errors.expiryDate?.message ??
-                          form.formState.errors.payment?.expiryDate?.message}
+                        {form.formState.errors.payment?.expiryDate?.message}
                       </p>
                     )}
                   </div>

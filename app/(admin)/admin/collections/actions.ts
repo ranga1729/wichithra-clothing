@@ -6,6 +6,7 @@ import { CreateCollectionSchema, createCollectionSchema } from "@/schemas/admin-
 import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
+import { createAuditLog } from "@/app/(admin)/admin/logs/actions";
 
 export async function getCollections(): Promise<ApiResponse> {
   try {
@@ -40,7 +41,7 @@ export async function getCollections(): Promise<ApiResponse> {
 
 export async function createCollection(data: CreateCollectionSchema): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validatedData = createCollectionSchema.parse(data);
 
@@ -100,6 +101,15 @@ export async function createCollection(data: CreateCollectionSchema): Promise<Ap
 
     revalidatePath("/admin/collections");
 
+    createAuditLog({
+      userId: user.userId,
+      action: "CREATE",
+      entity: "Collection",
+      entityId: collection.id,
+      newValues: { name: collection.name, slug: collection.slug },
+      description: `Created collection "${collection.name}"`,
+    });
+
     return {
       success: true,
       message: en.collection_created_successfully,
@@ -116,7 +126,7 @@ export async function createCollection(data: CreateCollectionSchema): Promise<Ap
 
 export async function deleteCollection(id: string): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const collection = await prisma.collection.findUnique({
       where: { id },
@@ -138,6 +148,14 @@ export async function deleteCollection(id: string): Promise<ApiResponse> {
 
     revalidatePath("/admin/collections");
 
+    createAuditLog({
+      userId: user.userId,
+      action: "DELETE",
+      entity: "Collection",
+      entityId: id,
+      description: `Deleted collection`,
+    });
+
     return {
       success: true,
       message: en.collection_deleted_successfully,
@@ -154,7 +172,7 @@ export async function deleteCollection(id: string): Promise<ApiResponse> {
 
 export async function toggleCollectionActiveStatus(id: string): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const collection = await prisma.collection.findUnique({
       where: { id },
@@ -175,6 +193,15 @@ export async function toggleCollectionActiveStatus(id: string): Promise<ApiRespo
     }
 
     revalidatePath("/admin/collections");
+
+    createAuditLog({
+      userId: user.userId,
+      action: "UPDATE",
+      entity: "Collection",
+      entityId: id,
+      newValues: { isActive: !collection.isActive },
+      description: `Toggled active status to ${!collection.isActive}`,
+    });
 
     return {
       success: true,
@@ -288,7 +315,7 @@ export async function getProductsForSelector(): Promise<ApiResponse> {
 
 export async function addProductToCollection(collectionId: string, productId: string): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const collection = await prisma.collection.findUnique({
       where: { id: collectionId },
@@ -324,6 +351,14 @@ export async function addProductToCollection(collectionId: string, productId: st
 
     revalidatePath("/admin/collections");
 
+    createAuditLog({
+      userId: user.userId,
+      action: "CREATE",
+      entity: "ProductCollection",
+      entityId: productId,
+      description: `Added product to collection`,
+    });
+
     return {
       success: true,
       message: en.product_added_to_collection,
@@ -340,7 +375,7 @@ export async function addProductToCollection(collectionId: string, productId: st
 
 export async function removeProductFromCollection(collectionId: string, productId: string): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const existing = await prisma.productCollection.findUnique({
       where: {
@@ -359,6 +394,14 @@ export async function removeProductFromCollection(collectionId: string, productI
     });
 
     revalidatePath("/admin/collections");
+
+    createAuditLog({
+      userId: user.userId,
+      action: "DELETE",
+      entity: "ProductCollection",
+      entityId: productId,
+      description: `Removed product from collection`,
+    });
 
     return {
       success: true,

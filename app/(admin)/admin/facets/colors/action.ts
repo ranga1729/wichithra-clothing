@@ -10,6 +10,7 @@ import { revalidatePath } from "next/cache";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
 import { SUPABASE_FOLDERS, moveTempToPermanent, deleteImage, extractStoragePathFromUrl } from "@/components/providers/supabase/storage";
 import { Prisma } from "@/generated/prisma/client";
+import { createAuditLog } from "@/app/(admin)/admin/logs/actions";
 import { ColorListResponseSchema, CreateColorResponseSchema, DeleteColorResponseSchema, UpdateColorResponseSchema } from "@/schemas/server-action-responses";
 
 // Helper: Name conflict check (soft-delete aware)
@@ -130,7 +131,7 @@ export async function getColors(paginator: Paginator, filter: ColorFilter): Prom
 // CREATE Color
 export async function createColor(newColor: BaseColorSchema): Promise<ApiResponse<CreateColorResponseSchema>> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validatedData = baseColorSchema.parse(newColor);
 
@@ -168,6 +169,15 @@ export async function createColor(newColor: BaseColorSchema): Promise<ApiRespons
 
     revalidatePath("/admin/colors");
 
+    createAuditLog({
+      userId: user.userId,
+      action: "CREATE",
+      entity: "Color",
+      entityId: color.id,
+      newValues: color,
+      description: `Created color "${color.name}"`,
+    });
+
     return {
       success: true,
       data: { color },
@@ -187,7 +197,7 @@ export async function createColor(newColor: BaseColorSchema): Promise<ApiRespons
 // UPDATE Color
 export async function updateColorById(data: UpdateColorSchema): Promise<ApiResponse<UpdateColorResponseSchema>> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validatedData = await import("@/schemas/admin-schemas").then(m =>
       m.updateColorSchema.parse(data)
@@ -233,6 +243,15 @@ export async function updateColorById(data: UpdateColorSchema): Promise<ApiRespo
 
     revalidatePath("/admin/colors");
 
+    createAuditLog({
+      userId: user.userId,
+      action: "UPDATE",
+      entity: "Color",
+      entityId: color.id,
+      newValues: color,
+      description: `Updated color "${color.name}"`,
+    });
+
     return {
       success: true,
       data: { color },
@@ -252,7 +271,7 @@ export async function updateColorById(data: UpdateColorSchema): Promise<ApiRespo
 // DELETE Color (Soft Delete)
 export async function deleteColorById(id: string): Promise<ApiResponse<DeleteColorResponseSchema>> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const color = await prisma.color.findFirst({
       where: { id, ...notDeleted },
@@ -308,6 +327,14 @@ export async function deleteColorById(id: string): Promise<ApiResponse<DeleteCol
     });
 
     revalidatePath("/admin/colors");
+
+    createAuditLog({
+      userId: user.userId,
+      action: "DELETE",
+      entity: "Color",
+      entityId: deletedColor.id,
+      description: `Deleted color "${deletedColor.name}"`,
+    });
 
     return {
       success: true,

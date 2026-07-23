@@ -64,3 +64,10 @@ export interface CancelledOrderFilter {
   createdDateTo?: string,   // ISO date string (YYYY-MM-DD)
   paymentStatus?: string,
 }
+
+export interface AuditLogFilter {
+  userName?: string,
+  action?: string,
+  dateFrom?: string, // ISO date string (YYYY-MM-DD)
+  dateTo?: string,   // ISO date string (YYYY-MM-DD)
+}

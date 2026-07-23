@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { en } from "@/lib/i18n/en";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
 import { Prisma } from "@/generated/prisma/client";
+import { createAuditLog } from "@/app/(admin)/admin/logs/actions";
 import { CreateDesignResponseSchema, DeleteDesignResponseSchema, DesignListResponseSchema, UpdateDesignResponseSchema } from "@/schemas/server-action-responses";
 import { baseDesignSchema, BaseDesignSchema, updateDesignSchema, UpdateDesignSchema } from "@/schemas/admin-schemas";
 import { date } from "zod";
@@ -100,7 +101,7 @@ export async function getDesigns(paginator: Paginator, filter: DesignFilter, sor
 //CREATE Design
 export async function createDesign(newDesign: BaseDesignSchema): Promise<ApiResponse<CreateDesignResponseSchema>> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validatedData = baseDesignSchema.parse(newDesign);
 
@@ -130,6 +131,15 @@ export async function createDesign(newDesign: BaseDesignSchema): Promise<ApiResp
 
     revalidatePath("/admin/design");
 
+    createAuditLog({
+      userId: user.userId,
+      action: "CREATE",
+      entity: "Design",
+      entityId: design.id,
+      newValues: design,
+      description: `Created design "${design.name}"`,
+    });
+
     return {
       success: true,
       data: { 
@@ -150,7 +160,7 @@ export async function createDesign(newDesign: BaseDesignSchema): Promise<ApiResp
 // DELETE Design (Soft Delete)
 export async function deleteDesignById(id: string): Promise<ApiResponse<DeleteDesignResponseSchema>> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const design = await prisma.design.findFirst({
       where: { id : id, ...notDeleted },
@@ -196,6 +206,14 @@ export async function deleteDesignById(id: string): Promise<ApiResponse<DeleteDe
 
     revalidatePath("/admin/design");
 
+    createAuditLog({
+      userId: user.userId,
+      action: "DELETE",
+      entity: "Design",
+      entityId: deletedDesign.id,
+      description: `Deleted design "${deletedDesign.name}"`,
+    });
+
     return {
       success: true,
       data: { 
@@ -217,7 +235,7 @@ export async function deleteDesignById(id: string): Promise<ApiResponse<DeleteDe
 // ─── UPDATE Design ──────────────────────────────────────────────────────────
 export async function updateDesignById(updatedDesign: UpdateDesignSchema): Promise<ApiResponse<UpdateDesignResponseSchema>> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validatedData = updateDesignSchema.parse(updatedDesign);
 
@@ -258,6 +276,15 @@ export async function updateDesignById(updatedDesign: UpdateDesignSchema): Promi
     });
 
     revalidatePath("/admin/design");
+
+    createAuditLog({
+      userId: user.userId,
+      action: "UPDATE",
+      entity: "Design",
+      entityId: design.id,
+      newValues: design,
+      description: `Updated design "${design.name}"`,
+    });
 
     return {
       success: true,

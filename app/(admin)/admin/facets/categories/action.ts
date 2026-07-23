@@ -9,6 +9,7 @@ import { en } from "@/lib/i18n/en";
 import { SUPABASE_FOLDERS, deleteImage, moveTempToPermanent, extractStoragePathFromUrl } from "@/components/providers/supabase/storage";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
 import { Prisma } from "@/generated/prisma/client";
+import { createAuditLog } from "@/app/(admin)/admin/logs/actions";
 import { CategoryListResponseSchema, CreateCategoryResponseSchema, DeleteCategoryResponseSchema, UpdateCategoryResponseSchema } from "@/schemas/server-action-responses";
 import { baseCategorySchema, BaseCategorySchema, updateCategorySchema, UpdateCategorySchema } from "@/schemas/admin-schemas";
 
@@ -159,7 +160,7 @@ export async function getCategories(paginator: Paginator, filter: CategoryFilter
 
 export async function createCategory(newCategory: BaseCategorySchema): Promise<ApiResponse<CreateCategoryResponseSchema>> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validatedData = baseCategorySchema.parse(newCategory);
 
@@ -212,6 +213,15 @@ export async function createCategory(newCategory: BaseCategorySchema): Promise<A
     }
 
     revalidatePath("/admin/categories");
+
+    createAuditLog({
+      userId: user.userId,
+      action: "CREATE",
+      entity: "Category",
+      entityId: category.id,
+      newValues: category,
+      description: `Created category "${category.name}"`,
+    });
   
     return {
       success: true,
@@ -233,7 +243,7 @@ export async function createCategory(newCategory: BaseCategorySchema): Promise<A
 
 export async function deleteCategoryById(id: string) : Promise<ApiResponse<DeleteCategoryResponseSchema>> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const category = await prisma.category.findFirst({
       where: {id : id, ...notDeleted},
@@ -288,6 +298,14 @@ export async function deleteCategoryById(id: string) : Promise<ApiResponse<Delet
     
     revalidatePath('/admin/categories');
 
+    createAuditLog({
+      userId: user.userId,
+      action: "DELETE",
+      entity: "Category",
+      entityId: deletedCategory.id,
+      description: `Deleted category "${deletedCategory.name}"`,
+    });
+
     return {
       success: true,
       data: {
@@ -308,7 +326,7 @@ export async function deleteCategoryById(id: string) : Promise<ApiResponse<Delet
 
 export async function updateCategoryById(category: UpdateCategorySchema): Promise<ApiResponse<UpdateCategoryResponseSchema>> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validatedData = updateCategorySchema.parse(category);
 
@@ -367,6 +385,16 @@ export async function updateCategoryById(category: UpdateCategorySchema): Promis
     }
 
     revalidatePath("/admin/categories");
+
+    createAuditLog({
+      userId: user.userId,
+      action: "UPDATE",
+      entity: "Category",
+      entityId: updatedCategory.id,
+      newValues: updatedCategory,
+      description: `Updated category "${updatedCategory.name}"`,
+    });
+
     return { 
       success: true, 
       data: {
@@ -388,7 +416,7 @@ export async function updateCategoryById(category: UpdateCategorySchema): Promis
 
 export async function toggleActiveStatusById(id: string): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const existingCategory = await prisma.category.findUnique({
       where: { id: id, ...notDeleted},
@@ -423,6 +451,15 @@ export async function toggleActiveStatusById(id: string): Promise<ApiResponse> {
     }
 
     revalidatePath("/admin/categories");
+
+    createAuditLog({
+      userId: user.userId,
+      action: "UPDATE",
+      entity: "Category",
+      entityId: id,
+      newValues: { isActive: !existingCategory.isActive },
+      description: `Toggled active status to ${!existingCategory.isActive} for category`,
+    });
 
     return {
       success: true,

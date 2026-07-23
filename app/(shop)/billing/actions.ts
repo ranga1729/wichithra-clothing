@@ -7,6 +7,7 @@ import { checkout_schema, ShippingAddress } from "@/schemas/shop-schemas"
 import { ApiResponse } from "@/types/auth-types"
 import { Prisma } from "@/generated/prisma/client"
 import { PaymentMethod, PaymentStatus, OrderStatus, StockMovementType } from "@/generated/prisma/enums"
+import { createAuditLog } from "@/app/(admin)/admin/logs/actions"
 
 interface CartItemInput {
   variantId: string
@@ -73,7 +74,11 @@ export async function placeOrder(
           isActive: true,
         },
         include: {
-          product: true,
+          product: {
+            include: {
+              category: true,
+            },
+          },
           color: true,
           inventory: true,
         },
@@ -86,7 +91,7 @@ export async function placeOrder(
       let subtotal = new Prisma.Decimal(0)
       let discountAmount = new Prisma.Decimal(0)
 
-      const orderItemsData: Prisma.OrderItemCreateManyInput[] = []
+      const orderItemsData: Array<Omit<Prisma.OrderItemCreateManyInput, 'orderId'>> = []
 
       for (const cartItem of cartItems) {
         const variant = variants.find((v) => v.id === cartItem.variantId)
@@ -117,7 +122,7 @@ export async function placeOrder(
           },
           select: { imageUrl: true },
         })
-
+        
         orderItemsData.push({
           inventoryId: variant.inventory.id,
           variantId: variant.id,
@@ -125,8 +130,8 @@ export async function placeOrder(
           sku: variant.sku,
           productName: variant.product.name,
           productSlug: variant.product.slug,
-          categoryName: "Uncategorized",
-          categorySlug: "uncategorized",
+          categoryName: variant.product.category?.name ?? "Uncategorized",
+          categorySlug: variant.product.category?.slug ?? "uncategorized",
           sizeName: variant.size,
           colorName: variant.color.name,
           colorHexCode: variant.color.hexCode,
@@ -245,6 +250,19 @@ export async function placeOrder(
 
       return { orderId: order.id, orderNumber: order.orderNumber }
     })
+
+    try {
+      await createAuditLog({
+        userId,
+        action: "CREATE",
+        entity: "Order",
+        entityId: result.orderId,
+        newValues: { orderNumber: result.orderNumber },
+        description: `Order ${result.orderNumber} placed`,
+      });
+    } catch {
+      console.error("Failed to create audit log for order:", result.orderNumber);
+    }
 
     return {
       success: true,

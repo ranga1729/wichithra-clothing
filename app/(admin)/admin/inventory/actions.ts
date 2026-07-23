@@ -9,6 +9,7 @@ import { AuthError, requireRole } from "@/lib/server-auth-guard";
 import { createInventoryItemSchema, CreateInventoryItemSchema, updateInventoryItemSchema, UpdateInventoryItemSchema } from "@/schemas/admin-schemas";
 import { revalidatePath } from "next/cache";
 import { ClothingSize } from "@/generated/prisma/enums";
+import { createAuditLog } from "@/app/(admin)/admin/logs/actions";
 
 export async function getInventoryItemByVariantId(variantId: string): Promise<ApiResponse> {
   try {
@@ -66,7 +67,7 @@ export async function getInventoryItemByVariantId(variantId: string): Promise<Ap
 
 export async function updateInventoryItem(variantId: string, data: UpdateInventoryItemSchema): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validatedData = updateInventoryItemSchema.parse(data);
 
@@ -88,6 +89,15 @@ export async function updateInventoryItem(variantId: string, data: UpdateInvento
     });
 
     revalidatePath('/admin/inventory');
+
+    createAuditLog({
+      userId: user.userId,
+      action: "UPDATE",
+      entity: "Inventory",
+      entityId: variantId,
+      newValues: { quantity: validatedData.quantity, isActive: validatedData.isActive },
+      description: `Updated inventory item for variant`,
+    });
 
     return { success: true, message: en.inventory_item_updated_successfully };
   } catch (error: any) {
@@ -258,7 +268,7 @@ export async function checkVariantExists(productId: string, colorId: string, siz
 
 export async function deleteInventoryItem(variantId: string): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     // Guard: block deletion if there is reserved stock (active carts / pending orders)
     const inventory = await prisma.inventory.findFirst({
@@ -291,6 +301,14 @@ export async function deleteInventoryItem(variantId: string): Promise<ApiRespons
 
     revalidatePath('/admin/inventory');
 
+    createAuditLog({
+      userId: user.userId,
+      action: "DELETE",
+      entity: "Inventory",
+      entityId: variantId,
+      description: `Deleted inventory item for variant`,
+    });
+
     return { success: true, message: en.inventory_item_deleted_successfully };
   } catch (error: any) {
     if (error instanceof AuthError) throw error;
@@ -300,7 +318,7 @@ export async function deleteInventoryItem(variantId: string): Promise<ApiRespons
 
 export async function createInventoryItem(data: CreateInventoryItemSchema): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validatedData = createInventoryItemSchema.parse(data);
 
@@ -349,6 +367,15 @@ export async function createInventoryItem(data: CreateInventoryItemSchema): Prom
     });
 
     revalidatePath('/admin/inventory');
+
+    createAuditLog({
+      userId: user.userId,
+      action: "CREATE",
+      entity: "Inventory",
+      entityId: validatedData.productId,
+      newValues: { sku: validatedData.sku, quantity: validatedData.quantity, size: validatedData.size },
+      description: `Created inventory item with SKU "${validatedData.sku}"`,
+    });
 
     return {
       success: true,

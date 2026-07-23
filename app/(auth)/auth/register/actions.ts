@@ -9,6 +9,7 @@ import { generateToken } from "@/lib/jwt";
 import { hashPassword } from "@/lib/passwordHashing";
 import { cookies } from "next/headers";
 import { ZodError } from "zod";
+import { createAuditLog } from "@/app/(admin)/admin/logs/actions";
 
 export async function registerUser(formData:RegistrationForm) : Promise<ApiResponse<AuthResponse>> {
   try {
@@ -91,6 +92,15 @@ export async function registerUser(formData:RegistrationForm) : Promise<ApiRespo
       sameSite: "strict",
       maxAge: 60 * 60 * 24 * 7,
       path: "/"
+    });
+
+    createAuditLog({
+      userId: user.id,
+      action: "CREATE",
+      entity: "User",
+      entityId: user.id,
+      newValues: { email: user.email, firstName: user.firstName, lastName: user.lastName },
+      description: `New user registered: ${user.firstName} ${user.lastName}`,
     });
 
     return {

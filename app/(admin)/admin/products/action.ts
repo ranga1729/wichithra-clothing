@@ -10,6 +10,7 @@ import { Paginator } from "@/types/table-types";
 import { revalidatePath } from "next/cache";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
 import { SUPABASE_BUCKET, SUPABASE_FOLDERS, uploadImage, deleteImage } from "@/components/providers/supabase/storage";
+import { createAuditLog } from "@/app/(admin)/admin/logs/actions";
 
 export async function getProducts(paginator: Paginator, filter: ProductFilter):Promise<ApiResponse> {
   try {
@@ -216,7 +217,7 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
 
 export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validatedData = basicProductInfoSchema.parse(data);
 
@@ -272,6 +273,16 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
 
     revalidatePath(`/admin/products/${updatedProduct.id}`);
 
+    createAuditLog({
+      userId: user.userId,
+      action: "UPDATE",
+      entity: "Product",
+      entityId: updatedProduct.id,
+      oldValues: existingProduct,
+      newValues: { name: validatedData.name, slug: validatedData.slug },
+      description: `Updated basic info for product "${validatedData.name}"`,
+    });
+
     return {
       success: true,
       message: en.product_updated_successfully,
@@ -297,7 +308,7 @@ export async function changeBasicInfo(data: BasicProductInfoSchema):Promise<ApiR
 
 export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const existingProduct = await prisma.product.findUnique({
       where: {id : id},
@@ -332,6 +343,15 @@ export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
 
     revalidatePath(`/admin/products/${updatedProduct.id}`);
 
+    createAuditLog({
+      userId: user.userId,
+      action: "UPDATE",
+      entity: "Product",
+      entityId: updatedProduct.id,
+      newValues: { isFeatured: !existingProduct.isFeatured },
+      description: `Toggled featured status to ${!existingProduct.isFeatured}`,
+    });
+
     return {
       success: true,
       message: en.product_updated_successfully,
@@ -357,7 +377,7 @@ export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
 
 export async function changeProductStatus(id: string, newStatus: ProductStatus):Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validation = ProductStatusSchema.safeParse(newStatus);
 
@@ -401,6 +421,16 @@ export async function changeProductStatus(id: string, newStatus: ProductStatus):
 
     revalidatePath(`/admin/products/${updatedProduct.id}`);
 
+    createAuditLog({
+      userId: user.userId,
+      action: "UPDATE",
+      entity: "Product",
+      entityId: updatedProduct.id,
+      oldValues: { status: existingProduct.status },
+      newValues: { status: validatedStatus },
+      description: `Changed product status from "${existingProduct.status}" to "${validatedStatus}"`,
+    });
+
     return {
       success: true,
       message: en.product_updated_successfully,
@@ -426,7 +456,7 @@ export async function changeProductStatus(id: string, newStatus: ProductStatus):
 
 export async function createNewProduct(data: BasicProductInfoSchema):Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const validatedData = basicProductInfoSchema.parse(data);
 
@@ -511,6 +541,15 @@ export async function createNewProduct(data: BasicProductInfoSchema):Promise<Api
 
     revalidatePath("/admin/products");
 
+    createAuditLog({
+      userId: user.userId,
+      action: "CREATE",
+      entity: "Product",
+      entityId: product.id,
+      newValues: { name: validatedData.name, slug: validatedData.slug },
+      description: `Created product "${validatedData.name}"`,
+    });
+
     return {
       success: true,
       data: validatedData
@@ -536,7 +575,7 @@ export async function createNewProduct(data: BasicProductInfoSchema):Promise<Api
 
 export async function updateSizeGuide(productId: string, formData: FormData): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const file = formData.get("file") as File;
     if (!file || !file.size) return { success: false, error: en.failed_to_upload_image };
@@ -565,6 +604,15 @@ export async function updateSizeGuide(productId: string, formData: FormData): Pr
     });
 
     revalidatePath(`/admin/products/${productId}`);
+
+    createAuditLog({
+      userId: user.userId,
+      action: "UPDATE",
+      entity: "Product",
+      entityId: productId,
+      description: `Updated size guide for product`,
+    });
+
     return { success: true, data: { imageUrl: publicUrl } };
 
   } catch (error) {
@@ -577,7 +625,7 @@ export async function updateSizeGuide(productId: string, formData: FormData): Pr
 
 export async function removeSizeGuide(productId: string): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const product = await prisma.product.findUnique({
       where: { id: productId, deletedAt: null },
@@ -599,6 +647,15 @@ export async function removeSizeGuide(productId: string): Promise<ApiResponse> {
     });
 
     revalidatePath(`/admin/products/${productId}`);
+
+    createAuditLog({
+      userId: user.userId,
+      action: "UPDATE",
+      entity: "Product",
+      entityId: productId,
+      description: `Removed size guide from product`,
+    });
+
     return { success: true };
 
   } catch (error) {
@@ -611,7 +668,7 @@ export async function removeSizeGuide(productId: string): Promise<ApiResponse> {
 
 export async function addProductImage(productId: string, formData: FormData): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const file = formData.get("file") as File;
     if (!file || !file.size) return { success: false, error: en.failed_to_upload_image };
@@ -657,6 +714,16 @@ export async function addProductImage(productId: string, formData: FormData): Pr
     });
 
     revalidatePath(`/admin/products/${productId}`);
+
+    createAuditLog({
+      userId: user.userId,
+      action: "CREATE",
+      entity: "ProductImage",
+      entityId: newImage.id,
+      newValues: { productId, imageUrl: publicUrl },
+      description: `Added image to product`,
+    });
+
     return { 
       success: true, 
       data: { 
@@ -683,7 +750,7 @@ export async function addProductImage(productId: string, formData: FormData): Pr
 
 export async function deleteProductImage(imageId: string): Promise<ApiResponse> {
   try {
-    await requireRole(["admin", "super-admin"]);
+    const user = await requireRole(["admin", "super-admin"]);
 
     const image = await prisma.productImage.findUnique({
       where: { id: imageId },
@@ -706,6 +773,15 @@ export async function deleteProductImage(imageId: string): Promise<ApiResponse> 
     await prisma.productImage.delete({ where: { id: imageId } });
 
     revalidatePath(`/admin/products/${image.productId}`);
+
+    createAuditLog({
+      userId: user.userId,
+      action: "DELETE",
+      entity: "ProductImage",
+      entityId: imageId,
+      description: `Deleted product image from product`,
+    });
+
     return { success: true };
 
   } catch (error) {

@@ -7,6 +7,7 @@ import { NewOrderFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
 import { OrderStatus, PaymentStatus, StockMovementType } from "@/generated/prisma/enums";
+import { createAuditLog } from "@/app/(admin)/admin/logs/actions";
 
 const NEW_ORDER_STATUSES: OrderStatus[] = [OrderStatus.PENDING, OrderStatus.CONFIRMED];
 
@@ -92,11 +93,11 @@ export async function getNewOrders(paginator: Paginator, filter: NewOrderFilter)
         totalRecords,
       },
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof AuthError) throw error;
     return {
       success: false,
-      error: error.message || en.failed_to_load_orders,
+      error: error instanceof Error ? error.message : en.failed_to_load_orders,
     };
   }
 }
@@ -155,11 +156,11 @@ export async function getOrderItems(orderId: string): Promise<ApiResponse> {
       success: true,
       data: JSON.parse(JSON.stringify(order)),
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof AuthError) throw error;
     return {
       success: false,
-      error: error.message || en.failed_to_load_order_details,
+      error: error instanceof Error ? error.message : en.failed_to_load_order_details,
     };
   }
 }
@@ -197,12 +198,25 @@ export async function moveToOngoing(orderId: string): Promise<ApiResponse> {
       });
     });
 
+    try {
+      await createAuditLog({
+        userId: adminUser.userId,
+        action: "UPDATE",
+        entity: "Order",
+        entityId: orderId,
+        newValues: { status: OrderStatus.PROCESSING },
+        description: `Moved order to ongoing (processing)`,
+      });
+    } catch {
+      console.error("Failed to create audit log for order:", orderId);
+    }
+
     return { success: true, message: en.order_moved_to_ongoing };
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof AuthError) throw error;
     return {
       success: false,
-      error: error.message || en.failed_to_move_order,
+      error: error instanceof Error ? error.message : en.failed_to_move_order,
     };
   }
 }
@@ -279,12 +293,25 @@ export async function cancelOrder(orderId: string, reason: string): Promise<ApiR
       });
     });
 
+    try {
+      await createAuditLog({
+        userId: adminUser.userId,
+        action: "UPDATE",
+        entity: "Order",
+        entityId: orderId,
+        newValues: { status: OrderStatus.CANCELLED, reason: reason.trim() },
+        description: `Cancelled order: ${reason.trim()}`,
+      });
+    } catch {
+      console.error("Failed to create audit log for order:", orderId);
+    }
+
     return { success: true, message: en.order_cancelled };
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof AuthError) throw error;
     return {
       success: false,
-      error: error.message || en.failed_to_cancel_order,
+      error: error instanceof Error ? error.message : en.failed_to_cancel_order,
     };
   }
 }

@@ -8,6 +8,7 @@ import { generateToken } from "@/lib/jwt";
 import { comparePassword } from "@/lib/passwordHashing";
 import { cookies } from "next/headers";
 import { ZodError } from "zod";
+import { createAuditLog } from "@/app/(admin)/admin/logs/actions";
 
 export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthResponse>> {
   try {
@@ -56,6 +57,18 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
       path: "/"
     });
 
+    try {
+      await createAuditLog({
+        userId: user.id,
+        action: "LOGIN",
+        entity: "User",
+        entityId: user.id,
+        description: `User ${user.email} logged in`,
+      });
+    } catch {
+      console.error("Failed to create audit log for login:", user.id);
+    }
+
     return {
       success: true,
       message: en.loggin_successful,
@@ -76,7 +89,7 @@ export async function loginUser(formData: LoginForm) : Promise<ApiResponse<AuthR
       return {
         success: false,
         message: en.validation_failed,
-        error: error.issues[0].message || en.validation_failed
+        error: error.issues[0]?.message ?? en.validation_failed
       };
     }
     

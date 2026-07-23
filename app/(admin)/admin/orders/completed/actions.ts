@@ -92,11 +92,11 @@ export async function getCompletedOrders(paginator: Paginator, filter: Completed
         totalRecords,
       },
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof AuthError) throw error;
     return {
       success: false,
-      error: error.message || en.failed_to_load_orders,
+      error: error instanceof Error ? error.message : en.failed_to_load_orders,
     };
   }
 }
@@ -155,11 +155,11 @@ export async function getOrderItems(orderId: string): Promise<ApiResponse> {
       success: true,
       data: JSON.parse(JSON.stringify(order)),
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof AuthError) throw error;
     return {
       success: false,
-      error: error.message || en.failed_to_load_order_details,
+      error: error instanceof Error ? error.message : en.failed_to_load_order_details,
     };
   }
 }

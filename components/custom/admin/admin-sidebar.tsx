@@ -3,6 +3,8 @@
 import * as React from "react"
 import {
   ChartNoAxesCombined,
+  CircleDollarSign,
+  ClipboardClock,
   ListCollapse,
   ListOrdered,
   Shirt,
@@ -100,6 +102,18 @@ const data = {
       title: "Customers",
       url: "/admin/customers",
       icon: UserRound,
+      isActive: true,
+    },
+    {
+      title: "Payments",
+      url: "/admin/payments",
+      icon: CircleDollarSign,
+      isActive: true,
+    },
+    {
+      title: "Logs",
+      url: "/admin/logs",
+      icon: ClipboardClock,
       isActive: true,
     },
   ],

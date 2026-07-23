@@ -114,46 +114,46 @@ export const getColumns = ({ paginator, viewOrders, blacklistCustomer, deleteCus
       );
     },
   },
-  {
-    id: "actions",
-    header: () => <div className="text-center">Actions</div>,
-    cell: ({ row }) => (
-      <div className="flex flex-row gap-2 justify-center items-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Ellipsis />
-            </Button>
-          </DropdownMenuTrigger>
+  // {
+  //   id: "actions",
+  //   header: () => <div className="text-center">Actions</div>,
+  //   cell: ({ row }) => (
+  //     <div className="flex flex-row gap-2 justify-center items-center">
+  //       <DropdownMenu>
+  //         <DropdownMenuTrigger asChild>
+  //           <Button variant="outline" size="sm">
+  //             <Ellipsis />
+  //           </Button>
+  //         </DropdownMenuTrigger>
 
-          <DropdownMenuContent>
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => viewOrders && viewOrders(row.original.id)}>
-                <Button variant="ghost" size="sm">
-                  <Clock/>
-                </Button>{" "}
-                View Past Orders
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => blacklistCustomer && blacklistCustomer(row.original.id)}>
-                <Button variant="ghost" size="sm">
-                  <UserX color="red"/>
-                </Button>{" "}
-                Blacklist Customer
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => deleteCustomer && deleteCustomer(row.original.id)}>
-                <Button variant="ghost" size="sm">
-                  <Trash color="red"/>
-                </Button>{" "}
-                Delete Customer
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    ),
-  },
+  //         <DropdownMenuContent>
+  //           <DropdownMenuGroup>
+  //             <DropdownMenuItem onClick={() => viewOrders && viewOrders(row.original.id)}>
+  //               <Button variant="ghost" size="sm">
+  //                 <Clock/>
+  //               </Button>{" "}
+  //               View Past Orders
+  //             </DropdownMenuItem>
+  //           </DropdownMenuGroup>
+  //           <DropdownMenuGroup>
+  //             <DropdownMenuItem onClick={() => blacklistCustomer && blacklistCustomer(row.original.id)}>
+  //               <Button variant="ghost" size="sm">
+  //                 <UserX color="red"/>
+  //               </Button>{" "}
+  //               Blacklist Customer
+  //             </DropdownMenuItem>
+  //           </DropdownMenuGroup>
+  //           <DropdownMenuGroup>
+  //             <DropdownMenuItem onClick={() => deleteCustomer && deleteCustomer(row.original.id)}>
+  //               <Button variant="ghost" size="sm">
+  //                 <Trash color="red"/>
+  //               </Button>{" "}
+  //               Delete Customer
+  //             </DropdownMenuItem>
+  //           </DropdownMenuGroup>
+  //         </DropdownMenuContent>
+  //       </DropdownMenu>
+  //     </div>
+  //   ),
+  // },
 ];
