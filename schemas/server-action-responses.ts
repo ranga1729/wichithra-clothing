@@ -1,5 +1,5 @@
 import * as z from "zod"
-import { deleteCategorySchema, deleteDesignSchema, getCategorySchema, getDesignSchema } from "./admin-schemas"
+import { deleteCategorySchema, deleteColorSchema, deleteDesignSchema, getCategorySchema, getColorSchema, getDesignSchema } from "./admin-schemas"
 
 // Category CRUDs
 export const categoryListResponseSchema = z.object({
@@ -44,3 +44,25 @@ export const deleteDesignResponseSchema = z.object({
   design: deleteDesignSchema,
 });
 export type DeleteDesignResponseSchema = z.infer<typeof deleteDesignResponseSchema>;
+
+// Color CRUDs
+export const colorListResponseSchema = z.object({
+  colors: z.array(getColorSchema),
+  totalRecords: z.number(),
+});
+export type ColorListResponseSchema = z.infer<typeof colorListResponseSchema>;
+
+export const createColorResponseSchema = z.object({
+  color: getColorSchema,
+});
+export type CreateColorResponseSchema = z.infer<typeof createColorResponseSchema>;
+
+export const updateColorResponseSchema = z.object({
+  color: deleteColorSchema,
+});
+export type UpdateColorResponseSchema = z.infer<typeof updateColorResponseSchema>;
+
+export const deleteColorResponseSchema = z.object({
+  color: deleteColorSchema,
+});
+export type DeleteColorResponseSchema = z.infer<typeof deleteColorResponseSchema>;

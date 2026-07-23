@@ -228,4 +228,7 @@ export const en = {
   category_is_assigned_to_products: "Category is assigned to products. Can not be deleted.",
   failed_to_move_size_guide_image : "Failed to move size-guide image from temp folder.",
   design_is_assigned_to_products : "Design is assigned to products. Unassign them first before deleting.",
+  color_is_assigned_to_products: "Color is assigned to products/variants. Can not be deleted.",
+  swatch_removed_successfully: "Color swatch removed successfully.",
+  failed_to_get_color_selector_data: "Failed to get color selector data."
 }

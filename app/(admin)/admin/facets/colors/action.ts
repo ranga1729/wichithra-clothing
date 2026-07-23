@@ -2,15 +2,84 @@
 
 import { en } from "@/lib/i18n/en";
 import { includingDeleted, notDeleted, prisma } from "@/lib/prisma";
-import { colorSchema, ColorSchema } from "@/schemas/admin-schemas";
+import { baseColorSchema, BaseColorSchema, UpdateColorSchema } from "@/schemas/admin-schemas";
 import { ApiResponse } from "@/types/auth-types";
 import { ColorFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { revalidatePath } from "next/cache";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
-import { SUPABASE_BUCKET, SUPABASE_FOLDERS, uploadImage, deleteImage } from "@/components/providers/supabase/storage";
+import { SUPABASE_FOLDERS, moveTempToPermanent, deleteImage, extractStoragePathFromUrl } from "@/components/providers/supabase/storage";
+import { Prisma } from "@/generated/prisma/client";
+import { ColorListResponseSchema, CreateColorResponseSchema, DeleteColorResponseSchema, UpdateColorResponseSchema } from "@/schemas/server-action-responses";
 
-export async function getColors(paginator: Paginator, filter: ColorFilter):Promise<ApiResponse> {
+// Helper: Name conflict check (soft-delete aware)
+async function checkNameConflicts(name: string, excludeId?: string): Promise<string | null> {
+  const where: Prisma.ColorWhereInput = {
+    ...includingDeleted,
+    ...(excludeId && { id: { not: excludeId } }),
+    name: { equals: name, mode: "insensitive" },
+  };
+
+  const conflicts = await prisma.color.findMany({
+    where,
+    select: { id: true, name: true, deletedAt: true },
+  });
+
+  if (conflicts.length === 0) return null;
+
+  const activeConflict = conflicts.find((c) => c.deletedAt === null);
+  if (activeConflict) return en.name_already_exists;
+
+  const softDeletedConflict = conflicts.find((c) => c.deletedAt !== null);
+  if (softDeletedConflict) return en.name_already_exists_in_a_deleted_record;
+
+  return null;
+}
+
+// Helper: Process swatch image from temp URL to permanent location
+// If newUrl is a temp URL, moves it to permanent. If null, removes old.
+// Returns the final public URL or null.
+async function processSwatchImage(newUrl: string | null | undefined, entityId: string, oldUrl: string | null): Promise<string | null> {
+  // Removal: newUrl is null/empty and old exists
+  if ((!newUrl || newUrl === "") && oldUrl) {
+    try {
+      const oldPath = extractStoragePathFromUrl(oldUrl);
+      if (oldPath) await deleteImage(oldPath).catch(() => null);
+    } catch { /* ignore */ }
+    return null;
+  }
+
+  // New URL provided
+  if (newUrl) {
+    const isTempUrl = newUrl.includes(`/${SUPABASE_FOLDERS.TEMP}/`);
+
+    if (isTempUrl) {
+      // Delete old if exists
+      if (oldUrl) {
+        try {
+          const oldPath = extractStoragePathFromUrl(oldUrl);
+          if (oldPath) await deleteImage(oldPath).catch(() => null);
+        } catch { /* ignore */ }
+      }
+
+      // Extract temp path from URL and move to permanent
+      const tempPath = extractStoragePathFromUrl(newUrl);
+      if (tempPath) {
+        const { publicUrl } = await moveTempToPermanent(tempPath, SUPABASE_FOLDERS.SWATCHES, entityId);
+        return publicUrl;
+      }
+    }
+
+    // Non-temp URL (already permanent) — return as-is
+    return newUrl;
+  }
+
+  // No change
+  return oldUrl;
+}
+
+// ─── GET Colors (List) ──────────────────────────────────────────────────────
+export async function getColors(paginator: Paginator, filter: ColorFilter): Promise<ApiResponse<ColorListResponseSchema>> {
   try {
     await requireRole(["admin", "super-admin"]);
 
@@ -18,145 +87,96 @@ export async function getColors(paginator: Paginator, filter: ColorFilter):Promi
     const pageIndex = Math.max(0, paginator.pageIndex);
     const skip = pageIndex * pageSize;
 
-    const whereClause: any = {
+    const whereClause: Prisma.ColorWhereInput = {
       ...notDeleted,
       ...(filter.name && {
-        name: {
-          contains: filter.name as string,
-          mode: 'insensitive'
-        }
+        name: { contains: filter.name, mode: "insensitive" },
       }),
       ...(filter.hexCode && {
-        hexCode: {
-          contains: filter.hexCode as string,
-          mode: 'insensitive'
+        hexCode: { contains: filter.hexCode, mode: "insensitive" },
+      }),
+    };
+
+    const [colors, totalRecords] = await prisma.$transaction([
+      prisma.color.findMany({
+        select: {
+          id: true,
+          name: true,
+          hexCode: true,
+          swatchImageUrl: true,
+          isActive: true,
         },
-      })
+        where: whereClause,
+        orderBy: { name: "asc" },
+        skip,
+        take: pageSize,
+      }),
+      prisma.color.count({ where: whereClause }),
+    ]);
+
+    return {
+      success: true,
+      data: { colors, totalRecords },
+    };
+  } catch (error: any) {
+    if (error instanceof AuthError) throw error;
+    return {
+      success: false,
+      error: error.message ?? en.data_retrieval_failed,
+    };
+  }
+}
+
+// CREATE Color
+export async function createColor(newColor: BaseColorSchema): Promise<ApiResponse<CreateColorResponseSchema>> {
+  try {
+    await requireRole(["admin", "super-admin"]);
+
+    const validatedData = baseColorSchema.parse(newColor);
+
+    const nameError = await checkNameConflicts(validatedData.name);
+    if (nameError) {
+      return { success: false, error: nameError };
     }
-    
-    const colors = await prisma.color.findMany({
+
+    const color = await prisma.color.create({
+      data: {
+        name: validatedData.name,
+        hexCode: validatedData.hexCode ?? null,
+        isActive: true,
+      },
       select: {
         id: true,
         name: true,
         hexCode: true,
         swatchImageUrl: true,
-      },
-      where: whereClause,
-      skip: skip,
-      take: pageSize
-    })
-
-    const totalRecords = await prisma.color.count({
-      where: whereClause,
-    })
-
-    if(!colors) {
-      return {
-        success: false,
-        error: en.data_retrieval_failed
-      }
-    }
-
-    return {
-      success: true,
-      data: {
-        colors : colors,
-        totalRecords : totalRecords
-      }
-    };
-
-  } catch(error:any) {
-    if (error instanceof AuthError) throw error;
-    return { 
-      success: false,
-      error: error.message || en.data_retrieval_failed 
-    };
-  }
-}
-
-export async function createColor(data: ColorSchema):Promise<ApiResponse> {
-  try{ 
-    await requireRole(["admin", "super-admin"]);
-    const validatedData = colorSchema.parse(data);
-
-    const existingColor = await prisma.color.findUnique({
-      where: {
-        name: validatedData.name,
-        ...includingDeleted,
-      },
-      select: {
-        id: true,
-        deletedAt: true,
-      }
-    })
-
-    if(existingColor) {
-      if(existingColor.deletedAt === null) {
-        return {
-          success: false,
-          error: en.name_already_exists,
-        }
-      }
-      
-      const reActivatedColor = await prisma.color.update({
-        where: { id: existingColor.id },
-        data: {
-          hexCode: validatedData.hexCode ?? null,
-          deletedAt: null,
-          isActive: true,
-        }
-      })
-
-      if(!reActivatedColor) {
-        return {
-          success: false,
-          error: en.failed_to_create_color,
-        };
-      }
-
-      revalidatePath("/admin/colors");
-
-      return {
-        success: true,
-        data: { colorId: existingColor.id },
-        message: en.color_created_successfully,
-      }
-    }
-
-    const newColor = await prisma.color.create({
-      data: {
-        name: validatedData.name,
-        hexCode: validatedData.hexCode ?? null,
-        createdAt: new Date(),
         isActive: true,
-      }
+      },
     });
 
-    if(!newColor) {
-      return {
-        success: false,
-        error: en.failed_to_create_color,
-      };
+    // Move swatch image from temp to permanent if provided
+    if (validatedData.swatchImageUrl) {
+      const finalUrl = await processSwatchImage(validatedData.swatchImageUrl, color.id, null);
+      if (finalUrl !== validatedData.swatchImageUrl) {
+        await prisma.color.update({
+          where: { id: color.id },
+          data: { swatchImageUrl: finalUrl },
+        });
+        color.swatchImageUrl = finalUrl;
+      }
     }
 
     revalidatePath("/admin/colors");
-    
+
     return {
       success: true,
-      data: { colorId: newColor.id },
+      data: { color },
       message: en.color_created_successfully,
     };
-  } catch(error: any) {
+  } catch (error: any) {
     if (error instanceof AuthError) throw error;
-    console.error("Error creating color:", error.message);
-    
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-    
+    console.error("Create color error:", error);
+
     return {
       success: false,
       error: en.failed_to_create_color,
@@ -164,68 +184,139 @@ export async function createColor(data: ColorSchema):Promise<ApiResponse> {
   }
 }
 
-export async function deleteColorById(id: string):Promise<ApiResponse> {
+// UPDATE Color
+export async function updateColorById(data: UpdateColorSchema): Promise<ApiResponse<UpdateColorResponseSchema>> {
   try {
     await requireRole(["admin", "super-admin"]);
 
-    const color = await prisma.color.findUnique({
-      where: { id: id , ...notDeleted},
+    const validatedData = await import("@/schemas/admin-schemas").then(m =>
+      m.updateColorSchema.parse(data)
+    );
+
+    const nameError = await checkNameConflicts(validatedData.name, validatedData.id);
+    if (nameError) {
+      return { success: false, error: nameError };
+    }
+
+    const existingColor = await prisma.color.findUnique({
+      where: { id: validatedData.id, ...notDeleted },
+      select: { id: true, swatchImageUrl: true },
+    });
+
+    if (!existingColor) {
+      return { success: false, error: en.color_doesnt_exist };
+    }
+
+    // Process swatch image (handles temp→permanent move, removal, or no change)
+    const finalSwatchUrl = await processSwatchImage(
+      validatedData.swatchImageUrl,
+      validatedData.id,
+      existingColor.swatchImageUrl
+    );
+
+    const color = await prisma.color.update({
+      where: { id: validatedData.id },
+      data: {
+        name: validatedData.name,
+        hexCode: validatedData.hexCode ?? null,
+        isActive: validatedData.isActive,
+        swatchImageUrl: finalSwatchUrl,
+      },
       select: {
         id: true,
         name: true,
         hexCode: true,
         swatchImageUrl: true,
-      }
-    })
-
-    if(!color) {
-      return {
-        success: false,
-        error: en.design_doesnt_exist
-      }
-    }
-
-    const deletedColor = await prisma.color.update({
-      where: {
-        id: color.id
+        isActive: true,
       },
-      data: {
-        deletedAt: new Date(),
-      }
     });
 
-    if(!deletedColor) {
-        return {
-        success: false,
-        error: en.failed_to_delete_color,
-      }
-    }
-
-    if (color.swatchImageUrl) {
-      try {
-        const oldUrl = new URL(color.swatchImageUrl);
-        const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
-        if (oldPath) await deleteImage(oldPath).catch(() => null);
-      } catch { /* ignore URL parse errors */ }
-    }
-
-    revalidatePath('/admin/colors');
+    revalidatePath("/admin/colors");
 
     return {
       success: true,
-      message: en.color_deleted_successfully
-    }
-  } catch(error:any) {
+      data: { color },
+      message: en.color_updated_successfully,
+    };
+  } catch (error: any) {
     if (error instanceof AuthError) throw error;
-    console.error("Error deleting color:", error.message);
-    
-    if (error instanceof Error) {
+    console.error("Update color error:", error);
+
+    return {
+      success: false,
+      error: en.color_update_failed,
+    };
+  }
+}
+
+// DELETE Color (Soft Delete)
+export async function deleteColorById(id: string): Promise<ApiResponse<DeleteColorResponseSchema>> {
+  try {
+    await requireRole(["admin", "super-admin"]);
+
+    const color = await prisma.color.findFirst({
+      where: { id, ...notDeleted },
+      select: {
+        id: true,
+        swatchImageUrl: true,
+        _count: {
+          select: {
+            variants: true,
+            productImages: true,
+          },
+        },
+      },
+    });
+
+    if (!color) {
       return {
         success: false,
-        error: error.message,
+        error: en.color_doesnt_exist,
       };
     }
-    
+
+    if (color._count.variants > 0 || color._count.productImages > 0) {
+      return {
+        success: false,
+        error: en.color_is_assigned_to_products,
+      };
+    }
+
+    // Delete the swatch image if exists
+    if (color.swatchImageUrl) {
+      try {
+        const path = extractStoragePathFromUrl(color.swatchImageUrl);
+        if (path) await deleteImage(path).catch(() => null);
+      } catch { /* ignore */ }
+    }
+
+    const deletedColor = await prisma.color.update({
+      where: { id: color.id },
+      data: {
+        isActive: false,
+        deletedAt: new Date(),
+        swatchImageUrl: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        hexCode: true,
+        swatchImageUrl: true,
+        isActive: true,
+        deletedAt: true,
+      },
+    });
+
+    revalidatePath("/admin/colors");
+
+    return {
+      success: true,
+      data: { color: deletedColor },
+      message: en.color_deleted_successfully,
+    };
+  } catch (error: any) {
+    if (error instanceof AuthError) throw error;
+    console.error("Delete color error:", error);
     return {
       success: false,
       error: en.failed_to_delete_color,
@@ -233,220 +324,33 @@ export async function deleteColorById(id: string):Promise<ApiResponse> {
   }
 }
 
-export async function updateColorById(id: string, data: ColorSchema):Promise<ApiResponse> {
- try {
-  await requireRole(["admin", "super-admin"]);
-
-  const validatedData = colorSchema.parse(data);
- 
-  const color = await prisma.color.findUnique({
-    where: { 
-      id: id,
-      ...notDeleted, 
-    },
-    select: {
-      id: true,
-      name: true,
-      hexCode: true,
-      swatchImageUrl: true,
-      deletedAt: true,
-    }
-  })
-
-  if(!color) {
-    return {
-      success: false,
-      error: en.color_doesnt_exist
-    }
-  }
-
-  if(validatedData.name !== color.name) {
-    const nameConflict = await prisma.color.findUnique({
-      where: {
-        name: validatedData.name,
-        ...includingDeleted
-      },
-      select: {
-        id: true,
-        deletedAt: true,
-      }
-    })
-
-    if(nameConflict && nameConflict.deletedAt === null) {
-      return { success: false, error: en.name_already_exists };
-    }
-
-    if(nameConflict && nameConflict.deletedAt !== null) {
-      await prisma.color.delete({
-        where: {
-          id: nameConflict.id
-        }
-      })
-    }
-  }
-
-  const updatedColor = await prisma.color.update({
-    where: {
-      id: color.id
-    },
-    data: {
-      name: validatedData.name,
-      hexCode: validatedData.hexCode ?? null,
-    }
-  })
-
-  if(!updatedColor) {
-    return {
-      success: false,
-      error: en.color_update_failed
-    }
-  }
-
-  revalidatePath('/admin/colors');
-
-  return {
-    success: true,
-    message: en.color_updated_successfully
-  }
-
- } catch(error: any) {
-  if (error instanceof AuthError) throw error;
-  console.error("Error updating color:", error.message);
-    
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-    
-    return {
-      success: false,
-      error: en.color_update_failed,
-    };
- }
-}
-
-export async function updateColorSwatch(colorId: string, formData: FormData): Promise<ApiResponse> {
+// GET Selector Data
+export async function getColorSelectorData(): Promise<ApiResponse> {
   try {
     await requireRole(["admin", "super-admin"]);
 
-    const file = formData.get("file") as File;
-    if (!file || !file.size) return { success: false, error: en.failed_to_upload_image };
-
-    const color = await prisma.color.findUnique({
-      where: { id: colorId, ...notDeleted },
-      select: { id: true, swatchImageUrl: true },
-    });
-    if (!color) return { success: false, error: en.color_doesnt_exist };
-
-    if (color.swatchImageUrl) {
-      try {
-        const oldUrl = new URL(color.swatchImageUrl);
-        const oldPath = oldUrl.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
-        if (oldPath) await deleteImage(oldPath).catch(() => null);
-      } catch { /* ignore URL parse errors */ }
-    }
-
-    const ext = file.name.split(".").pop();
-    const storagePath = `${SUPABASE_FOLDERS.SWATCHES}/${colorId}.${ext}`;
-    const publicUrl = await uploadImage(file, storagePath, file.type);
-
-    await prisma.color.update({
-      where: { id: colorId },
-      data: { swatchImageUrl: publicUrl },
-    });
-
-    revalidatePath("/admin/colors");
-    return { success: true, data: { imageUrl: publicUrl } };
-
-  } catch (error: any) {
-    if (error instanceof AuthError) throw error;
-    console.error("Error updating color swatch:", error.message);
-    if (error instanceof Error) return { success: false, error: error.message };
-    return { success: false, error: en.failed_to_upload_image };
-  }
-}
-
-export async function removeColorSwatch(colorId: string): Promise<ApiResponse> {
-  try {
-    await requireRole(["admin", "super-admin"]);
-
-    const color = await prisma.color.findUnique({
-      where: { id: colorId, ...notDeleted },
-      select: { id: true, swatchImageUrl: true },
-    });
-    if (!color) return { success: false, error: en.color_doesnt_exist };
-
-    if (color.swatchImageUrl) {
-      try {
-        const url = new URL(color.swatchImageUrl);
-        const path = url.pathname.split(`/object/public/${SUPABASE_BUCKET}/`)[1];
-        if (path) await deleteImage(path).catch(() => null);
-      } catch { /* ignore URL parse errors */ }
-    }
-
-    await prisma.color.update({
-      where: { id: colorId },
-      data: { swatchImageUrl: null },
-    });
-
-    revalidatePath("/admin/colors");
-    return { success: true };
-
-  } catch (error: any) {
-    if (error instanceof AuthError) throw error;
-    console.error("Error removing color swatch:", error.message);
-    if (error instanceof Error) return { success: false, error: error.message };
-    return { success: false, error: en.failed_to_remove_image };
-  }
-}
-
-export async function getColorSelectorData():Promise<ApiResponse> {
-  try {
-    await requireRole(["admin", "super-admin"]);
-    
     const colors = await prisma.color.findMany({
-      where: {
-        ...notDeleted,
-        isActive: true,
-      },
+      where: { ...notDeleted, isActive: true },
       select: {
         id: true,
         name: true,
         hexCode: true,
         swatchImageUrl: true,
       },
-      orderBy: {
-        name: 'asc',
-      }
-    })
-
-    if(!colors) {
-      return {
-        success: false,
-        error: en.failed_to_get_category_selector_data,
-      }
-    }
+      orderBy: { name: "asc" },
+    });
 
     return {
       success: true,
-      data: colors
-    }
-  } catch(error) {
+      data: colors,
+    };
+  } catch (error: any) {
     if (error instanceof AuthError) throw error;
-    console.error("Error updating product:", error);
-    
-    if (error instanceof Error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-    
+    console.error("Get selector error:", error);
+
     return {
       success: false,
-      error: en.product_update_failed,
+      error: en.failed_to_get_color_selector_data,
     };
   }
 }

@@ -6,12 +6,12 @@ import { initialPaginator, Paginator } from "@/types/table-types";
 import { useRef, useState } from "react";
 import { getColumns } from "./columns";
 import { en } from "@/lib/i18n/en";
-import AddNewModal from "./addNewModal";
-import EditModal from "./editModal";
+import AddNewModal from "./AddNewModal";
+import EditModal from "./UpdateModal";
 import { ColorFilter } from "@/types/filter-types";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Item } from "@/components/ui/item";
+import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteColorById, getColors } from "./action";
 import toast from "react-hot-toast";
@@ -20,8 +20,8 @@ import AddNewButton from "@/components/AddNewButton";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const InitiaFilter:ColorFilter = {
- name : "",
- hexCode : "",
+  name : "",
+  hexCode : "",
 }
 
 export default function ColorsPage() {
@@ -87,6 +87,18 @@ export default function ColorsPage() {
   
   return (
     <div className="flex flex-col gap-3">
+      
+      {/* Page header */}
+        <Item variant="muted">
+          <ItemContent>
+            <ItemTitle className="text-2xl">Colors</ItemTitle>
+            <ItemDescription>
+              Defines the visual shade, tone, or pattern of a garment. Colors(ex: Red, Blue, Olive Green) represent by a hexadecimal code. 
+              Swatches(ex: Camouflage, Floral, Polka dot) can include an image of the pattern. 
+            </ItemDescription>
+          </ItemContent>
+        </Item>
+
       <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
         <div className="flex flex-row justify-start items-center gap-3 w-full">
           <div className="grid w-60 max-w-sm items-center gap-2">
@@ -132,9 +144,9 @@ export default function ColorsPage() {
           onDelete: (color: Color) => deleteColor(color.id),
           paginator: paginator
         })}
-        data={colors?.data.colors || []} 
+        data={colors?.data?.colors || []} 
         isLoading={isPending}
-        totalRecords={colors?.data.totalRecords || 0} 
+        totalRecords={colors?.data?.totalRecords || 0} 
         initialPageSize={10}
         onPaginationChange={setPaginator}
       />

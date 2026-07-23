@@ -84,20 +84,39 @@ export const deleteDesignSchema = getDesignSchema.extend({
 });
 export type DeleteDesignSchema = z.infer<typeof deleteDesignSchema>;
 
-
-export const colorSchema = z.object({
+// Color management
+export const baseColorSchema = z.object({
   name: z
     .string("Enter a valid name")
     .min(1, "Name is required")
-    .max(100, "Name can not exceed 100 characters")
+    .max(100, "Name cannot exceed 100 characters")
     .transform((val) => val.trim()),
   hexCode: z
     .string()
     .length(6, "Color code must have 6 digits")
-    .optional()
+    .nullish()
     .or(z.literal(""))
-    .transform((val) => val === "" ? undefined : val),
-})
+    .transform((val) => (val === "" ? undefined : val)),
+  swatchImageUrl: z.string().nullish(),
+});
+export type BaseColorSchema = z.input<typeof baseColorSchema>;
+
+export const getColorSchema = baseColorSchema.extend({
+  id: z.uuid(),
+  isActive: z.boolean(),
+});
+export type GetColorSchema = z.infer<typeof getColorSchema>;
+
+export const updateColorSchema = baseColorSchema.extend({
+  id: z.uuid(),
+  isActive: z.boolean(),
+});
+export type UpdateColorSchema = z.input<typeof updateColorSchema>;
+
+export const deleteColorSchema = getColorSchema.extend({
+  deletedAt: z.date().nullish(),
+});
+export type DeleteColorSchema = z.infer<typeof deleteColorSchema>;
 
 //for products page
 const categorySelectSchema = z.object({
@@ -421,8 +440,6 @@ export const customerSchema = z.object({
   })),
 })
 
-// export type DesignSchema = z.infer<typeof designSchema>
-export type ColorSchema = z.infer<typeof colorSchema>
 
 export type ProductSchema = z.infer<typeof productSchema>
 export type SimpleProductSchema = z.infer<typeof simpleProductSchema>
