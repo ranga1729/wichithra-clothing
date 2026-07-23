@@ -1,10 +1,12 @@
+'use client'
+
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { updateDesignById } from "./action";
 import toast from "react-hot-toast";
@@ -23,7 +25,6 @@ interface Props {
 
 export default function UpdateModal(props: Props) {
   const queryClient = useQueryClient();
-  const [prevData, setPrevData] = useState<Design>();
 
   const {
     register, handleSubmit,
@@ -33,53 +34,49 @@ export default function UpdateModal(props: Props) {
     resolver: zodResolver(updateDesignSchema),
     mode: "onChange",
     defaultValues: {
+      id: "",
       name: "",
       slug: "",
       description: "",
+      isActive: true,
     },
   });
 
   const currentFormData = watch();
 
   const hasChanges = useMemo(() => {
-    if(!prevData) return false;
-
-    const nameChanged = currentFormData.name !== prevData.name;
-    const slugChanged = currentFormData.slug !== prevData.slug;
-    const descriptionChanged = currentFormData.description !== prevData.description;
-
-    return nameChanged || slugChanged || descriptionChanged;
-  }, [currentFormData, prevData])
-
-  const handleCancel = () => {
-    props.onOpenChange(false);
-    reset();
-  }
+    if (!props.selectedDesign) return false;
+    return (
+      currentFormData.name !== props.selectedDesign.name ||
+      currentFormData.slug !== props.selectedDesign.slug ||
+      (currentFormData.description || "") !== (props.selectedDesign.description || "")
+    );
+  }, [currentFormData, props.selectedDesign]);
 
   useEffect(() => {
-    const loadDesignData = async () => {
-      if (props.selectedDesign) {
-        setValue("name", props.selectedDesign.name);
-        setValue("slug", props.selectedDesign.slug);
-        setValue("description", props.selectedDesign.description || "");
-                
-        setPrevData(props.selectedDesign);
-      }
-    };
+    if (props.selectedDesign && props.isModalOpen) {
+      setValue("id", props.selectedDesign.id);
+      setValue("name", props.selectedDesign.name);
+      setValue("slug", props.selectedDesign.slug);
+      setValue("description", props.selectedDesign.description || "");
+      setValue("isActive", props.selectedDesign.isActive);
+    }
+  }, [props.selectedDesign?.id, props.isModalOpen]);
 
-    loadDesignData();
-  }, [props.selectedDesign]);
+  useEffect(() => {
+    if (!props.isModalOpen) {
+      reset();
+    }
+  }, [props.isModalOpen, reset]);
 
-  // react query
   const { mutate: updateDesign, isPending } = useMutation({
-    mutationFn: ({data}:{data: UpdateDesignSchema}) => updateDesignById(data),
+    mutationFn: (data: UpdateDesignSchema) => updateDesignById(data),
     onSuccess: (response) => {
       if (response.success) {
-        queryClient.invalidateQueries({ queryKey: ['designs'] });
+        queryClient.invalidateQueries({ queryKey: ["designs"] });
         toast.success(en.design_updated_successfully);
         reset();
         props.onOpenChange(false);
-        setPrevData(undefined);
       } else {
         toast.error(response.error || en.design_update_failed);
       }
@@ -89,8 +86,13 @@ export default function UpdateModal(props: Props) {
     },
   });
 
-  const onSubmit = (data: UpdateDesignSchema) => updateDesign({id: prevData?.id!, data: data})
-  
+  const onSubmit = (data: UpdateDesignSchema) => updateDesign(data);
+
+  const handleCancel = () => {
+    reset();
+    props.onOpenChange(false);
+  };
+
   return (
     <Dialog open={props.isModalOpen} onOpenChange={handleCancel}>
       <DialogContent className="dark:bg-neutral-800 max-h-[90vh] overflow-y-auto">
