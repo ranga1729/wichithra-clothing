@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
 
 const initialFilter: InventoryFilter = {
   productId: "",
@@ -117,6 +118,19 @@ export default function InventoryPage() {
 
   return (
     <div className="flex flex-col gap-3">
+
+        {/* Header */}
+        <Item variant="muted">
+          <ItemContent className="flex-col">
+            <ItemTitle className="text-2xl">Inventory(Product Variants)</ItemTitle>
+            <ItemDescription className="whitespace-normal line-clamp-none">
+              Inventory tracks product variants. <br/>
+              A product variant represent an actual sellable Item construct with a produt mapped with one size and one color. <br/>
+              (Ex: Black Color Medium Size Baggy Tshirt with Crew Neck - Product: Baggy Tshirt with Crew Neck, Color: Black, Size: M)
+            </ItemDescription>
+          </ItemContent>
+        </Item>
+
       <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
         <div className="flex flex-row flex-wrap justify-start items-end gap-3 w-full">
           <div className="w-60 max-w-sm">

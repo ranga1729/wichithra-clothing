@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { en } from "@/lib/i18n/en";
 import toast from "react-hot-toast";
 import { useDebounce } from "@/hooks/useDebounce";
+import { Item, ItemContent, ItemTitle } from "@/components/ui/item";
 
 const initialFilter: CustomerFilter = {
   name: "",
@@ -63,6 +64,14 @@ export default function CustomersPage() {
 
   return (
     <div className="flex flex-col gap-3">
+
+        {/* Page header */}
+        <Item variant="muted">
+          <ItemContent>
+            <ItemTitle className="text-2xl">Customers</ItemTitle>
+          </ItemContent>
+        </Item>
+
       <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
         <div className="flex flex-row justify-start items-center gap-3 w-full">
           <div className="grid w-60 max-w-sm items-center gap-2">

@@ -92,7 +92,7 @@ export default function ColorsPage() {
         <Item variant="muted">
           <ItemContent>
             <ItemTitle className="text-2xl">Colors</ItemTitle>
-            <ItemDescription>
+            <ItemDescription className="whitespace-normal line-clamp-none">
               Defines the visual shade, tone, or pattern of a garment. Colors(ex: Red, Blue, Olive Green) represent by a hexadecimal code. 
               Swatches(ex: Camouflage, Floral, Polka dot) can include an image of the pattern. 
             </ItemDescription>

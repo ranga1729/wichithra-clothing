@@ -139,7 +139,7 @@ export default function CategoryPage() {
         <Item variant="muted">
           <ItemContent>
             <ItemTitle className="text-2xl">Categories</ItemTitle>
-            <ItemDescription>
+            <ItemDescription className="whitespace-normal line-clamp-none">
               The fundamental structural geometry and cut of an apparel item (ex: T-Shirt, Skirt, Shorts) that serves as the base entity for a product.
             </ItemDescription>
           </ItemContent>

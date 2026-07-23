@@ -19,6 +19,7 @@ import { getCategorySelectorData } from "../facets/categories/action";
 import { useDebounce } from "@/hooks/useDebounce";
 import AddNewButton from "@/components/AddNewButton";
 import AddNewModal from "./AddNewModal";
+import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
 
 const initiaFilter:ProductFilter = {
   name: "",
@@ -99,6 +100,18 @@ export default function ProductsPage() {
 
   return (
     <div className="flex flex-col gap-3">
+
+        {/* Page header */}
+        <Item variant="muted">
+          <ItemContent>
+            <ItemTitle className="text-2xl">Products</ItemTitle>
+            <ItemDescription className="whitespace-normal line-clamp-none">
+              A product is a construct represents a one product category and multiple Designs. <br/>
+              (Ex: Baggy Tshirt with Crew Neck - Category: Tshirt, Designs: Baggy + Crew neck)
+            </ItemDescription>
+          </ItemContent>
+        </Item>
+        
       <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
         <div className="flex flex-row justify-start items-center gap-3 w-full">
           <div className="grid w-60 max-w-sm items-center gap-2">

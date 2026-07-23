@@ -29,6 +29,7 @@ import { getCancelledOrders } from "./actions"
 import { getColumns } from "./columns"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { PAYMENT_STATUS_OPTIONS } from "@/lib/data-objects"
+import { Item, ItemContent, ItemTitle } from "@/components/ui/item"
 
 const initialFilter: CancelledOrderFilter = {
   orderNumber: "",
@@ -95,6 +96,14 @@ export default function CancelledOrdersPage() {
 
   return (
     <div className="flex flex-col gap-3">
+
+        {/* Page header */}
+        <Item variant="muted">
+          <ItemContent>
+            <ItemTitle className="text-2xl">Completed Orders</ItemTitle>
+          </ItemContent>
+        </Item>
+
       <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
         <FieldGroup className="flex flex-row flex-wrap justify-start items-end gap-3 w-full">
           

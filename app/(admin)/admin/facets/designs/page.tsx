@@ -108,7 +108,7 @@ export default function DesignPage() {
         <Item variant="muted">
           <ItemContent>
             <ItemTitle className="text-2xl">Designs</ItemTitle>
-            <ItemDescription>
+            <ItemDescription className="whitespace-normal line-clamp-none">
               Structural alterations and surface alterations applied to a bacis structure(category) of an apparel item. <br/>
               ex: Baggy Tshirt (Tshirt is the category, Baggy is the design)
             </ItemDescription>
