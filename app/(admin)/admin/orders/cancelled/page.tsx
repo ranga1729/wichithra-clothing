@@ -100,7 +100,7 @@ export default function CancelledOrdersPage() {
         {/* Page header */}
         <Item variant="muted">
           <ItemContent>
-            <ItemTitle className="text-2xl">Completed Orders</ItemTitle>
+            <ItemTitle className="text-2xl">Cancelled Orders</ItemTitle>
           </ItemContent>
         </Item>
 
@@ -211,8 +211,6 @@ export default function CancelledOrdersPage() {
         columns={getColumns({
           paginator: paginator,
           onView: (id) => router.push(`/admin/orders/cancelled/${id}`),
-          onMove: (id) => console.log(id),
-          onCancel: (id) => console.log(id),
         })}
         data={data?.orders ?? []}
         isLoading={isPending}

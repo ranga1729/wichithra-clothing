@@ -128,7 +128,7 @@ export const getColumns = ({ onCancel, onMove, onView, paginator }: ColumnProps)
                 <Button variant="ghost" size="sm">
                   <Check color="green"/>
                 </Button>{" "}
-                Move to Ongoing Orders
+                Move to Completed Orders
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onCancel && onCancel(row.original.id)}>
                 <Button variant="ghost" size="sm">

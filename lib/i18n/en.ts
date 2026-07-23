@@ -255,5 +255,12 @@ export const en = {
   design_is_assigned_to_products : "Design is assigned to products. Unassign them first before deleting.",
   color_is_assigned_to_products: "Color is assigned to products/variants. Can not be deleted.",
   swatch_removed_successfully: "Color swatch removed successfully.",
-  failed_to_get_color_selector_data: "Failed to get color selector data."
+  failed_to_get_color_selector_data: "Failed to get color selector data.",
+
+  order_moved_to_ongoing: "Order moved to ongoing successfully",
+  order_moved_to_completed: "Order moved to completed successfully",
+  order_cancelled: "Order cancelled successfully",
+  failed_to_move_order: "Failed to move order",
+  failed_to_cancel_order: "Failed to cancel order",
+  cancel_reason_required: "Cancel reason is required"
 }

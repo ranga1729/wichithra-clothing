@@ -5,17 +5,16 @@ import { CompletedOrderSchema } from "@/schemas/admin-schemas"
 import { Paginator } from "@/types/table-types"
 import { ColumnDef } from "@tanstack/react-table"
 import { format } from "date-fns"
-import { Check, Ellipsis, LayoutList, X } from "lucide-react"
+import { Ellipsis, LayoutList, X } from "lucide-react"
 
 type ColumnProps = {
   paginator?: Paginator
-  onMove: (id:string) => void,
   onCancel: (id:string) => void,
   onView: (id:string) => void,
 }
 
 
-export const getColumns = ({ onCancel, onMove, onView, paginator }: ColumnProps): ColumnDef<CompletedOrderSchema>[] => [
+export const getColumns = ({ onCancel, onView, paginator }: ColumnProps): ColumnDef<CompletedOrderSchema>[] => [
   {
     id: "index",
     header: "No.",
@@ -123,12 +122,6 @@ export const getColumns = ({ onCancel, onMove, onView, paginator }: ColumnProps)
                   <LayoutList/>
                 </Button>{" "}
                 View Order Items
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onMove && onMove(row.original.id)}>
-                <Button variant="ghost" size="sm">
-                  <Check color="green"/>
-                </Button>{" "}
-                Move to Ongoing Orders
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onCancel && onCancel(row.original.id)}>
                 <Button variant="ghost" size="sm">

@@ -6,7 +6,7 @@ import { ApiResponse } from "@/types/auth-types";
 import { NewOrderFilter } from "@/types/filter-types";
 import { Paginator } from "@/types/table-types";
 import { AuthError, requireRole } from "@/lib/server-auth-guard";
-import { OrderStatus, PaymentStatus } from "@/generated/prisma/enums";
+import { OrderStatus, PaymentStatus, StockMovementType } from "@/generated/prisma/enums";
 
 const NEW_ORDER_STATUSES: OrderStatus[] = [OrderStatus.PENDING, OrderStatus.CONFIRMED];
 
@@ -160,6 +160,131 @@ export async function getOrderItems(orderId: string): Promise<ApiResponse> {
     return {
       success: false,
       error: error.message || en.failed_to_load_order_details,
+    };
+  }
+}
+
+export async function moveToOngoing(orderId: string): Promise<ApiResponse> {
+  try {
+    const adminUser = await requireRole(["admin", "super-admin"]);
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true },
+    });
+
+    if (!order) {
+      return { success: false, error: en.order_not_found };
+    }
+
+    if (order.status !== OrderStatus.PENDING && order.status !== OrderStatus.CONFIRMED) {
+      return { success: false, error: en.failed_to_move_order };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id: orderId },
+        data: { status: OrderStatus.PROCESSING },
+      });
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId,
+          status: OrderStatus.PROCESSING,
+          notes: "Moved to ongoing",
+          createdBy: adminUser.userId,
+        },
+      });
+    });
+
+    return { success: true, message: en.order_moved_to_ongoing };
+  } catch (error: any) {
+    if (error instanceof AuthError) throw error;
+    return {
+      success: false,
+      error: error.message || en.failed_to_move_order,
+    };
+  }
+}
+
+export async function cancelOrder(orderId: string, reason: string): Promise<ApiResponse> {
+  try {
+    const adminUser = await requireRole(["admin", "super-admin"]);
+
+    if (!reason?.trim()) {
+      return { success: false, error: en.cancel_reason_required };
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true },
+    });
+
+    if (!order) {
+      return { success: false, error: en.order_not_found };
+    }
+
+    if (order.status !== OrderStatus.PENDING && order.status !== OrderStatus.CONFIRMED) {
+      return { success: false, error: en.failed_to_cancel_order };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: OrderStatus.CANCELLED,
+          cancelReason: reason.trim(),
+        },
+      });
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId,
+          status: OrderStatus.CANCELLED,
+          notes: reason.trim(),
+          createdBy: adminUser.userId,
+        },
+      });
+
+      const orderItems = await tx.orderItem.findMany({
+        where: { orderId },
+        select: { inventoryId: true, quantity: true },
+      });
+
+      for (const item of orderItems) {
+        if (!item.inventoryId) continue;
+
+        await tx.inventory.update({
+          where: { id: item.inventoryId },
+          data: {
+            quantity: { increment: item.quantity },
+          },
+        });
+
+        await tx.stockMovement.create({
+          data: {
+            inventoryId: item.inventoryId,
+            movementType: StockMovementType.RELEASED,
+            quantity: item.quantity,
+            reason: "Order cancelled - inventory restored",
+            referenceId: orderId,
+            createdBy: adminUser.userId,
+          },
+        });
+      }
+
+      await tx.payment.updateMany({
+        where: { orderId, status: { not: PaymentStatus.REFUNDED } },
+        data: { status: PaymentStatus.REFUNDED },
+      });
+    });
+
+    return { success: true, message: en.order_cancelled };
+  } catch (error: any) {
+    if (error instanceof AuthError) throw error;
+    return {
+      success: false,
+      error: error.message || en.failed_to_cancel_order,
     };
   }
 }

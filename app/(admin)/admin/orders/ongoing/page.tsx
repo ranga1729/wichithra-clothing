@@ -18,18 +18,19 @@ import { useDebounce } from "@/hooks/useDebounce"
 import { en } from "@/lib/i18n/en"
 import { OngoingOrderFilter } from "@/types/filter-types"
 import { initialPaginator, Paginator } from "@/types/table-types"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { type DateRange } from "react-day-picker"
 import toast from "react-hot-toast"
 import { getColumns } from "./columns"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { getOngoingOrders } from "./actions"
+import { getOngoingOrders, moveToCompleted, cancelOrder } from "./actions"
 import { PAYMENT_STATUS_OPTIONS } from "@/lib/data-objects"
 import { Item, ItemContent, ItemTitle } from "@/components/ui/item"
+import { CancelOrderModal } from "@/components/custom/admin/cancel-order-modal"
 
 const initialFilter: OngoingOrderFilter = {
   orderNumber: "",
@@ -41,10 +42,12 @@ const initialFilter: OngoingOrderFilter = {
 
 export default function OngoingOrdersPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const tableRef = useRef<TableWithPaginationRef>(null)
   const [paginator, setPaginator] = useState<Paginator>(initialPaginator)
   const [filter, setFilter] = useState<OngoingOrderFilter>(initialFilter)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null)
 
   const debouncedFilter = useDebounce(filter, 500)
 
@@ -93,6 +96,42 @@ export default function OngoingOrdersPage() {
       toast.error(error.message)
     }
   }, [error, isError])
+
+  const invalidateQueries = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["ongoing-orders"] })
+  }, [queryClient])
+
+  const moveMutation = useMutation({
+    mutationFn: moveToCompleted,
+    onSuccess: (response) => {
+      if (response.success) {
+        toast.success(response.message || en.order_moved_to_completed)
+        invalidateQueries()
+      } else {
+        toast.error(response.error || en.failed_to_move_order)
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || en.failed_to_move_order)
+    },
+  })
+
+  const cancelMutation = useMutation({
+    mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) =>
+      cancelOrder(orderId, reason),
+    onSuccess: (response) => {
+      if (response.success) {
+        toast.success(response.message || en.order_cancelled)
+        invalidateQueries()
+        setCancelOrderId(null)
+      } else {
+        toast.error(response.error || en.failed_to_cancel_order)
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || en.failed_to_cancel_order)
+    },
+  })
 
   return (
     <div className="flex flex-col gap-3">
@@ -211,14 +250,27 @@ export default function OngoingOrdersPage() {
         columns={getColumns({
           paginator: paginator,
           onView: (id) => router.push(`/admin/orders/ongoing/${id}`),
-          onMove: (id) => console.log(id),
-          onCancel: (id) => console.log(id),
+          onMove: (id) => moveMutation.mutate(id),
+          onCancel: (id) => setCancelOrderId(id),
         })}
         data={data?.orders ?? []}
         isLoading={isPending}
         totalRecords={data?.totalRecords ?? 0}
         initialPageSize={10}
         onPaginationChange={setPaginator}
+      />
+
+      <CancelOrderModal
+        open={!!cancelOrderId}
+        onOpenChange={(open) => {
+          if (!open) setCancelOrderId(null)
+        }}
+        onConfirm={(reason) => {
+          if (cancelOrderId) {
+            cancelMutation.mutate({ orderId: cancelOrderId, reason })
+          }
+        }}
+        isLoading={cancelMutation.isPending}
       />
     </div>
   )
