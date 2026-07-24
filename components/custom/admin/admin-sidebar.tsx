@@ -5,6 +5,7 @@ import {
   ChartNoAxesCombined,
   CircleDollarSign,
   ClipboardClock,
+  icons,
   ListCollapse,
   ListOrdered,
   Shirt,
@@ -87,21 +88,27 @@ const data = {
       ]
     },
     {
+      title: "Payments",
+      url: "/admin/payments",
+      icon: CircleDollarSign,
+      isActive: true,
+    },
+    {
       title: "Products",
       url: "/admin/products",
       icon: Shirt,
       isActive: true,
     },
     {
-      title: "Collections",
-      url: "/admin/collections",
-      icon: SquareLibrary,
+      title: "Inventory(Variants)",
+      url: "/admin/inventory",
+      icon: SquaresExclude,
       isActive: true,
     },
     {
-      title: "Inventory",
-      url: "/admin/inventory",
-      icon: SquaresExclude,
+      title: "Product Collections",
+      url: "/admin/collections",
+      icon: SquareLibrary,
       isActive: true,
     },
     {
@@ -128,12 +135,6 @@ const data = {
       title: "Customers",
       url: "/admin/customers",
       icon: UserRound,
-      isActive: true,
-    },
-    {
-      title: "Payments",
-      url: "/admin/payments",
-      icon: CircleDollarSign,
       isActive: true,
     },
     {

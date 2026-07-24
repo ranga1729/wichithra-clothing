@@ -586,7 +586,7 @@ export default function ProductDetailPage() {
         <h1 className="font-bold text-md text-neutral-600 text-center">Product Mappings</h1>
         <div className="flex flex-row items-start justify-center flex-wrap p-5 rounded-2xl gap-4">
           <ColorMapper variants={product?.variants}  />
-          <DesignMapper designs={product?.productDesigns} />
+          <DesignMapper designs={product?.productDesigns} productId={productId!} />
           <SizeMapper variants={product?.variants} />
         </div>
       </div> 

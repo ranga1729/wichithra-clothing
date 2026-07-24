@@ -12,7 +12,7 @@ import {
 import toast from "react-hot-toast";
 import { registerUser } from "./actions";
 import { useRouter } from "next/navigation";
-import logo from "@/public/images/logo.png"
+import logo from "@/public/logo/KOA_logo_white.png"
 import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

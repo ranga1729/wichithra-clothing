@@ -46,7 +46,7 @@ export default function SearchableSelect<T extends { id?: string }>({
       <Combobox
         items={items}
         itemToStringValue={itemToStringValue}
-        value={(value !== null ? itemToStringValue(value) : "") as any}
+        value={value}
         onValueChange={onValueChange}
         disabled={disabled}
       >
@@ -58,7 +58,7 @@ export default function SearchableSelect<T extends { id?: string }>({
           aria-invalid={!!error}
           className="dark:border dark:border-neutral-600"
         />
-        <ComboboxContent>
+        <ComboboxContent className="z-9999">
           <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
           <ComboboxList>
             {(item: T) => (
