@@ -54,18 +54,19 @@ export function KoaHeader() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <Link 
+              href="/search" 
+              className={`text-sm font-medium transition duration-300 ${isSolidActive ? 'text-foreground hover:text-primary' : 'text-white hover:text-white/70'}`}
+            >
+              Shop
+            </Link>
+            
+            <Link 
               href="/collections" 
               className={`text-sm font-medium transition duration-300 ${isSolidActive ? 'text-foreground hover:text-primary' : 'text-white hover:text-white/70'}`}
             >
               Collections
             </Link>
             
-            <Link 
-              href="/search" 
-              className={`text-sm font-medium transition duration-300 ${isSolidActive ? 'text-foreground hover:text-primary' : 'text-white hover:text-white/70'}`}
-            >
-              Shop
-            </Link>
             <Link 
               href="/about" 
               className={`text-sm font-medium transition duration-300 ${isSolidActive ? 'text-foreground hover:text-primary' : 'text-white hover:text-white/70'}`}
@@ -116,7 +117,7 @@ export function KoaHeader() {
               )}
             </Button>
 
-            <div className={isSolidActive ? 'text-foreground' : 'text-white'}>
+            <div className={`p-2 rounded-lg transition duration-300 ${isSolidActive ? 'hover:bg-muted' : 'hover:bg-white/10'}`}>
               <UserAccount isSolidActive={isSolidActive} />
             </div>
           </div>

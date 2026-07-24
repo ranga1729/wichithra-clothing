@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import logo from "../../../public/logo/KOA_logo_black.png"
+import warrior_face from "@/public/logo/warrior_face_black.png"
 import owner from "@/public/Kalindu/kalindu-2.jpg"
+import journey from "@/public/images/journey.png"
 import Breadcrumbs from "@/components/custom/shop/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -87,9 +89,9 @@ export default function AboutPage() {
             {/* Decorative logo */}
             <div
               aria-hidden="true"
-              className="hidden md:block select-none leading-none opacity-10"
+              className="hidden md:block select-none leading-none"
             >
-              <Image src={logo} alt="" width={200} height={200} className="object-contain" />
+              <Image src={logo} alt="KOA logo" width={500} height={500} className="object-contain" />
             </div>
           </div>
 
@@ -107,10 +109,13 @@ export default function AboutPage() {
       <section className="border-y border-border bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
           <div className="grid md:grid-cols-[1fr_2fr] gap-12 items-start">
-            <div className="md:sticky md:top-24">
+            <div className="md:sticky md:top-24 h-full flex flex-col">
               <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
                 The origin
               </p>
+              <div className="flex-1 flex items-center justify-center">
+                <Image src={warrior_face} alt={"Warrior Face"} width={200} height={200} />
+              </div>
             </div>
 
             <div className="space-y-6">
@@ -182,10 +187,13 @@ export default function AboutPage() {
       <section className="border-b border-border">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
           <div className="grid md:grid-cols-[1fr_2fr] gap-12 items-start">
-            <div className="md:sticky md:top-24">
+            <div className="md:sticky md:top-24 h-full flex flex-col">
               <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
                 The timeline
               </p>
+              <div className="flex-1 flex items-center justify-center">
+                <Image src={journey} alt={"Joruney"} width={400} height={400} />
+              </div>
             </div>
 
             <div className="relative">
