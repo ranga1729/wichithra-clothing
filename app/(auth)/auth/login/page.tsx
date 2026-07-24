@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { loginUser } from "./actions";
 import { useRouter } from "next/navigation";
-import logo from "@/public/images/logo.png"
+import logo from "@/public/logo/warrior_face_white.png"
 import Image from "next/image";
 import { en } from "@/lib/i18n/en";
 import { useMutation } from "@tanstack/react-query";
@@ -31,7 +31,7 @@ export default function Login() {
         toast.success(result.message!);
         const role = result.data?.user.role;
         if (role === 'admin' || role === 'super-admin') {
-          router.push("/admin/analytics");
+          router.push("/admin/analytics/sales");
         } else {
           router.push("/");
         }

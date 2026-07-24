@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import logo from "../../../public/logo/KOA_logo_black.png"
+import owner from "@/public/Kalindu/kalindu-2.jpg"
 
 export const metadata: Metadata = {
   title: "About | KOA Clothing",
@@ -308,29 +309,18 @@ export default function AboutPage() {
                 className="relative w-64 h-80 rounded-2xl overflow-hidden flex items-end"
                 style={{ background: "hsl(var(--muted))" }}
               >
-                {/* Big decorative letter */}
-                <span
-                  aria-hidden="true"
-                  className="absolute top-4 right-4 font-black leading-none select-none"
-                  style={{
-                    fontSize: "10rem",
-                    color: "#C9A96E",
-                    opacity: 0.15,
-                    lineHeight: 1,
-                  }}
-                >
-                  K
-                </span>
+                
                 {/* Name plate */}
                 <div
-                  className="w-full px-5 py-4 z-10"
+                  className="w-full px-0 pt-0 pb-5 z-10"
                   style={{ background: "rgba(0,0,0,0.55)" }}
                 >
-                  <p className="text-white font-semibold text-sm">
+                  <Image src={owner} alt={"Mr. Kalindu Dilranga"} ></Image>
+                  <p className="text-white font-semibold text-sm text-center">
                     Kalindu Dilranga
                   </p>
                   <p
-                    className="text-xs mt-0.5"
+                    className="text-xs mt-0.5 text-center"
                     style={{ color: "#C9A96E" }}
                   >
                     Founder, KOA Clothing
