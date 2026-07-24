@@ -1,32 +1,10 @@
+import { AUDITLOGS_ACTION_BADGE_STYLES } from "@/lib/utils"
+import { AuditLogRow } from "@/schemas/admin-schemas"
 import { Paginator } from "@/types/table-types"
 import { ColumnDef } from "@tanstack/react-table"
 
-type AuditLogRow = {
-  id: string
-  action: string
-  entity: string
-  entityId: string | null
-  description: string | null
-  oldValues: Record<string, unknown>
-  newValues: Record<string, unknown>
-  ipAddress: string | null
-  createdAt: string
-  user: {
-    firstName: string
-    lastName: string
-    email: string
-  }
-}
-
 type ColumnProps = {
   paginator?: Paginator
-}
-
-const ACTION_BADGE_STYLES: Record<string, string> = {
-  CREATE: "border-green-500 bg-green-100 text-green-800",
-  UPDATE: "border-blue-500 bg-blue-100 text-blue-800",
-  DELETE: "border-red-500 bg-red-100 text-red-800",
-  LOGIN: "border-purple-500 bg-purple-100 text-purple-800",
 }
 
 export const getColumns = ({
@@ -59,7 +37,7 @@ export const getColumns = ({
     header: () => <div className="text-center">Action</div>,
     cell: ({ row }) => {
       const action = row.original.action
-      const badgeClass = ACTION_BADGE_STYLES[action] ?? "border-gray-500 bg-gray-100 text-gray-800"
+      const badgeClass = AUDITLOGS_ACTION_BADGE_STYLES[action] ?? "border-gray-500 bg-gray-100 text-gray-800"
       return (
         <div className="flex items-center justify-center">
           <span className={`border flex w-fit items-center justify-center rounded-full px-3 py-1 text-xs font-medium ${badgeClass}`}>

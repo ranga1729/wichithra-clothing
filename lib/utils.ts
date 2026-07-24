@@ -33,3 +33,17 @@ export const GetAgeGroupBadgeStyle: Record<AgeGroup, { label: string; className:
   TEEN: { label: "Teen", className: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300" },
   ADULT: { label: "Adult", className: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-300" },
 }
+
+export const AUDITLOGS_ACTION_BADGE_STYLES: Record<string, string> = {
+  CREATE: "border-green-500 bg-green-100 text-green-800",
+  UPDATE: "border-blue-500 bg-blue-100 text-blue-800",
+  DELETE: "border-red-500 bg-red-100 text-red-800",
+  LOGIN: "border-purple-500 bg-purple-100 text-purple-800",
+}
+
+export const AUDITLOGS_ACTION_OPTIONS = [
+  { value: "CREATE", label: "Create" },
+  { value: "UPDATE", label: "Update" },
+  { value: "DELETE", label: "Delete" },
+  { value: "LOGIN", label: "Login" },
+]

@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/select"
 import { useDebounce } from "@/hooks/useDebounce"
 import { en } from "@/lib/i18n/en"
-import { AuditLogFilter } from "@/types/filter-types"
 import { initialPaginator, Paginator } from "@/types/table-types"
 import { useQuery } from "@tanstack/react-query"
 import { format } from "date-fns"
@@ -28,6 +27,8 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { getAuditLogs } from "./actions"
 import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item"
 import { type DateRange } from "react-day-picker"
+import { AuditLogFilter } from "@/schemas/admin-schemas"
+import { AUDITLOGS_ACTION_OPTIONS } from "@/lib/utils"
 
 const initialFilter: AuditLogFilter = {
   userName: "",
@@ -35,13 +36,6 @@ const initialFilter: AuditLogFilter = {
   dateFrom: "",
   dateTo: "",
 }
-
-const ACTION_OPTIONS = [
-  { value: "CREATE", label: "Create" },
-  { value: "UPDATE", label: "Update" },
-  { value: "DELETE", label: "Delete" },
-  { value: "LOGIN", label: "Login" },
-]
 
 export default function LogsPage() {
   const tableRef = useRef<TableWithPaginationRef>(null)
@@ -84,7 +78,7 @@ export default function LogsPage() {
     queryFn: async () => {
       const response = await getAuditLogs(paginator, debouncedFilter)
       if (!response.success) {
-        throw new Error(response.error || en.failed_to_fetch_data)
+        toast.error(response.error || en.failed_to_fetch_data)
       }
       return response.data
     },
@@ -145,7 +139,7 @@ export default function LogsPage() {
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="__all__">All actions</SelectItem>
-                  {ACTION_OPTIONS.map((opt) => (
+                  {AUDITLOGS_ACTION_OPTIONS.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
                     </SelectItem>

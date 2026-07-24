@@ -1,5 +1,6 @@
 import { createCategory } from "@/app/(admin)/admin/facets/categories/action";
 import { AgeGroup, ClothingSize, GenderTarget, PaymentStatus, ProductStatus } from "@/generated/prisma/enums";
+import { fillOffset } from "motion/react";
 import * as z from "zod"
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
@@ -503,3 +504,54 @@ export const collectionProductSchema = z.object({
 export type CreateCollectionSchema = z.infer<typeof createCollectionSchema>
 export type CollectionSchema = z.infer<typeof collectionSchema>
 export type CollectionProductSchema = z.infer<typeof collectionProductSchema>
+
+// Audit Logs
+export const AuditLogActionEnum = z.enum(["CREATE", "UPDATE", "DELETE", "LOGIN"]);
+export type AuditLogAction = z.infer<typeof AuditLogActionEnum>;
+
+export const auditLogFilterSchema = z.object({
+  userName: z.string().optional().default(""),
+  action: z.string().optional().default(""), // empty means "all actions"
+  dateFrom: z.string().optional().default(""),
+  dateTo: z.string().optional().default(""),
+}).refine(
+  (data) => {
+    // Optional: ensure dateFrom <= dateTo if both provided
+    if (data.dateFrom && data.dateTo) {
+      return new Date(data.dateFrom) <= new Date(data.dateTo);
+    }
+    return true;
+  },
+  { message: "dateFrom must be before or equal to dateTo" }
+);
+export type AuditLogFilter = z.infer<typeof auditLogFilterSchema>;
+
+export const createAuditLogSchema = z.object({
+  userId: z.uuid(),
+  action: AuditLogActionEnum,
+  entity: z.string().min(1, "Entity is required"),
+  entityId: z.uuid().nullish(),
+  oldValues: z.any().nullish(),
+  newValues: z.any().nullish(),
+  description: z.string().max(500).nullish(),
+  ipAddress: z.string().nullish(),
+});
+export type CreateAuditLogParams = z.infer<typeof createAuditLogSchema>;
+
+export const getAuditLogSchema = z.object({
+  id: z.uuid(),
+  action: AuditLogActionEnum,
+  entity: z.string(),
+  entityId: z.uuid().nullable(),
+  description: z.string().nullable(),
+  oldValues: z.any().nullable(),
+  newValues: z.any().nullable(),
+  ipAddress: z.string().nullable(),
+  createdAt: z.iso.datetime({offset: true}), // ISO 8601 with timezone
+  user: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    email: z.email(),
+  }),
+});
+export type AuditLogRow = z.infer<typeof getAuditLogSchema>;
