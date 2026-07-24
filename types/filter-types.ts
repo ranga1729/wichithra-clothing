@@ -71,3 +71,12 @@ export interface CancelledOrderFilter {
 //   dateFrom?: string, // ISO date string (YYYY-MM-DD)
 //   dateTo?: string,   // ISO date string (YYYY-MM-DD)
 // }
+
+export interface PaymentFilter {
+  search?: string,
+  paymentMethod?: string,
+  dateFrom?: string,
+  dateTo?: string,
+  minAmount?: string,
+  maxAmount?: string,
+}

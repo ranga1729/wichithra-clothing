@@ -3,23 +3,21 @@
 import { useState } from "react"
 import { CustomerForm } from "@/components/custom/auth/customer-form"
 import { AddressForm } from "@/components/custom/auth/address-form"
-import { Field, FieldDescription, FieldGroup } from "@/components/ui/field"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   registrationSchema,
-  personalDataSchema,
   type RegistrationForm,
 } from "@/schemas/auth-schemas"
-import toast from "react-hot-toast"
-import { registerUser } from "./actions"
-import { useRouter } from "next/navigation"
-import { en } from "@/lib/i18n/en"
-import { useMutation } from "@tanstack/react-query"
-import { LoaderCircle, ArrowLeft, ArrowRight, Check } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
 import { Progress } from "@/components/ui/progress"
+import toast from "react-hot-toast";
+import { registerUser } from "./actions";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, Check, LoaderCircle } from "lucide-react";
+import { en } from "@/lib/i18n/en";
+import { useMutation } from "@tanstack/react-query";
 
 const STEPS = [
   { id: 1, label: "Personal Info" },
@@ -146,7 +144,7 @@ export default function Register() {
       </div>
 
       {/* Step Content */}
-      <div className="min-h-[320px]">
+      <div className="min-h-80">
         {currentStep === 1 && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

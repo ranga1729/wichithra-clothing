@@ -109,7 +109,7 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
 
     const selectedProduct = await prisma.product.findUnique({
       where: {
-        id: productId,
+        id: productId, ...notDeleted
       },
       select: {
         id: true,
@@ -135,9 +135,10 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
             id: true,
             name: true,
             slug: true,
-          }
+          },
         },
         productDesigns: {
+          where: { deletedAt: null },
           select: {
             id: true,
             productId: true,
@@ -147,7 +148,7 @@ export async function getProductById(productId: string):Promise<ApiResponse> {
                 id: true,
                 name: true,
               }
-            }
+            },
           }
         },
         productImages: {
@@ -794,6 +795,145 @@ export async function deleteProductImage(imageId: string): Promise<ApiResponse> 
     return { 
       success: false, 
       error: en.failed_to_remove_image 
+    };
+  }
+}
+
+export async function getAvailableDesigns(): Promise<ApiResponse> {
+  try {
+    await requireRole(["admin", "super-admin"]);
+
+    const designs = await prisma.design.findMany({
+      where: { ...notDeleted, isActive: true },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: { name: "asc" },
+    });
+
+    return {
+      success: true,
+      data: designs,
+    };
+  } catch (error: any) {
+    if (error instanceof AuthError) throw error;
+    return {
+      success: false,
+      error: error.message || en.data_retrieval_failed,
+    };
+  }
+}
+
+export async function assignDesignToProduct(productId: string, designId: string): Promise<ApiResponse> {
+  try {
+    const user = await requireRole(["admin", "super-admin"]);
+
+    const product = await prisma.product.findUnique({
+      where: { id: productId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!product) return { success: false, error: en.product_doesnt_exist };
+
+    const design = await prisma.design.findFirst({
+      where: { id: designId, ...notDeleted },
+      select: { id: true, name: true },
+    });
+    if (!design) return { success: false, error: en.design_doesnt_exist };
+
+    const existing = await prisma.productDesign.findFirst({
+      where: { productId, designId },
+    });
+
+    let productDesign;
+    let isNewAssignment = true;
+
+    if (existing) {
+      if (existing.deletedAt === null) {
+        return { success: false, error: en.design_already_assigned };
+      }
+      productDesign = await prisma.productDesign.update({
+        where: { id: existing.id },
+        data: { deletedAt: null },
+      });
+      isNewAssignment = false;
+    } else {
+      productDesign = await prisma.productDesign.create({
+        data: { productId, designId },
+      });
+    }
+
+    revalidatePath(`/admin/products/${productId}`);
+
+    createAuditLog({
+      userId: user.userId,
+      action: "CREATE",
+      entity: "ProductDesign",
+      entityId: productDesign.id,
+      newValues: { productId, designId },
+      description: isNewAssignment
+        ? `Assigned design "${design.name}" to product`
+        : `Re-assigned design "${design.name}" to product`,
+    });
+
+    return {
+      success: true,
+      data: {
+        id: productDesign.id,
+        productId,
+        designId,
+        design: { id: design.id, name: design.name },
+      },
+      message: en.design_assigned_to_product,
+    };
+  } catch (error: any) {
+    if (error instanceof AuthError) throw error;
+    return {
+      success: false,
+      error: error.message || en.failed_to_assign_design,
+    };
+  }
+}
+
+export async function removeDesignFromProduct(productDesignId: string): Promise<ApiResponse> {
+  try {
+    const user = await requireRole(["admin", "super-admin"]);
+
+    const productDesign = await prisma.productDesign.findUnique({
+      where: { id: productDesignId },
+      select: {
+        id: true,
+        productId: true,
+        design: { select: { name: true } },
+      },
+    });
+
+    if (!productDesign) return { success: false, error: en.design_doesnt_exist };
+
+    await prisma.productDesign.update({
+      where: { id: productDesignId },
+      data: { deletedAt: new Date() },
+    });
+
+    revalidatePath(`/admin/products/${productDesign.productId}`);
+
+    createAuditLog({
+      userId: user.userId,
+      action: "DELETE",
+      entity: "ProductDesign",
+      entityId: productDesignId,
+      description: `Removed design "${productDesign.design.name}" from product`,
+    });
+
+    return {
+      success: true,
+      message: en.design_removed_from_product,
+    };
+  } catch (error: any) {
+    if (error instanceof AuthError) throw error;
+    return {
+      success: false,
+      error: error.message || en.failed_to_remove_design,
     };
   }
 }

@@ -1,5 +1,5 @@
 import * as z from "zod"
-import { deleteCategorySchema, deleteColorSchema, deleteDesignSchema, getAuditLogSchema, getCategorySchema, getColorSchema, getDesignSchema } from "./admin-schemas"
+import { deleteCategorySchema, deleteColorSchema, deleteDesignSchema, getAuditLogSchema, getCategorySchema, getColorSchema, getDesignSchema, paymentRowSchema } from "./admin-schemas"
 
 // Category CRUDs
 export const categoryListResponseSchema = z.object({
@@ -74,3 +74,10 @@ export const auditLogsResponseSchema = z.object({
 });
 
 export type AuditLogsResponseSchema = z.infer<typeof auditLogsResponseSchema>;
+
+// Payments
+export const paymentsResponseSchema = z.object({
+  payments: z.array(paymentRowSchema),
+  totalRecords: z.number().int().nonnegative(),
+});
+export type PaymentsResponseSchema = z.infer<typeof paymentsResponseSchema>;
