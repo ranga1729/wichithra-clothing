@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { User } from 'lucide-react'
+import Logout from './custom/general/logout-button/logout-button'
 
 interface Props {
   isSolidActive: boolean
@@ -18,14 +19,16 @@ export default function UserAccount(props:Props) {
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          {/* <DropdownMenuLabel>My Account</DropdownMenuLabel> */}
           <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Billing</DropdownMenuItem>
+          {/* <DropdownMenuItem>Billing</DropdownMenuItem> */}
           <DropdownMenuItem>View orders</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Logout</DropdownMenuItem>
+          <DropdownMenuItem className='flex-row items-center justify-center'>
+            <Logout />
+          </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

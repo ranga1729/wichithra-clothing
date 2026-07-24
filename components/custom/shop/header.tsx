@@ -57,13 +57,20 @@ export function KoaHeader() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <Link 
-              href="/shop" 
+              href="/search" 
               className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
             >
               Shop
             </Link>
             <Link 
               href="/collections" 
+              className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
+            >
+              Collections
+            </Link>
+            
+            <Link 
+              href="/contact" 
               className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
             >
               Categories
@@ -73,12 +80,6 @@ export function KoaHeader() {
               className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
             >
               About
-            </Link>
-            <Link 
-              href="/contact" 
-              className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
-            >
-              Contact
             </Link>
           </nav>
 
