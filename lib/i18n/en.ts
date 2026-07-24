@@ -271,5 +271,20 @@ export const en = {
   order_cancelled: "Order cancelled successfully",
   failed_to_move_order: "Failed to move order",
   failed_to_cancel_order: "Failed to cancel order",
-  cancel_reason_required: "Cancel reason is required"
+  cancel_reason_required: "Cancel reason is required",
+
+  // Payments
+  payments_title: "Payments",
+  payments_description: "View and manage all payment transactions. Refund payments or cancel orders with refunds.",
+  failed_to_load_payments: "Failed to load payments",
+  payment_not_found: "Payment not found",
+  payment_already_refunded: "This payment has already been refunded",
+  payment_refunded_successfully: "Payment refunded successfully",
+  failed_to_refund_payment: "Failed to refund payment",
+  order_cancelled_and_refunded: "Order cancelled and refunded successfully",
+  failed_to_cancel_order_and_refund: "Failed to cancel order and refund",
+  refund_payment_title: "Refund Payment",
+  refund_payment_description: "Please provide a reason for refunding this payment. The order will not be modified.",
+  refund_reason_required: "Refund reason is required",
+  order_not_cancellable: "This order cannot be cancelled in its current status",
 }

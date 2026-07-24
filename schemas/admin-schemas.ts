@@ -538,6 +538,59 @@ export const createAuditLogSchema = z.object({
 });
 export type CreateAuditLogParams = z.infer<typeof createAuditLogSchema>;
 
+// Payments
+export const paymentFilterSchema = z.object({
+  search: z.string().optional().default(""),
+  paymentMethod: z.string().optional().default(""),
+  dateFrom: z.string().optional().default(""),
+  dateTo: z.string().optional().default(""),
+  minAmount: z.string().optional().default(""),
+  maxAmount: z.string().optional().default(""),
+}).refine(
+  (data) => {
+    if (data.dateFrom && data.dateTo) {
+      return new Date(data.dateFrom) <= new Date(data.dateTo);
+    }
+    return true;
+  },
+  { message: "dateFrom must be before or equal to dateTo" }
+);
+export type PaymentFilter = z.infer<typeof paymentFilterSchema>;
+
+export const paymentRowSchema = z.object({
+  id: z.uuid(),
+  orderId: z.uuid(),
+  amount: z.coerce.number(),
+  currency: z.string(),
+  method: z.string(),
+  status: z.string(),
+  gatewayTransactionId: z.string().nullable(),
+  paidAt: z.coerce.date().nullable(),
+  refundedAt: z.coerce.date().nullable(),
+  createdAt: z.coerce.date(),
+  order: z.object({
+    orderNumber: z.string(),
+    status: z.string(),
+    user: z.object({
+      firstName: z.string(),
+      lastName: z.string(),
+    }),
+  }),
+});
+export type PaymentRow = z.infer<typeof paymentRowSchema>;
+
+export const cancelOrderAndRefundSchema = z.object({
+  paymentId: z.uuid(),
+  reason: z.string().min(1, "Reason is required"),
+});
+export type CancelOrderAndRefundParams = z.infer<typeof cancelOrderAndRefundSchema>;
+
+export const refundOnlySchema = z.object({
+  paymentId: z.uuid(),
+  reason: z.string().min(1, "Reason is required"),
+});
+export type RefundOnlyParams = z.infer<typeof refundOnlySchema>;
+
 export const getAuditLogSchema = z.object({
   id: z.uuid(),
   action: AuditLogActionEnum,
