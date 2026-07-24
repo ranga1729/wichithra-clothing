@@ -8,6 +8,7 @@ import { AgeGroup, ClothingSize, GenderTarget } from '@/generated/prisma/enums'
 import { getProductBySlug } from '@/app/(shop)/product/[slug]/action'
 import { ProductDetailColor } from '@/schemas/shop-schemas'
 import { useCartStore } from '@/lib/zustand-stores/cart-store'
+import { useAuthStore } from '@/lib/zustand-stores/auth-store'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
@@ -129,6 +130,7 @@ export default function ProductPage() {
   }, [])
 
   const addItem = useCartStore((s) => s.addItem)
+  const user = useAuthStore((s) => s.user)
 
   const handleAddToCart = useCallback(() => {
     if (!selectedVariant || !product || quantity === 0) return
@@ -181,8 +183,14 @@ export default function ProductPage() {
       quantity,
     }, quantity)
 
+    if (!user) {
+      toast.error('Please login to proceed with checkout')
+      router.push('/auth/login')
+      return
+    }
+
     router.push('/billing')
-  }, [product, selectedVariant, selectedSize, quantity, addItem, router])
+  }, [product, selectedVariant, selectedSize, quantity, addItem, router, user])
 
   const outOfStock = product && product.variants.length === 0
 

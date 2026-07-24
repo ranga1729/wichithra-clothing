@@ -8,8 +8,12 @@ import type { ApiResponse } from "@/types/auth-types"
 
 export async function getUserProfile(userId: string): Promise<ApiResponse> {
   try {
-    await requireAuth();
-    await requireRole(["admin", "super-admin", "customer"]);
+    const authUser = await requireAuth();
+    await requireRole(["customer"]);
+
+    if (authUser.userId !== userId) {
+      return { success: false, error: "Unauthorized" };
+    }
 
     const user = await prisma.user.findFirst({
       where: { id: userId, ...notDeleted },
@@ -38,8 +42,13 @@ export async function getUserProfile(userId: string): Promise<ApiResponse> {
 }
 
 export async function updateProfile(userId: string, input: unknown): Promise<ApiResponse> {
-  await requireAuth();
-  await requireRole(["admin", "super-admin", "customer"]);
+  const authUser = await requireAuth();
+  await requireRole(["customer"]);
+
+  if (authUser.userId !== userId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const parsed = updateProfileSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: parsed.error.message }
   try {
@@ -55,8 +64,13 @@ export async function updateProfile(userId: string, input: unknown): Promise<Api
 }
 
 export async function upsertPhone(userId: string, input: unknown): Promise<ApiResponse> {
-  await requireAuth();
-  await requireRole(["admin", "super-admin", "customer"]);
+  const authUser = await requireAuth();
+  await requireRole(["customer"]);
+
+  if (authUser.userId !== userId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const parsed = phoneSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: parsed.error.message }
   try {
@@ -87,8 +101,13 @@ export async function upsertPhone(userId: string, input: unknown): Promise<ApiRe
 }
 
 export async function deletePhone(userId: string, phoneId: string): Promise<ApiResponse> {
-  await requireAuth();
-  await requireRole(["admin", "super-admin", "customer"]);
+  const authUser = await requireAuth();
+  await requireRole(["customer"]);
+
+  if (authUser.userId !== userId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   try {
     await prisma.phoneNumber.update({
       where: { id: phoneId },
@@ -106,8 +125,13 @@ export async function deletePhone(userId: string, phoneId: string): Promise<ApiR
 }
 
 export async function upsertAddress(userId: string, input: unknown): Promise<ApiResponse> {
-  await requireAuth();
-  await requireRole(["admin", "super-admin", "customer"]);
+  const authUser = await requireAuth();
+  await requireRole(["customer"]);
+
+  if (authUser.userId !== userId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   const parsed = addressSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: parsed.error.message }
   try {
@@ -150,8 +174,13 @@ export async function upsertAddress(userId: string, input: unknown): Promise<Api
 }
 
 export async function deleteAddress(userId: string, addressId: string): Promise<ApiResponse> {
-  await requireAuth();
-  await requireRole(["admin", "super-admin", "customer"]);
+  const authUser = await requireAuth();
+  await requireRole(["customer"]);
+
+  if (authUser.userId !== userId) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   try {
     await prisma.address.delete({
       where: { id: addressId },
@@ -169,8 +198,12 @@ export async function deleteAddress(userId: string, addressId: string): Promise<
 
 export async function getOrderHistory(userId: string): Promise<ApiResponse> {
   try {
-    await requireAuth();
-    await requireRole(["customer", "admin", "super-admin"]);
+    const authUser = await requireAuth();
+    await requireRole(["customer"]);
+
+    if (authUser.userId !== userId) {
+      return { success: false, error: "Unauthorized" };
+    }
 
     const orders = await prisma.order.findMany({
       where: { userId },
@@ -215,8 +248,12 @@ export async function getOrderHistory(userId: string): Promise<ApiResponse> {
 
 export async function getPaymentHistory(userId: string): Promise<ApiResponse> {
   try {
-    await requireAuth();
-    await requireRole(["admin", "super-admin", "customer"]);
+    const authUser = await requireAuth();
+    await requireRole(["customer"]);
+
+    if (authUser.userId !== userId) {
+      return { success: false, error: "Unauthorized" };
+    }
 
     const payments = await prisma.payment.findMany({
       where: { order: { userId } },

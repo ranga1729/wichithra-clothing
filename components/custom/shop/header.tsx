@@ -9,8 +9,12 @@ import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useCartStore } from '@/lib/zustand-stores/cart-store'
 import CartSheet from '@/components/custom/shop/cart-sheet'
+import { JwtPayload } from '@/types/auth-types';
 
-export function KoaHeader() {
+interface Props {
+  user: JwtPayload | null
+}
+export function KoaHeader(props: Props) {
   const pathname = usePathname();
   const isHomepage = pathname === '/'
   const setCartOpen = useCartStore((s) => s.setOpen)
@@ -118,7 +122,7 @@ export function KoaHeader() {
             </Button>
 
             <div className={`p-2 rounded-lg transition duration-300 ${isSolidActive ? 'hover:bg-muted' : 'hover:bg-white/10'}`}>
-              <UserAccount isSolidActive={isSolidActive} />
+              <UserAccount user={props.user} isSolidActive={isSolidActive} />
             </div>
           </div>
         </div>

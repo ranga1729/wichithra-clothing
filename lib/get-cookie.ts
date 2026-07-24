@@ -5,7 +5,8 @@ import { JwtPayload } from '@/types/auth-types';
 export async function getUserFromCookie(): Promise<JwtPayload | null> {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('wichithra-token')?.value;
+    const token_name = process.env.TOKEN_NAME ?? "koa-token"
+    const token = cookieStore.get(token_name)?.value;
 
     if (!token) {
       return null;

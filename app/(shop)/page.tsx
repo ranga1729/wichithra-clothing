@@ -6,9 +6,6 @@ import { KoaFeatures } from "@/components/custom/shop/features"
 import { KoaHero } from "@/components/custom/shop/hero"
 import { getFeaturedProducts } from "./actions"
 import { Truck, RotateCcw, ShieldCheck } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import Link from "next/link"
 import NewsletterSection from "@/components/custom/shop/news-letter-section"
 
 function PromoBar() {

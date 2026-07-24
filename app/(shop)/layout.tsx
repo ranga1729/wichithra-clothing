@@ -1,5 +1,7 @@
 import { KoaFooter } from "@/components/custom/shop/footer";
 import { KoaHeader } from "@/components/custom/shop/header";
+import AuthProvider from "@/components/providers/auth/auth-provider";
+import { getUserFromCookie } from "@/lib/get-cookie";
 import { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -32,18 +34,22 @@ export const metadata: Metadata = {
 }
 
 
-export default function ShopFrontLayout({
+export default async function ShopFrontLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getUserFromCookie();
+
   return (
-    <div className={`${geistSans.variable} ${geistMono.variable} [--header-height:calc(--spacing(14))] font-sans antialiased bg-background text-foreground min-h-lvh flex flex-col items-center`}>
-      <KoaHeader />
-      <main className="w-full flex-1">
-        {children}
-      </main>
-      <KoaFooter/>
-    </div>
+    <AuthProvider user={user}>
+      <div className={`${geistSans.variable} ${geistMono.variable} [--header-height:calc(--spacing(14))] font-sans antialiased bg-background text-foreground min-h-lvh flex flex-col items-center`}>
+        <KoaHeader user={user} />
+        <main className="w-full flex-1">
+          {children}
+        </main>
+        <KoaFooter/>
+      </div>
+    </AuthProvider>
   )
 }

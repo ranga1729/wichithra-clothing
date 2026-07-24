@@ -2,7 +2,9 @@
 
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/zustand-stores/cart-store'
+import { useAuthStore } from '@/lib/zustand-stores/auth-store'
 import { Button } from '@/components/ui/button'
+import toast from 'react-hot-toast'
 
 export default function CartFooter() {
   const router = useRouter()
@@ -10,9 +12,15 @@ export default function CartFooter() {
   const setOpen = useCartStore((s) => s.setOpen)
   const totalPrice = useCartStore((s) => s.totalPrice)
   const items = useCartStore((s) => s.items)
+  const user = useAuthStore((s) => s.user)
 
   const handleCheckout = () => {
     setOpen(false)
+    if (!user) {
+      toast.error('Please login to proceed with checkout')
+      router.push('/auth/login')
+      return
+    }
     router.push('/billing')
   }
 

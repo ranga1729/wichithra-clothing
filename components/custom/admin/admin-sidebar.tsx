@@ -200,7 +200,7 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
                   {mounted && (
                     <Image 
                       src={ resolvedTheme == "dark" ? KOA_warrior_face_white : KOA_warrior_face_black} 
-                      alt={"Wichithra logo"} 
+                      alt={"KOA logo"} 
                       height={30} width={30} 
                     />
                   )}

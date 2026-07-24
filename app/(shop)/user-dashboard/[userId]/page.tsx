@@ -1,4 +1,6 @@
 import type { Metadata } from "next"
+import { redirect } from "next/navigation"
+import { getUserFromCookie } from "@/lib/get-cookie"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import MyDetailsTab from "./tabs/MyDetailsTab"
 import OrderHistoryTab from "./tabs/OrderHistoryTab"
@@ -17,6 +19,11 @@ interface Props {
 export default async function UserDashboardPage({ params, searchParams }: Props) {
   const { userId } = await params
   const { tab } = await searchParams
+
+  const user = await getUserFromCookie()
+  if (!user) redirect("/auth/login")
+  if (user.userId !== userId) redirect("/")
+
   const defaultTab = tab === "orders" ? "orders" : tab === "payments" ? "payments" : "details"
 
   return (
