@@ -6,6 +6,9 @@ export const salesFilterSchema = z.object({
     .default("last30days"),
   dateFrom: z.string().optional(),
   dateTo: z.string().optional(),
+  comparison: z
+    .enum(["previousPeriod", "previousMonth", "previousYear"])
+    .default("previousPeriod"),
 })
 
 export type SalesFilter = z.input<typeof salesFilterSchema>
