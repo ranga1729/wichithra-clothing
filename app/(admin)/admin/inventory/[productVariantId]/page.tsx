@@ -86,7 +86,6 @@ export default function EditInventoryItem({
 
   useEffect(() => {
     if(item) {
-      console.log(item)
       setDynamicLabel(item.variant.sku)
     }
   })

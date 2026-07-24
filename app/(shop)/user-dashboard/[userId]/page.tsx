@@ -1,5 +1,45 @@
-export default function Orders() {
+import type { Metadata } from "next"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import MyDetailsTab from "./tabs/MyDetailsTab"
+import OrderHistoryTab from "./tabs/OrderHistoryTab"
+import PaymentHistoryTab from "./tabs/PaymentHistoryTab"
+
+export const metadata: Metadata = {
+  title: "My Dashboard | KOA Clothing",
+}
+
+interface Props {
+  params: Promise<{ userId: string }>
+  searchParams: Promise<{ tab?: string }>
+}
+
+export default async function UserDashboardPage({ params, searchParams }: Props) {
+  const { userId } = await params
+  const { tab } = await searchParams
+  const defaultTab = tab === "orders" ? "orders" : tab === "payments" ? "payments" : "details"
+
   return (
-    <h1>Main page view</h1>
+    <main className="max-w-5xl mx-auto px-4 md:px-8 py-10">
+      <h1 className="text-2xl font-bold text-foreground mb-8">My Dashboard</h1>
+      <Tabs defaultValue={defaultTab}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="details">My Details</TabsTrigger>
+          <TabsTrigger value="orders">Order History</TabsTrigger>
+          <TabsTrigger value="payments">Payment History</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details">
+          <MyDetailsTab userId={userId} />
+        </TabsContent>
+
+        <TabsContent value="orders">
+          <OrderHistoryTab userId={userId} />
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <PaymentHistoryTab userId={userId} />
+        </TabsContent>
+      </Tabs>
+    </main>
   )
 }

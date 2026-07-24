@@ -44,14 +44,12 @@ export default function ProductsPage() {
 
   const handleFilterChange = (e:React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    console.log(name, value)
     setFilter(prevFilter => ({
         ...prevFilter, [name]: value
     }));
   }
 
   const handleSelectorChange = (name: string, value: string) => {
-    console.log(name, value)
     setFilter(prevFilter => ({
         ...prevFilter, [name]: value
     }));
@@ -74,7 +72,6 @@ export default function ProductsPage() {
       if(!response.success) {
         throw new Error(response.error || en.failed_to_fetch_data);
       }
-      console.log("data: ", response.data);
       return response.data
     },
     placeholderData: (prevdata) => prevdata

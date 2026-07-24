@@ -7,7 +7,7 @@ import { ApiResponse, JwtPayload } from "@/types/auth-types";
 
 const TOKEN_NAME = process.env.TOKEN_NAME!;
 
-export async function getCurrentUser(): Promise<ApiResponse<Pick<JwtPayload, "firstName" | "lastName" | "email" | "role">>> {
+export async function getCurrentUser(): Promise<ApiResponse<JwtPayload>> {
   try {
     const user = await getUserFromCookie();
 
@@ -18,6 +18,7 @@ export async function getCurrentUser(): Promise<ApiResponse<Pick<JwtPayload, "fi
     return {
       success: true,
       data: {
+        userId: user.userId,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,

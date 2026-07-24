@@ -171,3 +171,36 @@ export const checkout_schema = z.object({
 export type ShippingAddress = z.infer<typeof shipping_address_schema>
 export type PaymentDetails = z.infer<typeof payment_details_schema>
 export type CheckoutForm = z.infer<typeof checkout_schema>
+
+// ── User Profile Update ──────────────────────────────────────
+export const updateProfileSchema = z.object({
+  firstName: z.string().min(1, "First name is required").max(50),
+  lastName: z.string().min(1, "Last name is required").max(50),
+})
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
+
+// ── Phone Number ─────────────────────────────────────────────
+export const phoneSchema = z.object({
+  id: z.string().optional(),
+  type: z.enum(["MOBILE", "HOME"]),
+  countryCode: z.string().max(5).optional(),
+  phoneNumber: z
+    .string()
+    .min(7, "Phone number too short")
+    .max(15, "Phone number too long")
+    .regex(/^\+?[0-9\s\-()]+$/, "Invalid phone number format"),
+})
+export type PhoneInput = z.infer<typeof phoneSchema>
+
+// ── Address ──────────────────────────────────────────────────
+export const addressSchema = z.object({
+  id: z.string().optional(),
+  type: z.enum(["DELIVERY", "BILLING"]),
+  houseNo: z.string().min(1, "House number is required"),
+  addressLine1: z.string().min(1, "Address line 1 is required"),
+  addressLine2: z.string().optional(),
+  city: z.string().min(1, "City is required"),
+  province: z.string().min(1, "Province is required"),
+  zipcode: z.string().optional(),
+})
+export type AddressInput = z.infer<typeof addressSchema>

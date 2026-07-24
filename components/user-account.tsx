@@ -2,12 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { User } from 'lucide-react'
 import { getCurrentUser, logoutAction } from '@/components/custom/general/logout-button/action'
-import { use } from 'react'
 
 interface Props {
   isSolidActive: boolean
@@ -52,7 +52,9 @@ export default function UserAccount(props: Props) {
           <DropdownMenuLabel>{user ? `Hello, ${user.firstName} ${user.lastName}` : 'My Account'}</DropdownMenuLabel>
           {/* <DropdownMenuItem>Profile</DropdownMenuItem> */}
           {/* <DropdownMenuItem>Billing</DropdownMenuItem> */}
-          <DropdownMenuItem>User Dashboard</DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`/user-dashboard/${user?.userId}`}>User Dashboard</Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

@@ -318,8 +318,6 @@ export async function toggleFeaturedStatus(id: string):Promise<ApiResponse> {
       }
     })
 
-    console.log("test:", existingProduct)
-
     if(!existingProduct) {
       return {
         success: false,
