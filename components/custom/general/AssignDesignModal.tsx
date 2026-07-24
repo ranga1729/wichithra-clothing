@@ -5,7 +5,7 @@ import { en } from "@/lib/i18n/en";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { getAvailableDesigns, assignDesignToProduct } from "@/app/(admin)/admin/products/action";
-import SearchableSelect from "./SearchableSelect";
+import CustomSelect from "./CustomSelect";
 import SaveButton from "@/components/SaveButton";
 import CancelButton from "@/components/CancelButton";
 import toast from "react-hot-toast";
@@ -24,7 +24,7 @@ interface Props {
 
 export default function AssignDesignModal({ isModalOpen, onOpenChange, productId, assignedDesignIds }: Props) {
   const queryClient = useQueryClient();
-  const [selectedDesign, setSelectedDesign] = useState<DesignOption | null>(null);
+  const [selectedDesignId, setSelectedDesignId] = useState<string>("");
 
   const { data: availableDesigns, isPending: isLoadingDesigns } = useQuery({
     queryKey: ["available-designs"],
@@ -40,13 +40,15 @@ export default function AssignDesignModal({ isModalOpen, onOpenChange, productId
     ? availableDesigns.filter((d) => !assignedDesignIds.includes(d.id))
     : [];
 
+  const selectOptions = filteredDesigns.map((d) => ({ name: d.name, value: d.id }));
+
   const { mutate: assignDesign, isPending } = useMutation({
     mutationFn: (designId: string) => assignDesignToProduct(productId, designId),
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ["products", productId] });
         toast.success(en.design_assigned_to_product);
-        setSelectedDesign(null);
+        setSelectedDesignId("");
         onOpenChange(false);
       } else {
         toast.error(response.error || en.failed_to_assign_design);
@@ -58,12 +60,12 @@ export default function AssignDesignModal({ isModalOpen, onOpenChange, productId
   });
 
   const handleSave = () => {
-    if (!selectedDesign) return;
-    assignDesign(selectedDesign.id);
+    if (!selectedDesignId) return;
+    assignDesign(selectedDesignId);
   };
 
   const handleCancel = () => {
-    setSelectedDesign(null);
+    setSelectedDesignId("");
     onOpenChange(false);
   };
 
@@ -81,19 +83,17 @@ export default function AssignDesignModal({ isModalOpen, onOpenChange, productId
           ) : filteredDesigns.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">{en.no_available_designs}</p>
           ) : (
-            <SearchableSelect
-              items={filteredDesigns}
-              itemToStringValue={(item) => item.name}
-              value={selectedDesign}
-              onValueChange={setSelectedDesign}
-              placeholder="Search designs..."
-              emptyMessage={en.no_search_result_found}
+            <CustomSelect
+              placeholder="Select a design..."
+              optionsObject={selectOptions}
+              value={selectedDesignId}
+              onValueChange={setSelectedDesignId}
             />
           )}
         </div>
 
         <DialogFooter>
-          <SaveButton isPending={isPending} disabled={!selectedDesign} onClick={handleSave} />
+          <SaveButton isPending={isPending} disabled={!selectedDesignId} onClick={handleSave} />
           <CancelButton onClick={handleCancel} isPending={isPending} />
         </DialogFooter>
       </DialogContent>
