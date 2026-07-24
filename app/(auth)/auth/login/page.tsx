@@ -1,64 +1,59 @@
 "use client"
 
-import { LoginForm as LoginUI } from "@/components/custom/auth/login-form";
-import { LoginForm, loginSchema } from "@/schemas/auth-schemas";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
-import { loginUser } from "./actions";
-import { useRouter } from "next/navigation";
-import logo from "@/public/logo/warrior_face_white.png"
-import Image from "next/image";
-import { en } from "@/lib/i18n/en";
-import { useMutation } from "@tanstack/react-query";
+import { LoginForm as LoginUI } from "@/components/custom/auth/login-form"
+import { LoginForm, loginSchema } from "@/schemas/auth-schemas"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
+import { loginUser } from "./actions"
+import { useRouter } from "next/navigation"
+import { en } from "@/lib/i18n/en"
+import { useMutation } from "@tanstack/react-query"
 
 export default function Login() {
-  const router = useRouter();
+  const router = useRouter()
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
     defaultValues: {
       email: "",
-      password: ""
-    }
+      password: "",
+    },
   })
 
   const { mutate: login, isPending } = useMutation({
     mutationFn: (data: LoginForm) => loginUser(data),
     onSuccess: (result) => {
       if (result.success) {
-        toast.success(result.message!);
-        const role = result.data?.user.role;
-        if (role === 'admin' || role === 'super-admin') {
-          router.push("/admin/analytics/sales");
+        toast.success(result.message!)
+        const role = result.data?.user.role
+        if (role === "admin" || role === "super-admin") {
+          router.push("/admin/analytics/sales")
         } else {
-          router.push("/");
+          router.push("/")
         }
       } else {
-        toast.error(result.message || en.registration_failed);
+        toast.error(result.message || en.registration_failed)
       }
     },
     onError: (error: Error) => {
-      toast.error(error.message);
-    }
-  });
+      toast.error(error.message)
+    },
+  })
 
   const onSubmit = async () => {
-    const isValid = await form.trigger();
+    const isValid = await form.trigger()
     if (isValid) {
-      login(form.getValues());
+      login(form.getValues())
     } else {
-      toast.error(en.fill_all_required_fileds);
+      toast.error(en.fill_all_required_fileds)
     }
   }
 
   return (
-    <div className="flex min-h-svh bg-neutral-800 w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm flex flex-col gap-5 items-center justify-center">
-        <Image src={logo} alt={"Logo"} height={80} width={80} />
-        <LoginUI form={form} onSubmit={onSubmit} isPending={isPending} />
-      </div>
+    <div className="w-full max-w-sm">
+      <LoginUI form={form} onSubmit={onSubmit} isPending={isPending} />
     </div>
   )
 }

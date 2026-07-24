@@ -30,7 +30,7 @@ export const CustomerForm = (props:Props) => {
                 aria-invalid = {errors.firstName ? "true" : "false"}
               />
               {errors.firstName && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors.firstName.message}
                 </p>
               )}
@@ -46,7 +46,7 @@ export const CustomerForm = (props:Props) => {
                 aria-invalid = {errors.lastName ? "true" : "false"}
               />
               {errors.lastName && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors.lastName.message}
                 </p>
               )}
@@ -63,7 +63,7 @@ export const CustomerForm = (props:Props) => {
               aria-invalid={errors.email ? "true" : "false"}
             />
             {errors.email && (
-              <p className="text-sm text-red-600 mt-1">
+              <p className="text-sm text-destructive mt-1">
                 {errors.email.message}
               </p>
             )}
@@ -80,7 +80,7 @@ export const CustomerForm = (props:Props) => {
                 aria-invalid={errors.password ? "true" : "false"}
               />
               {errors.password && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors.password.message}
                 </p>
               )}
@@ -96,7 +96,7 @@ export const CustomerForm = (props:Props) => {
                 aria-invalid={errors.confirmPassword ? "true" : "false"}
               />
               {errors.confirmPassword && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors.confirmPassword.message}
                 </p>
               )}
@@ -118,7 +118,7 @@ export const CustomerForm = (props:Props) => {
                 />
               </div>
               {errors.mobilePhoneNumber && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors.mobilePhoneNumber.message}
                 </p>
               )} 
@@ -137,7 +137,7 @@ export const CustomerForm = (props:Props) => {
                 />
               </div>
               {errors.homePhoneNumber && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors.homePhoneNumber.message}
                 </p>
               )}

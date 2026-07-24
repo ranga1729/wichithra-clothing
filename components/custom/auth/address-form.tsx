@@ -42,7 +42,7 @@ export const AddressForm = (props:Props) => {
                 aria-invalid={errors.houseNo ? "true" : "false"}
               />
               {errors.houseNo && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors.houseNo.message}
                 </p>
               )}
@@ -58,7 +58,7 @@ export const AddressForm = (props:Props) => {
                 aria-invalid={errors.zipCode ? "true" : "false"}
               />
               {errors.zipCode && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors.zipCode.message}
                 </p>
               )}
@@ -76,7 +76,7 @@ export const AddressForm = (props:Props) => {
               aria-invalid={errors.addressLine1 ? "true" : "false"}
             />
             {errors.addressLine1 && (
-              <p className="text-sm text-red-600 mt-1">
+              <p className="text-sm text-destructive mt-1">
                 {errors.addressLine1.message}
               </p>
             )}
@@ -91,7 +91,7 @@ export const AddressForm = (props:Props) => {
               aria-invalid={errors.addressLine2 ? "true" : "false"}
             />
             {errors.addressLine2 && (
-              <p className="text-sm text-red-600 mt-1">
+              <p className="text-sm text-destructive mt-1">
                 {errors.addressLine2.message}
               </p>
             )}
@@ -108,7 +108,7 @@ export const AddressForm = (props:Props) => {
                 aria-invalid={errors.city ? "true" : "false"} 
               />
               {errors.city && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-sm text-destructive mt-1">
                   {errors.city.message}
                 </p>
               )}
@@ -132,7 +132,7 @@ export const AddressForm = (props:Props) => {
                     />
 
                     {errors.province && (
-                      <p className="text-sm text-red-600 mt-1">
+                      <p className="text-sm text-destructive mt-1">
                         {errors.province.message}
                       </p>
                     )}
