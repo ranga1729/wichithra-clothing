@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { User } from 'lucide-react'
 import { getCurrentUser, logoutAction } from '@/components/custom/general/logout-button/action'
+import { use } from 'react'
 
 interface Props {
   isSolidActive: boolean
@@ -48,10 +49,10 @@ export default function UserAccount(props: Props) {
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
-          <DropdownMenuLabel>{user ? `Hello, ${user.firstName}` : 'My Account'}</DropdownMenuLabel>
-          <DropdownMenuItem>Profile</DropdownMenuItem>
+          <DropdownMenuLabel>{user ? `Hello, ${user.firstName} ${user.lastName}` : 'My Account'}</DropdownMenuLabel>
+          {/* <DropdownMenuItem>Profile</DropdownMenuItem> */}
           {/* <DropdownMenuItem>Billing</DropdownMenuItem> */}
-          <DropdownMenuItem>View orders</DropdownMenuItem>
+          <DropdownMenuItem>User Dashboard</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
