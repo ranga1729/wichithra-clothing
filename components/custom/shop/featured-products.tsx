@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { Heart, ShoppingCart } from 'lucide-react'
 import { useState } from 'react'
+import Link from 'next/link'
 
 interface Product {
   id: number
@@ -188,9 +189,9 @@ export function KoaFeaturedProducts() {
 
         {/* View All Button */}
         <div className="text-center mt-12">
-          <button className="px-8 py-3 border-2 border-[#3D79BE] text-[#3D79BE] font-semibold rounded-lg hover:bg-[#3D79BE] hover:text-white transition">
+          <Link  className="px-8 py-3 border-2 border-[#3D79BE] text-[#3D79BE] font-semibold rounded-lg hover:bg-[#3D79BE] hover:text-white transition" href={'/search'}>
             View All Products
-          </button>
+          </Link>
         </div>
       </div>
     </section>

@@ -168,12 +168,10 @@ function SearchContent() {
   const handleSearch = useCallback(
     (e: FormEvent) => {
       e.preventDefault()
-      const trimmed = query.trim()
-      if (!trimmed) return
       const url = buildUrl({ page: "0" })
       router.push(url)
     },
-    [query, router, buildUrl],
+    [router, buildUrl],
   )
 
   const handleApplyFilters = useCallback(() => {
