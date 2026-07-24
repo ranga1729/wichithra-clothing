@@ -12,7 +12,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'KOA - Premium Activewear',
   description: 'Discover premium activewear designed for athletes and fitness enthusiasts. High-performance clothing crafted for your active lifestyle.',
-  generator: 'v0.app',
   icons: {
     icon: [
       {
@@ -39,12 +38,12 @@ export default function ShopFrontLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="[--header-height:calc(--spacing(14))] font-sans antialiased bg-background text-foreground min-h-lvh flex flex-col items-center">
+    <div className={`${geistSans.variable} ${geistMono.variable} [--header-height:calc(--spacing(14))] font-sans antialiased bg-background text-foreground min-h-lvh flex flex-col items-center`}>
       <KoaHeader />
-      <main className="w-full">
+      <main className="w-full flex-1">
         {children}
       </main>
       <KoaFooter/>
     </div>
-  );
+  )
 }

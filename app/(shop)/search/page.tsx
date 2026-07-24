@@ -2,17 +2,20 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import { searchProducts } from "./actions"
-import { Search as SearchIcon, SlidersHorizontal, Loader2, PackageOpen } from "lucide-react"
+import { Search as SearchIcon, SlidersHorizontal, PackageOpen } from "lucide-react"
 import { useState, useCallback, useEffect, FormEvent, Suspense, useMemo } from "react"
 import ProductCard from "@/components/custom/shop/product-card"
 import ProductPaginator from "@/components/custom/shop/product-paginator"
+import { ProductCardGridSkeleton } from "@/components/custom/shop/product-card-skeleton"
 import { SearchFilterSheet } from "@/components/custom/shop/search-filter-sheet"
 import { useShopFiltersStore } from "@/lib/zustand-stores/shop-filters-store"
 import { SearchFilters } from "@/schemas/shop-schemas"
 import { ClothingSize } from "@/generated/prisma/enums"
+import { useSearchFilterOptions } from "@/hooks/use-search-filter-options"
 
 const PAGE_SIZE = 20
 
@@ -70,6 +73,8 @@ function SearchContent() {
   const storeSortColumn = useShopFiltersStore((s) => s.sortColumn)
   const storeSortOrder = useShopFiltersStore((s) => s.sortOrder)
 
+  const { data: filterOptions } = useSearchFilterOptions()
+
   const filters = useMemo<SearchFilters>(
     () => parseFiltersFromUrl(searchParams),
     [searchParams],
@@ -80,7 +85,6 @@ function SearchContent() {
     return isNaN(p) || p < 0 ? 0 : p
   }, [pageParam])
 
-  // Build URL from current state
   const buildUrl = useCallback(
     (overrides: Record<string, string | undefined>) => {
       const state = useShopFiltersStore.getState()
@@ -150,7 +154,6 @@ function SearchContent() {
     return count
   }, [filters])
 
-  // Sync URL params to store on mount
   useEffect(() => {
     initializeFromUrl({
       category: filters.category,
@@ -198,79 +201,128 @@ function SearchContent() {
   const products = data?.data?.products ?? []
   const totalRecords = data?.data?.totalRecords ?? 0
 
+  const topCategories = filterOptions?.categories?.slice(0, 6) ?? []
+
   return (
-    <div className="flex flex-col items-center mt-20 mb-10 gap-8 px-4">
-      <p className="text-4xl font-bold">What&apos;s on your mind?</p>
+    <div className="flex flex-col items-center">
+      {/* Search Header */}
+      <section className="w-full bg-muted/50 border-b border-border">
+        <div className="max-w-4xl mx-auto px-4 py-12 md:py-16 text-center">
+          <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground mb-3 font-medium">
+            Browse our collection
+          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-8">
+            What&apos;s on your mind?
+          </h1>
 
-      <form
-        onSubmit={handleSearch}
-        className="flex w-full max-w-2xl flex-row items-center justify-center gap-2"
-      >
-        <Input
-          type="text"
-          placeholder="anything in your mind"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          autoComplete="off"
-          className="h-10 flex-1 border placeholder:text-neutral-500"
+          <form
+            onSubmit={handleSearch}
+            className="flex w-full max-w-2xl mx-auto flex-row items-center gap-2"
+          >
+            <div className="relative flex-1">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search for products..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                autoComplete="off"
+                className="h-12 pl-10 bg-background border-border"
+              />
+            </div>
+            <Button type="submit" size="lg" className="h-12 px-6">
+              Search
+            </Button>
+          </form>
+
+          {/* Category quick links */}
+          {topCategories.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2 mt-6">
+              {topCategories.map((cat: { name: string; value: string }) => (
+                <Button
+                  key={cat.value}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => {
+                    router.push(`/search?category=${encodeURIComponent(cat.name)}`)
+                  }}
+                >
+                  {cat.name}
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Results */}
+      <div className="w-full max-w-7xl px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => handleOpenSheet(true)}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Filters
+              {activeFilterCount > 0 && (
+                <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs h-5">
+                  {activeFilterCount}
+                </Badge>
+              )}
+            </Button>
+          </div>
+
+          {totalRecords > 0 && (
+            <p className="text-sm text-muted-foreground">
+              {totalRecords} result{totalRecords !== 1 ? "s" : ""}
+              {q ? ` for "${q}"` : ""}
+            </p>
+          )}
+        </div>
+
+        <SearchFilterSheet
+          open={sheetOpen}
+          onOpenChange={handleOpenSheet}
+          onApply={handleApplyFilters}
         />
-        <Button type="submit" className="gap-2">
-          <SearchIcon className="h-4 w-4" />
-          Search
-        </Button>
-      </form>
 
-      <Button
-        variant="outline"
-        size="sm"
-        className="gap-2"
-        onClick={() => handleOpenSheet(true)}
-      >
-        <SlidersHorizontal className="h-4 w-4" />
-        Filters
-        {activeFilterCount > 0 && (
-          <span className="bg-primary text-primary-foreground ml-1 flex size-5 items-center justify-center rounded-full text-xs">
-            {activeFilterCount}
-          </span>
-        )}
-      </Button>
-
-      <SearchFilterSheet
-        open={sheetOpen}
-        onOpenChange={handleOpenSheet}
-        onApply={handleApplyFilters}
-      />
-
-      <div className="w-full max-w-7xl">
         {isLoading && (
-          <div className="mt-12 flex justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
+          <div className="mt-8">
+            <ProductCardGridSkeleton count={8} />
           </div>
         )}
 
         {isError && (
-          <p className="mt-12 text-center text-destructive">
-            {error?.message || "Something went wrong"}
-          </p>
+          <div className="mt-12 flex flex-col items-center gap-4">
+            <p className="text-lg text-destructive">
+              {error?.message || "Something went wrong"}
+            </p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
         )}
 
         {!isLoading && !isError && products.length === 0 && (
-          <div className="mt-12 flex flex-col items-center gap-4">
-            <PackageOpen className="h-16 w-16 text-muted-foreground" />
-            <p className="text-lg text-muted-foreground">
+          <div className="mt-16 flex flex-col items-center gap-4">
+            <div className="p-6 bg-muted rounded-full">
+              <PackageOpen className="h-12 w-12 text-muted-foreground" />
+            </div>
+            <p className="text-lg font-medium text-foreground">
               {q ? `No products found for "${q}"` : "No products available"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Try adjusting your search or filters
             </p>
           </div>
         )}
 
         {products.length > 0 && (
-          <div className="mt-8">
-            <p className="mb-4 text-sm text-muted-foreground">
-              {totalRecords} result{totalRecords !== 1 ? "s" : ""}
-              {q ? ` for "${q}"` : ""}
-              {(currentPage > 0 || products.length < totalRecords) &&
-                ` — Page ${currentPage + 1} of ${Math.ceil(totalRecords / PAGE_SIZE)}`}
-            </p>
+          <div>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {products.map((product) => (
                 <ProductCard
@@ -284,11 +336,12 @@ function SearchContent() {
                   colors={product.colors}
                   sizes={product.sizes}
                   price={product.price}
+                  discountPercentage={product.discountPercentage}
                 />
               ))}
             </div>
 
-            <div className="mt-8">
+            <div className="mt-10">
               <ProductPaginator
                 pageIndex={currentPage}
                 totalRecords={totalRecords}

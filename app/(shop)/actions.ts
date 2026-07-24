@@ -19,6 +19,7 @@ export async function getFeaturedProducts(): Promise<ApiResponse<ProductSearchRe
         slug: true,
         status: true,
         sellingPrice: true,
+        discountPercentage: true,
         category: {
           select: { name: true },
         },
@@ -76,6 +77,7 @@ export async function getFeaturedProducts(): Promise<ApiResponse<ProductSearchRe
         price: basePrice,
         status: p.status,
         primaryImage: primaryImage?.imageUrl ?? "",
+        discountPercentage: Number(p.discountPercentage) || 0,
       }
     })
 

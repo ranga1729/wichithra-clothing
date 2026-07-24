@@ -419,7 +419,7 @@ model OrderItem {
   sizeName       String   @db.VarChar(10)
   colorName      String   @db.VarChar(100)
   colorHexCode   String?   @db.Char(6)
-  swatchImageUrl String?   @db.Char(6)
+   swatchImageUrl String?   @db.VarChar(500)
   brandName      String?   @db.VarChar(100)
   primaryImageUrl  String?  @db.VarChar(500)
   quantity       Int

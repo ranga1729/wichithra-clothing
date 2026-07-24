@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { en } from '@/lib/i18n/en'
+import Breadcrumbs from '@/components/custom/shop/breadcrumbs'
 
 export default function OrderConfirmationPage() {
   const params = useParams()
@@ -26,7 +27,7 @@ export default function OrderConfirmationPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -34,7 +35,7 @@ export default function OrderConfirmationPage() {
   if (isError || !order) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
-        <p className="text-neutral-500">{data?.error ?? en.order_not_found}</p>
+        <p className="text-muted-foreground">{data?.error ?? en.order_not_found}</p>
         <Link href="/">
           <Button variant="outline">{en.continue_shopping}</Button>
         </Link>
@@ -43,13 +44,17 @@ export default function OrderConfirmationPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10 lg:px-8">
+    <div className="mx-auto w-full max-w-3xl px-4 py-8 lg:px-8">
+      <Breadcrumbs items={[{ label: 'Order Confirmation' }]} />
+
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
-        <CheckCircle2 className="h-16 w-16 text-green-600" />
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 lg:text-3xl">
+        <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-4">
+          <CheckCircle2 className="h-12 w-12 text-green-600" />
+        </div>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
           {en.order_confirmation_title}
         </h1>
-        <p className="max-w-md text-neutral-500">
+        <p className="max-w-md text-muted-foreground">
           {en.order_confirmation_message}
         </p>
       </div>
@@ -61,7 +66,7 @@ export default function OrderConfirmationPage() {
             <CardTitle className="text-lg">{en.order_number}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xl font-bold text-neutral-900">{order.orderNumber}</p>
+            <p className="text-xl font-bold text-foreground">{order.orderNumber}</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {new Date(order.createdAt).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -82,7 +87,7 @@ export default function OrderConfirmationPage() {
           <CardContent className="flex flex-col gap-3">
             {order.items.map((item, idx) => (
               <div key={idx} className="flex items-center gap-3">
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-neutral-100">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
                   {item.primaryImageUrl ? (
                     <Image
                       src={item.primaryImageUrl}
@@ -93,7 +98,7 @@ export default function OrderConfirmationPage() {
                       sizes="56px"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-neutral-400">
+                    <div className="flex h-full items-center justify-center text-muted-foreground">
                       <Shirt className="h-5 w-5" />
                     </div>
                   )}
@@ -129,7 +134,7 @@ export default function OrderConfirmationPage() {
               <CardTitle className="text-lg">{en.shipping_details}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-neutral-600">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 {order.shippingAddress.houseNo}, {order.shippingAddress.addressLine1}
                 {order.shippingAddress.addressLine2 &&
                   `, ${order.shippingAddress.addressLine2}`}
@@ -145,8 +150,8 @@ export default function OrderConfirmationPage() {
 
         {/* Continue Shopping */}
         <div className="flex justify-center pt-4">
-          <Link href="/">
-            <Button size="lg" variant="outline">
+          <Link href="/search">
+            <Button size="lg" className="gap-2">
               {en.continue_shopping}
             </Button>
           </Link>

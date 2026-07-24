@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import logo from "../../../public/logo/KOA_logo_black.png"
 import owner from "@/public/Kalindu/kalindu-2.jpg"
+import Breadcrumbs from "@/components/custom/shop/breadcrumbs";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "About | KOA Clothing",
@@ -58,86 +61,64 @@ const timeline = [
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <div className="pt-8">
+          <Breadcrumbs items={[{ label: 'About Us' }]} />
+        </div>
 
-      {/* ── HERO ── */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 pt-20 pb-24 md:pt-28 md:pb-32">
+        {/* ── HERO ── */}
+        <section className="pb-16 md:pb-24">
           <div className="grid md:grid-cols-[1fr_auto] gap-12 items-end">
             <div>
-              {/* Eyebrow */}
-              <p
-                className="text-xs tracking-[0.25em] uppercase text-muted-foreground mb-6 font-medium"
-                style={{ fontFamily: "var(--font-mono, monospace)" }}
-              >
+              <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground mb-4 font-medium">
                 KOA — Hawaiian · /ˈkoʊ.ɑː/ · Warrior
               </p>
 
-              {/* Headline */}
-              <h1
-                className="font-bold leading-[0.88] tracking-tight text-foreground"
-                style={{ fontSize: "clamp(3.5rem, 10vw, 8rem)" }}
-              >
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-foreground mb-6">
                 Dressed
                 <br />
                 for the{" "}
-                <span
-                  style={{
-                    color: "#C9A96E",
-                    fontStyle: "italic",
-                  }}
-                >
+                <span className="text-primary">
                   battle.
                 </span>
               </h1>
             </div>
 
-            {/* Large decorative K */}
+            {/* Decorative logo */}
             <div
               aria-hidden="true"
-              className="hidden md:block select-none leading-none font-black text-border"
-              style={{
-                fontSize: "clamp(8rem, 18vw, 18rem)",
-                lineHeight: 1,
-                letterSpacing: "-0.05em",
-                opacity: 0.5,
-              }}
+              className="hidden md:block select-none leading-none opacity-10"
             >
-              <Image src={logo} alt={"Logo"}></Image>
+              <Image src={logo} alt="" width={200} height={200} className="object-contain" />
             </div>
           </div>
 
-          {/* Sub-headline */}
-          <div className="mt-10 max-w-xl">
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+          <div className="mt-6 max-w-xl">
+            <p className="text-lg text-muted-foreground leading-relaxed">
               KOA is a Sri Lankan menswear and activewear brand. We make
               clothing for men who move with intention — built clean, worn hard,
               built to last.
             </p>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* ── BRAND STATEMENT ── */}
-      <section className="border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-20 md:py-28">
-          <div className="grid md:grid-cols-[1fr_2fr] gap-16 items-start">
-            {/* Left label column */}
+      <section className="border-y border-border bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
+          <div className="grid md:grid-cols-[1fr_2fr] gap-12 items-start">
             <div className="md:sticky md:top-24">
-              <p
-                className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium"
-                style={{ fontFamily: "var(--font-mono, monospace)" }}
-              >
+              <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
                 The origin
               </p>
             </div>
 
-            {/* Right content column */}
-            <div className="space-y-8">
-              <p className="text-2xl md:text-3xl font-medium leading-snug text-foreground">
+            <div className="space-y-6">
+              <p className="text-xl md:text-2xl font-medium leading-snug text-foreground">
                 The name comes from the Hawaiian word for warrior. We chose it
                 deliberately.
               </p>
-              <div className="space-y-5 text-muted-foreground text-base md:text-lg leading-relaxed">
+              <div className="space-y-4 text-muted-foreground text-base leading-relaxed">
                 <p>
                   KOA started as a small garment manufacturing operation in Sri
                   Lanka. Custom T-shirt printing for university clubs and
@@ -167,36 +148,22 @@ export default function AboutPage() {
 
       {/* ── VALUES GRID ── */}
       <section className="border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-20 md:py-28">
-          {/* Section header */}
-          <div className="mb-16 flex items-baseline gap-6">
-            <p
-              className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium shrink-0"
-              style={{ fontFamily: "var(--font-mono, monospace)" }}
-            >
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
+          <div className="mb-12 flex items-baseline gap-6">
+            <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium shrink-0">
               What we stand for
             </p>
-            <div
-              className="h-px bg-border flex-1"
-              aria-hidden="true"
-            />
+            <div className="h-px bg-border flex-1" aria-hidden="true" />
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-x-12 gap-y-12">
+          <div className="grid sm:grid-cols-2 gap-x-12 gap-y-10">
             {values.map((v, i) => (
               <div key={v.label} className="group">
                 <div className="flex items-start gap-5">
-                  {/* Index number */}
-                  <span
-                    className="text-xs font-medium tabular-nums shrink-0 mt-1"
-                    style={{
-                      color: "#C9A96E",
-                      fontFamily: "var(--font-mono, monospace)",
-                    }}
-                  >
+                  <span className="text-xs font-medium tabular-nums shrink-0 mt-1 text-primary">
                     0{i + 1}
                   </span>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <h3 className="text-base font-semibold text-foreground">
                       {v.label}
                     </h3>
@@ -213,52 +180,33 @@ export default function AboutPage() {
 
       {/* ── TIMELINE ── */}
       <section className="border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-20 md:py-28">
-          <div className="grid md:grid-cols-[1fr_2fr] gap-16 items-start">
-            {/* Left label */}
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
+          <div className="grid md:grid-cols-[1fr_2fr] gap-12 items-start">
             <div className="md:sticky md:top-24">
-              <p
-                className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium"
-                style={{ fontFamily: "var(--font-mono, monospace)" }}
-              >
+              <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
                 The timeline
               </p>
             </div>
 
-            {/* Timeline entries */}
             <div className="relative">
-              {/* Vertical line */}
               <div
                 className="absolute left-13 top-2 bottom-2 w-px bg-border hidden sm:block"
                 aria-hidden="true"
               />
 
-              <div className="space-y-12">
+              <div className="space-y-10">
                 {timeline.map((entry) => (
                   <div key={entry.year} className="relative flex gap-8 items-start">
-                    {/* Year pill */}
-                    <div
-                      className="shrink-0 w-22 text-right"
-                      style={{
-                        fontFamily: "var(--font-mono, monospace)",
-                        fontSize: "0.75rem",
-                        fontWeight: 600,
-                        color: "#C9A96E",
-                        paddingTop: "0.2rem",
-                      }}
-                    >
+                    <div className="shrink-0 w-22 text-right text-xs font-semibold text-primary tabular-nums pt-0.5">
                       {entry.year}
                     </div>
 
-                    {/* Dot */}
                     <div
-                      className="relative shrink-0 w-3 h-3 rounded-full border-2 bg-background z-10 mt-1"
-                      style={{ borderColor: "#C9A96E" }}
+                      className="relative shrink-0 w-3 h-3 rounded-full border-2 border-primary bg-background z-10 mt-1"
                       aria-hidden="true"
                     />
 
-                    {/* Content */}
-                    <div className="space-y-2 pb-2">
+                    <div className="space-y-1 pb-2">
                       <p className="font-semibold text-foreground text-sm">
                         {entry.event}
                       </p>
@@ -274,16 +222,12 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ── FOUNDER / PEOPLE SECTION ── */}
+      {/* ── FOUNDER SECTION ── */}
       <section className="border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-20 md:py-28">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            {/* Text */}
-            <div className="space-y-6">
-              <p
-                className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium"
-                style={{ fontFamily: "var(--font-mono, monospace)" }}
-              >
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-5">
+              <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
                 The founder
               </p>
               <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-snug">
@@ -303,28 +247,18 @@ export default function AboutPage() {
               </div>
             </div>
 
-            {/* Abstract identity block — replaces a placeholder image */}
             <div className="flex justify-center md:justify-end">
-              <div
-                className="relative w-64 h-80 rounded-2xl overflow-hidden flex items-end"
-                style={{ background: "hsl(var(--muted))" }}
-              >
-                
-                {/* Name plate */}
-                <div
-                  className="w-full px-0 pt-0 pb-5 z-10"
-                  style={{ background: "rgba(0,0,0,0.55)" }}
-                >
-                  <Image src={owner} alt={"Mr. Kalindu Dilranga"} ></Image>
-                  <p className="text-white font-semibold text-sm text-center">
-                    Kalindu Dilranga
-                  </p>
-                  <p
-                    className="text-xs mt-0.5 text-center"
-                    style={{ color: "#C9A96E" }}
-                  >
-                    Founder, KOA Clothing
-                  </p>
+              <div className="relative w-64 h-80 rounded-2xl overflow-hidden flex items-end bg-muted">
+                <div className="w-full z-10">
+                  <Image src={owner} alt="Mr. Kalindu Dilranga" />
+                  <div className="bg-foreground/80 backdrop-blur-sm px-4 py-4">
+                    <p className="text-white font-semibold text-sm text-center">
+                      Kalindu Dilranga
+                    </p>
+                    <p className="text-xs mt-0.5 text-center text-primary-foreground/80">
+                      Founder, KOA Clothing
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -334,33 +268,22 @@ export default function AboutPage() {
 
       {/* ── CLOSING CTA ── */}
       <section>
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-          <p
-            className="text-xs tracking-[0.25em] uppercase text-muted-foreground font-medium mb-8"
-            style={{ fontFamily: "var(--font-mono, monospace)" }}
-          >
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-20 md:py-28 text-center">
+          <p className="text-xs tracking-[0.25em] uppercase text-muted-foreground font-medium mb-6">
             Ready to wear KOA?
           </p>
-          <h2
-            className="font-bold text-foreground leading-tight mb-10"
-            style={{ fontSize: "clamp(2rem, 6vw, 4.5rem)" }}
-          >
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-8">
             The collection is live.
             <br />
-            <span style={{ color: "#C9A96E" }}>Start shopping.</span>
+            <span className="text-primary">Start shopping.</span>
           </h2>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/search"
-              className="inline-flex items-center justify-center gap-2 rounded-md px-8 py-3.5 text-sm font-semibold transition-colors"
-              style={{
-                background: "#C9A96E",
-                color: "#1a1008",
-              }}
-            >
-              Browse the collection
-            </a>  
+            <Button asChild size="lg" className="px-8">
+              <Link href="/search">
+                Browse the collection
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

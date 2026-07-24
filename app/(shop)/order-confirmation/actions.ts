@@ -1,7 +1,7 @@
 'use server'
 
 import { en } from "@/lib/i18n/en"
-import { notDeleted, prisma } from "@/lib/prisma"
+import { prisma } from "@/lib/prisma"
 import { requireAuth } from "@/lib/server-auth-guard"
 import { ApiResponse } from "@/types/auth-types"
 
@@ -42,7 +42,6 @@ export async function getOrderConfirmation(
       where: {
         id: orderId,
         userId: payload.userId,
-        ...notDeleted,
       },
       include: {
         orderItems: {

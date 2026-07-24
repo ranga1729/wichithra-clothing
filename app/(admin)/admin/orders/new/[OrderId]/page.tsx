@@ -4,19 +4,10 @@ import { use, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import { format } from "date-fns"
-import Image from "next/image"
+import ProductRow from '@/components/custom/shop/product-row'
 import toast from "react-hot-toast"
 import { ArrowLeft, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { getOrderItems } from "../actions"
 import { en } from "@/lib/i18n/en"
 import { paymentStatusStyles } from "@/lib/data-objects"
@@ -48,11 +39,6 @@ export default function OrderItemsPage({ params }: {params: Promise<{ OrderId: s
       setDynamicLabel(order.orderNumber)
     }
   })
-
-  const totalQuantity = order?.orderItems?.reduce(
-    (acc: number, item: any) => acc + item.quantity, 
-    0
-  ) ?? 0;
 
   return (
     <div className="flex flex-col gap-5 max-w-6xl mx-auto pb-10">
@@ -154,78 +140,25 @@ export default function OrderItemsPage({ params }: {params: Promise<{ OrderId: s
             <span className="text-sm">No order items found</span>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-16">Image</TableHead>
-                <TableHead>SKU</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Color</TableHead>
-                <TableHead className="text-center">Qty</TableHead>
-                <TableHead className="text-right">Unit Price</TableHead>
-                <TableHead className="text-right">Discount</TableHead>
-                <TableHead className="text-right">Subtotal</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {order.orderItems.map((item: any) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    {item.primaryImageUrl ? (
-                      <div className="relative h-30 w-30 rounded-md overflow-hidden border border-neutral-200">
-                        <Image
-                          src={item.primaryImageUrl}
-                          alt={item.productName}
-                          fill
-                          className="object-cover"
-                          sizes="70px"
-                        />
-                      </div>
-                    ) : (
-                      <div className="h-12 w-12 rounded-md border border-neutral-200 bg-neutral-100 flex items-center justify-center">
-                        <Package className="h-5 w-5 text-neutral-400" />
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-mono text-xs font-semibold">{item.sku}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm">{item.productName}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm">{item.sizeName}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm">{item.colorName}</span>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="text-sm">{item.quantity}</span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span className="text-sm">{Number(item.unitPrice).toFixed(2)} LKR</span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span className="text-sm">{Number(item.discountAmount).toFixed(2)} LKR</span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span className="text-sm font-semibold">{Number(item.totalPrice).toFixed(2)} LKR</span>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell colSpan={5}></TableCell>
-                <TableCell>{totalQuantity} Items</TableCell>
-                {/* <TableCell>Total</TableCell> */}
-                <TableCell></TableCell>
-                <TableCell className="text-right text-red-500">{Number(order.discountAmount).toFixed(2)} LKR</TableCell>
-                <TableCell className="text-right text-green-500">{Number(order.totalAmount).toFixed(2)} LKR</TableCell>
-              </TableRow>
-            </TableFooter>
-          </Table>
+          <div className="divide-y divide-border">
+            {order.orderItems.map((item: any) => (
+              <ProductRow
+                key={item.id}
+                item={{
+                  imageUrl: item.primaryImageUrl,
+                  productName: item.productName,
+                  categoryName: item.categoryName,
+                  sizeName: item.sizeName,
+                  colorName: item.colorName,
+                  colorHexCode: item.colorHexCode,
+                  quantity: item.quantity,
+                  unitPrice: item.unitPrice,
+                  totalPrice: item.totalPrice,
+                  productSlug: item.productSlug,
+                }}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>

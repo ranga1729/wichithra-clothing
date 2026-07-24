@@ -113,6 +113,7 @@ export async function searchProducts(
           slug: true,
           status: true,
           sellingPrice: true,
+          discountPercentage: true,
           category: {
             select: { name: true },
           },
@@ -173,6 +174,7 @@ export async function searchProducts(
         price: basePrice,
         status: p.status,
         primaryImage: primaryImage?.imageUrl ?? "",
+        discountPercentage: Number(p.discountPercentage) || 0,
       }
     })
 

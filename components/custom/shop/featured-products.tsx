@@ -3,6 +3,7 @@
 import { ProductSearchResult } from '@/schemas/shop-schemas'
 import ProductCard from './product-card'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 interface KoaFeaturedProductsProps {
   products: ProductSearchResult[]
@@ -12,15 +13,18 @@ export function KoaFeaturedProducts({ products }: KoaFeaturedProductsProps) {
   if (products.length === 0) return null
 
   return (
-    <section className="py-16 px-4 max-w-7xl">
+    <section className="py-20 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-koa-black mb-4">
+        <div className="text-center mb-14">
+          <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground mb-3 font-medium">
+            Curated for you
+          </p>
+          <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
             Featured Collection
           </h2>
-          <p className="text-lg text-[#2A2A2A] max-w-2xl mx-auto">
-            Curated selection of premium activewear and casual wear for the modern man
+          <p className="text-base text-muted-foreground max-w-2xl mx-auto">
+            Premium activewear and casual wear designed for warriors
           </p>
         </div>
 
@@ -32,10 +36,12 @@ export function KoaFeaturedProducts({ products }: KoaFeaturedProductsProps) {
         </div>
 
         {/* View All Button */}
-        <div className="text-center mt-12">
-          <Link className="px-8 py-3 border-2 border-[#3D79BE] text-[#3D79BE] font-semibold rounded-lg hover:bg-[#3D79BE] hover:text-white transition" href={'/search'}>
-            View All Products
-          </Link>
+        <div className="text-center mt-14">
+          <Button asChild variant="outline" size="lg" className="px-8">
+            <Link href="/search">
+              View All Products
+            </Link>
+          </Button>
         </div>
       </div>
     </section>

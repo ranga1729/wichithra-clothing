@@ -95,8 +95,8 @@ export function SearchFilterSheet({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-4">
-          {/* Sort Section — outside accordion */}
-          <div className="mb-4 rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
+          {/* Sort Section */}
+          <div className="mb-4 rounded-lg border border-border p-4">
             <Label className="mb-2 block text-sm font-medium">Sort By</Label>
             <div className="flex flex-row items-center gap-2">
               <Select value={sortColumn} onValueChange={setSortColumn}>

@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import MyDetailsTab from "./tabs/MyDetailsTab"
 import OrderHistoryTab from "./tabs/OrderHistoryTab"
 import PaymentHistoryTab from "./tabs/PaymentHistoryTab"
+import Breadcrumbs from "@/components/custom/shop/breadcrumbs"
 
 export const metadata: Metadata = {
   title: "My Dashboard | KOA Clothing",
@@ -19,7 +20,8 @@ export default async function UserDashboardPage({ params, searchParams }: Props)
   const defaultTab = tab === "orders" ? "orders" : tab === "payments" ? "payments" : "details"
 
   return (
-    <main className="max-w-5xl mx-auto px-4 md:px-8 py-10">
+    <main className="max-w-5xl mx-auto px-4 md:px-8 py-8">
+      <Breadcrumbs items={[{ label: 'My Dashboard' }]} />
       <h1 className="text-2xl font-bold text-foreground mb-8">My Dashboard</h1>
       <Tabs defaultValue={defaultTab}>
         <TabsList className="mb-6">

@@ -9,7 +9,10 @@ import { getOrderDetail } from "./actions"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import Breadcrumbs from "@/components/custom/shop/breadcrumbs"
+import ProductRow from "@/components/custom/shop/product-row"
 
 interface Props {
   params: Promise<{ OrderId: string }>
@@ -58,7 +61,7 @@ export default function OrderDetailPage({ params }: Props) {
     )
   }
 
-  const shortId = (order.id as string).slice(-8)
+  const orderNumber = (order.orderNumber as string)
   const status = order.status as string
   const createdAt = order.createdAt as string
   const totalAmount = order.totalAmount as number
@@ -68,19 +71,14 @@ export default function OrderDetailPage({ params }: Props) {
   const latestPayment = payments.length > 0 ? payments[0] : null
 
   return (
-    <main className="max-w-5xl mx-auto px-4 md:px-8 py-10">
-      <Link
-        href={`/user-dashboard/${order.userId as string}?tab=orders`}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
-      >
-        <ArrowLeft className="size-4" /> Back to My Orders
-      </Link>
+    <main className="max-w-5xl mx-auto px-4 md:px-8 py-8">
+      <Breadcrumbs items={[{ label: 'My Orders', href: `/user-dashboard/${order.userId as string}?tab=orders` }, { label: `Order #${order.orderNumber}` }]} />
 
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Order #{shortId}</h1>
-        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status] ?? "bg-gray-100 text-gray-800 border-gray-200"}`}>
+        <h1 className="text-2xl font-bold text-foreground">Order #{orderNumber}</h1>
+        <Badge variant="outline" className={STATUS_COLORS[status] ?? "bg-gray-100 text-gray-800 border-gray-200"}>
           {status}
-        </span>
+        </Badge>
       </div>
 
       <p className="text-sm text-muted-foreground mb-8">
@@ -91,17 +89,24 @@ export default function OrderDetailPage({ params }: Props) {
         <CardHeader>
           <CardTitle className="text-lg">Items in This Order</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-2">
           {orderItems.map((item) => (
-            <div key={item.id as string} className="rounded-md border p-4 space-y-1">
-              <p className="font-medium">{item.productName as string}</p>
-              <p className="text-sm text-muted-foreground">
-                SKU: {item.sku as string} &middot; Size: {item.sizeName as string} &middot; Color: {item.colorName as string}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Qty: {item.quantity as number} &middot; Unit price: LKR {Number(item.unitPrice).toLocaleString()}
-              </p>
-            </div>
+            <ProductRow
+              key={item.id as string}
+              item={{
+                imageUrl: item.primaryImageUrl as string | null,
+                productName: item.productName as string,
+                categoryName: item.categoryName as string,
+                sizeName: item.sizeName as string,
+                colorName: item.colorName as string,
+                colorHexCode: item.colorHexCode as string | null,
+                quantity: item.quantity as number,
+                unitPrice: item.unitPrice as number,
+                totalPrice: item.totalPrice as number,
+                productSlug: item.productSlug as string,
+              }}
+              href={`/product/${item.productSlug as string}`}
+            />
           ))}
 
           <Separator className="my-4" />
@@ -122,9 +127,9 @@ export default function OrderDetailPage({ params }: Props) {
             <div className="relative space-y-4 pl-4 border-l-2 border-border">
               {statusHistory.map((entry) => (
                 <div key={entry.id as string} className="relative">
-                  <div className="absolute -left-[1.35rem] top-1 size-2.5 rounded-full bg-border" />
+                  <div className="absolute -left-[1.35rem] top-1 size-2.5 rounded-full bg-primary" />
                   <p className="text-sm">
-                    <span className="font-medium">{entry.status as string}</span>
+                    <span className="font-medium text-foreground">{entry.status as string}</span>
                     {entry.notes ? <span className="text-muted-foreground ml-2">&mdash; {entry.notes as string}</span> : null}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -145,9 +150,9 @@ export default function OrderDetailPage({ params }: Props) {
           <CardContent className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Status:</span>
-              <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${PAYMENT_STATUS_COLORS[latestPayment.status as string] ?? "bg-gray-100 text-gray-800 border-gray-200"}`}>
+              <Badge variant="outline" className={PAYMENT_STATUS_COLORS[latestPayment.status as string] ?? "bg-gray-100 text-gray-800 border-gray-200"}>
                 {latestPayment.status as string}
-              </span>
+              </Badge>
             </div>
             <p className="text-sm text-muted-foreground">
               Method: {(latestPayment.method as string) ?? "\u2014"}

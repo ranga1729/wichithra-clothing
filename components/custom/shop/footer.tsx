@@ -23,10 +23,10 @@ export function KoaFooter() {
                 <Image src={facebook} alt='Facebook' width={30} height={30} />
               </a>
               <a href="#" className="hover:text-[#3D79BE] transition">
-                <Image src={instagrama} alt='Instagram' color='#0866FF' width={35} height={35} />
+                <Image src={instagrama} alt='Instagram' width={35} height={35} />
               </a>
               <a href="#" className="hover:text-[#3D79BE] transition">
-                <Image src={whatapp} alt='WhatsApp' color='#0866FF' width={30} height={30} />
+                <Image src={whatapp} alt='WhatsApp' width={30} height={30} />
               </a>
             </div>
           </div>
@@ -36,23 +36,23 @@ export function KoaFooter() {
             <h4 className="font-semibold mb-4">Shop</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <Link href="/shop/activewear" className="hover:text-[#3D79BE] transition">
-                  Activewear
+                <Link href="/search" className="hover:text-[#3D79BE] transition">
+                  All Products
                 </Link>
               </li>
               <li>
-                <Link href="/shop/casual" className="hover:text-[#3D79BE] transition">
-                  Casual Wear
+                <Link href="/search" className="hover:text-[#3D79BE] transition">
+                  New Arrivals
                 </Link>
               </li>
               <li>
-                <Link href="/shop/accessories" className="hover:text-[#3D79BE] transition">
-                  Accessories
+                <Link href="/search" className="hover:text-[#3D79BE] transition">
+                  Best Sellers
                 </Link>
               </li>
               <li>
-                <Link href="/shop/sale" className="hover:text-[#3D79BE] transition">
-                  Sale
+                <Link href="/collections" className="hover:text-[#3D79BE] transition">
+                  Collections
                 </Link>
               </li>
             </ul>
@@ -68,17 +68,12 @@ export function KoaFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="hover:text-[#3D79BE] transition">
-                  Blog
+                <Link href="/about" className="hover:text-[#3D79BE] transition">
+                  Our Story
                 </Link>
               </li>
               <li>
-                <Link href="/careers" className="hover:text-[#3D79BE] transition">
-                  Careers
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-[#3D79BE] transition">
+                <Link href="/about" className="hover:text-[#3D79BE] transition">
                   Contact
                 </Link>
               </li>
@@ -90,22 +85,22 @@ export function KoaFooter() {
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <Link href="/faq" className="hover:text-[#3D79BE] transition">
+                <Link href="/about" className="hover:text-[#3D79BE] transition">
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/shipping" className="hover:text-[#3D79BE] transition">
+                <Link href="/about" className="hover:text-[#3D79BE] transition">
                   Shipping Info
                 </Link>
               </li>
               <li>
-                <Link href="/returns" className="hover:text-[#3D79BE] transition">
-                  Returns
+                <Link href="/about" className="hover:text-[#3D79BE] transition">
+                  Returns &amp; Exchanges
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="hover:text-[#3D79BE] transition">
+                <Link href="/about" className="hover:text-[#3D79BE] transition">
                   Privacy Policy
                 </Link>
               </li>
@@ -114,16 +109,16 @@ export function KoaFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
-          <p>&copy; 2024 KOA. All rights reserved.</p>
+        <div className="flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm border-t border-gray-700 pt-8">
+          <p>&copy; {new Date().getFullYear()} KOA Clothing. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <Link href="/" className="hover:text-[#3D79BE] transition">
+            <Link href="/about" className="hover:text-[#3D79BE] transition">
               Terms of Service
             </Link>
-            <Link href="/" className="hover:text-[#3D79BE] transition">
+            <Link href="/about" className="hover:text-[#3D79BE] transition">
               Privacy Policy
             </Link>
-            <Link href="/" className="hover:text-[#3D79BE] transition">
+            <Link href="/about" className="hover:text-[#3D79BE] transition">
               Cookie Policy
             </Link>
           </div>

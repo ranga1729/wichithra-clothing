@@ -20,7 +20,6 @@ export function KoaHeader() {
   const [isHovered, setIsHovered] = useState(false)
 
   useEffect(() => {
-    // Only bind scroll event if we are on the homepage
     if (!isHomepage) return
 
     const handleScroll = () => {
@@ -45,33 +44,31 @@ export function KoaHeader() {
         isHomepage ? 'fixed' : 'sticky'
       } ${
         isSolidActive 
-          ? "bg-white border-b border-neutral-200 shadow-sm" 
+          ? "bg-background/95 backdrop-blur-sm border-b border-border shadow-sm" 
           : "bg-transparent border-b border-transparent"
       }`}
     >
-      {/* Main Header */}
-      {/* Added 'relative' here so the absolute logo aligns to this container */}
-      <div className={`max-w-7xl mx-auto px-4 relative`}>
+      <div className="max-w-7xl mx-auto px-4 relative">
         <div className="flex items-center justify-between h-20">
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <Link 
               href="/collections" 
-              className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
+              className={`text-sm font-medium transition duration-300 ${isSolidActive ? 'text-foreground hover:text-primary' : 'text-white hover:text-white/70'}`}
             >
               Collections
             </Link>
             
             <Link 
-              href="/categories" 
-              className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
+              href="/search" 
+              className={`text-sm font-medium transition duration-300 ${isSolidActive ? 'text-foreground hover:text-primary' : 'text-white hover:text-white/70'}`}
             >
-              Categories
+              Shop
             </Link>
             <Link 
               href="/about" 
-              className={`font-medium transition duration-300 ${isSolidActive ? 'text-koa-black hover:text-[#3D79BE]' : 'text-white hover:text-neutral-300'}`}
+              className={`text-sm font-medium transition duration-300 ${isSolidActive ? 'text-foreground hover:text-primary' : 'text-white hover:text-white/70'}`}
             >
               About
             </Link>
@@ -96,28 +93,30 @@ export function KoaHeader() {
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center gap-4 z-20">
+          <div className="flex items-center gap-2 z-20">
             <Link
               href='/search'
-              className={`p-2 rounded-lg transition duration-300 ${isSolidActive ? 'hover:bg-[#F3F4F6]' : 'hover:bg-white/10'}`}
+              className={`p-2 rounded-lg transition duration-300 ${isSolidActive ? 'hover:bg-muted' : 'hover:bg-white/10'}`}
               aria-label="Search"
             >
-              <Search className={`w-5 h-5 transition-colors duration-300 ${isSolidActive ? 'text-koa-black' : 'text-white'}`} />
+              <Search className={`w-5 h-5 transition-colors duration-300 ${isSolidActive ? 'text-foreground' : 'text-white'}`} />
             </Link>
 
             <Button 
-              className={`relative p-2 rounded-lg transition duration-300 ${isSolidActive ? 'hover:bg-[#F3F4F6]' : 'hover:bg-white/10'}`}
+              variant="ghost"
+              size="icon"
+              className={`relative transition duration-300 ${isSolidActive ? 'hover:bg-muted' : 'hover:bg-white/10'}`}
               onClick={() => setCartOpen(true)}
             >
-              <ShoppingCart className={`w-5 h-5 transition-colors duration-300 ${isSolidActive ? 'text-koa-black' : 'text-white'}`} />
+              <ShoppingCart className={`w-5 h-5 transition-colors duration-300 ${isSolidActive ? 'text-foreground' : 'text-white'}`} />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-neutral-900 px-1 text-[10px] font-medium text-white">
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
                   {cartCount}
                 </span>
               )}
             </Button>
 
-            <div className={isSolidActive ? 'text-koa-black' : 'text-white'}>
+            <div className={isSolidActive ? 'text-foreground' : 'text-white'}>
               <UserAccount isSolidActive={isSolidActive} />
             </div>
           </div>

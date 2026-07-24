@@ -61,6 +61,7 @@ export const product_search_result = z.object({
   status: status,
   price: z.number(),
   primaryImage: z.string(),
+  discountPercentage: z.number().optional(),
 })
 
 // Product Detail

@@ -3,18 +3,17 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import type { Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, ShieldCheck, Shirt } from 'lucide-react'
+import { Loader2, ShieldCheck, Shirt, ShoppingCart } from 'lucide-react'
 import { useCartStore } from '@/lib/zustand-stores/cart-store'
 import { placeOrder, getUserAddress } from '@/app/(shop)/billing/actions'
 import {
   checkout_schema,
-  shipping_address_schema,
   type CheckoutForm,
-  type ShippingAddress,
 } from '@/schemas/shop-schemas'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,7 +22,7 @@ import { Separator } from '@/components/ui/separator'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { en } from '@/lib/i18n/en'
 import toast from 'react-hot-toast'
-import Link from 'next/link'
+import Breadcrumbs from '@/components/custom/shop/breadcrumbs'
 
 export default function BillingPage() {
   const router = useRouter()
@@ -134,25 +133,27 @@ export default function BillingPage() {
   }
 
   const cartTotal = totalPrice()
-  const itemDiscount = items.reduce(
-    (sum, i) => sum + (i.quantity > 1 ? 0 : 0),
-    0,
-  )
 
   if (items.length === 0 && !isProcessing) {
     return (
       <div className="mx-auto flex min-h-[60vh] max-w-7xl flex-col items-center justify-center gap-4 px-4 py-10">
-        <p className="text-neutral-500">{en.cart_is_empty}</p>
-        <Link href="/">
-          <Button variant="outline">{en.continue_shopping}</Button>
+        <div className="p-6 bg-muted rounded-full">
+          <ShoppingCart className="h-12 w-12 text-muted-foreground" />
+        </div>
+        <p className="text-lg font-medium text-foreground">{en.cart_is_empty}</p>
+        <p className="text-sm text-muted-foreground">Add some products to get started</p>
+        <Link href="/search">
+          <Button size="lg" className="mt-2">{en.continue_shopping}</Button>
         </Link>
       </div>
     )
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-10 lg:px-8">
-      <h1 className="mb-8 text-2xl font-semibold tracking-tight text-neutral-900 lg:text-3xl">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 lg:px-8">
+      <Breadcrumbs items={[{ label: 'Checkout' }]} />
+
+      <h1 className="mb-8 text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
         {en.checkout_title}
       </h1>
 
@@ -167,7 +168,7 @@ export default function BillingPage() {
             <CardContent className="flex flex-col gap-4">
               {addressLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -179,7 +180,7 @@ export default function BillingPage() {
                       {...form.register('shippingAddress.houseNo')}
                     />
                     {form.formState.errors.shippingAddress?.houseNo && (
-                      <p className="text-xs text-red-600">
+                      <p className="text-xs text-destructive">
                         {form.formState.errors.shippingAddress.houseNo.message}
                       </p>
                     )}
@@ -193,7 +194,7 @@ export default function BillingPage() {
                       {...form.register('shippingAddress.city')}
                     />
                     {form.formState.errors.shippingAddress?.city && (
-                      <p className="text-xs text-red-600">
+                      <p className="text-xs text-destructive">
                         {form.formState.errors.shippingAddress.city.message}
                       </p>
                     )}
@@ -207,7 +208,7 @@ export default function BillingPage() {
                       {...form.register('shippingAddress.addressLine1')}
                     />
                     {form.formState.errors.shippingAddress?.addressLine1 && (
-                      <p className="text-xs text-red-600">
+                      <p className="text-xs text-destructive">
                         {form.formState.errors.shippingAddress.addressLine1.message}
                       </p>
                     )}
@@ -230,7 +231,7 @@ export default function BillingPage() {
                       {...form.register('shippingAddress.province')}
                     />
                     {form.formState.errors.shippingAddress?.province && (
-                      <p className="text-xs text-red-600">
+                      <p className="text-xs text-destructive">
                         {form.formState.errors.shippingAddress.province.message}
                       </p>
                     )}
@@ -244,7 +245,7 @@ export default function BillingPage() {
                       {...form.register('shippingAddress.zipCode')}
                     />
                     {form.formState.errors.shippingAddress?.zipCode && (
-                      <p className="text-xs text-red-600">
+                      <p className="text-xs text-destructive">
                         {form.formState.errors.shippingAddress.zipCode.message}
                       </p>
                     )}
@@ -263,7 +264,7 @@ export default function BillingPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <div className="rounded-md bg-blue-50 px-4 py-2 text-xs text-blue-700">
+              <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 px-4 py-2 text-xs text-blue-700 dark:text-blue-300">
                 {en.demo_payment_notice}
               </div>
 
@@ -281,7 +282,7 @@ export default function BillingPage() {
                     })}
                   />
                   {form.formState.errors.payment?.cardNumber && (
-                    <p className="text-xs text-red-600">
+                    <p className="text-xs text-destructive">
                       {form.formState.errors.payment.cardNumber.message}
                     </p>
                   )}
@@ -301,7 +302,7 @@ export default function BillingPage() {
                       })}
                     />
                     {form.formState.errors.payment?.expiryDate && (
-                      <p className="text-xs text-red-600">
+                      <p className="text-xs text-destructive">
                         {form.formState.errors.payment?.expiryDate?.message}
                       </p>
                     )}
@@ -321,7 +322,7 @@ export default function BillingPage() {
                       })}
                     />
                     {form.formState.errors.payment?.cvv && (
-                      <p className="text-xs text-red-600">
+                      <p className="text-xs text-destructive">
                         {form.formState.errors.payment.cvv.message}
                       </p>
                     )}
@@ -342,7 +343,7 @@ export default function BillingPage() {
               <div className="flex max-h-64 flex-col gap-3 overflow-y-auto">
                 {items.map((item) => (
                   <div key={item.variantId} className="flex items-center gap-3">
-                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-neutral-100">
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
                       {item.imageUrl ? (
                         <Image
                           src={item.imageUrl}
@@ -353,7 +354,7 @@ export default function BillingPage() {
                           sizes="56px"
                         />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-neutral-400">
+                        <div className="flex h-full items-center justify-center text-muted-foreground">
                           <Shirt className="h-5 w-5" />
                         </div>
                       )}
@@ -383,7 +384,7 @@ export default function BillingPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{en.shipping_fee}</span>
-                  <span className="text-green-600">Free</span>
+                  <span className="text-green-600 font-medium">Free</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{en.tax}</span>
