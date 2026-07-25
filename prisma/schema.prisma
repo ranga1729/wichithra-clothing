@@ -419,7 +419,7 @@ model OrderItem {
   sizeName       String   @db.VarChar(10)
   colorName      String   @db.VarChar(100)
   colorHexCode   String?   @db.Char(6)
-   swatchImageUrl String?   @db.VarChar(500)
+  swatchImageUrl String?   @db.VarChar(500)
   brandName      String?   @db.VarChar(100)
   primaryImageUrl  String?  @db.VarChar(500)
   quantity       Int
@@ -504,6 +504,7 @@ model Collection {
   name        String              @db.VarChar(100)
   slug        String              @unique @db.VarChar(100)
   description String?             @db.Text
+  coverImage  String?             @db.VarChar(500)
   isActive    Boolean             @default(true)
   deletedAt   DateTime?           @db.Timestamptz(6)
   createdAt   DateTime            @default(now()) @db.Timestamptz(6)
