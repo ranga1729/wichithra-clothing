@@ -143,8 +143,8 @@ export default function AddNewInventoryItem() {
       
       {/* header */}
       <div className="flex flex-col gap-1">
-        <h1 className="font-bold text-xl text-neutral-700 dark:text-neutral-200">Add New Inventory Item</h1>
-        <p className="text-sm text-neutral-500">
+        <h1 className="font-bold text-xl text-foreground">Add New Inventory Item</h1>
+        <p className="text-sm text-muted-foreground">
           Select a product, color, and size to create a new product variant with inventory.
         </p>
       </div>
@@ -152,8 +152,8 @@ export default function AddNewInventoryItem() {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
 
         {/* Variant Selection */}
-        <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
-          <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">Variant Selection</h1>
+        <div className="border border-border bg-card rounded-2xl p-5 flex flex-col gap-4">
+          <h1 className="font-semibold text-foreground text-center">Variant Selection</h1>
 
           {/* Category filter — drives server-side product query */}
           <SearchableSelect
@@ -272,10 +272,10 @@ export default function AddNewInventoryItem() {
             <div
               className={`flex items-center gap-2 text-sm rounded-lg p-3 border ${
                 isCheckingVariant
-                  ? "border-neutral-300 text-neutral-500 bg-neutral-50 dark:bg-neutral-800"
+                  ? "border-border text-muted-foreground bg-muted"
                   : variantCheck?.exists
-                  ? "border-red-300 text-red-700 bg-red-50 dark:bg-red-950"
-                  : "border-green-300 text-green-700 bg-green-50 dark:bg-green-950"
+                  ? "border-destructive/30 text-destructive bg-destructive/10"
+                  : "border-emerald-300 text-emerald-700 bg-emerald-50 dark:bg-emerald-950"
               }`}
             >
               {isCheckingVariant ? (
@@ -303,8 +303,8 @@ export default function AddNewInventoryItem() {
         </div>
 
         {/* Variant Details */}
-        <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
-          <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">Variant Details</h1>
+        <div className="border border-border bg-card rounded-2xl p-5 flex flex-col gap-4">
+          <h1 className="font-semibold text-foreground text-center">Variant Details</h1>
 
           <Field className="flex flex-col gap-2">
             <Label htmlFor="sku">SKU *</Label>
@@ -314,7 +314,7 @@ export default function AddNewInventoryItem() {
               {...register("sku")}
             />
             {errors.sku && (
-              <span className="text-sm text-red-500">{errors.sku.message as string}</span>
+              <span className="text-sm text-destructive">{errors.sku.message as string}</span>
             )}
           </Field>
 
@@ -333,7 +333,7 @@ export default function AddNewInventoryItem() {
               />
               <div className="flex flex-col">
                 <Label htmlFor="isActive">Active</Label>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-muted-foreground">
                   Only active variants will be visible to customers
                 </p>
               </div>
@@ -342,8 +342,8 @@ export default function AddNewInventoryItem() {
         </div>
 
         {/* Inventory Details */}
-        <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
-          <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">
+        <div className="border border-border bg-card rounded-2xl p-5 flex flex-col gap-4">
+          <h1 className="font-semibold text-foreground text-center">
             Inventory Details
           </h1>
 

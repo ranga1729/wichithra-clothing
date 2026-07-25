@@ -188,13 +188,13 @@ export function AdminSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
   return (
     <Sidebar
       side="left" variant="sidebar" collapsible="icon"
-      className="top-(--header-height) h-[calc(100svh-var(--header-height))]! dark:border-neutral-700 border-neutral-300"
+      className="top-(--header-height) h-[calc(100svh-var(--header-height))]! border-border"
       {...props}
     >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="bg-neutral-200 hover:bg-neutral-200 dark:bg-neutral-800">
+            <SidebarMenuButton size="lg" asChild className="bg-muted hover:bg-muted">
               <a href="#">
                 <div className="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   {mounted && (

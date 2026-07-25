@@ -49,10 +49,10 @@ export default function OrderItemsPage({ params }: {params: Promise<{ OrderId: s
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex flex-col gap-0.5">
-          <h1 className="font-bold text-xl text-neutral-700 dark:text-neutral-200">
+          <h1 className="font-bold text-xl text-foreground">
             Order Summary
           </h1>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-muted-foreground">
             {isPending ? "Loading..." : `Order ${order?.orderNumber ?? ""}`}
           </p>
         </div>
@@ -60,82 +60,82 @@ export default function OrderItemsPage({ params }: {params: Promise<{ OrderId: s
 
       {/* Order Details */}
       {!isPending && order && (
-        <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
-          <h2 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">
+        <div className="border border-border bg-card rounded-2xl p-5 flex flex-col gap-4">
+          <h2 className="font-semibold text-foreground text-center">
             Order Details
           </h2>
 
           <div className="flex flex-row flex-wrap gap-4">
             <div className="flex flex-col gap-1 flex-1 min-w-40">
-              <span className="text-xs text-neutral-500">Order Number</span>
+              <span className="text-xs text-muted-foreground">Order Number</span>
               <span className="font-mono text-sm font-semibold">{order.orderNumber}</span>
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-40">
-              <span className="text-xs text-neutral-500">Customer</span>
+              <span className="text-xs text-muted-foreground">Customer</span>
               <span className="text-sm">{order.user.firstName} {order.user.lastName}</span>
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-40">
-              <span className="text-xs text-neutral-500">Email</span>
+              <span className="text-xs text-muted-foreground">Email</span>
               <span className="text-sm">{order.user.email}</span>
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-40">
-              <span className="text-xs text-neutral-500">Created Date</span>
+              <span className="text-xs text-muted-foreground">Created Date</span>
               <span className="text-sm">{format(new Date(order.createdAt), "dd MMM yyyy")}</span>
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-40">
-              <span className="text-xs text-neutral-500">Payment Status</span>
+              <span className="text-xs text-muted-foreground">Payment Status</span>
               <span
-                className={`border border-neutral-300 rounded-full px-3 py-1 text-xs font-medium w-fit ${paymentStatusStyles[order.paymentStatus] ?? "bg-neutral-100 text-neutral-800"}`}
+                className={`border border-border rounded-full px-3 py-1 text-xs font-medium w-fit ${paymentStatusStyles[order.paymentStatus] ?? "bg-muted text-muted-foreground"}`}
               >
                 {order.paymentStatus.replace(/_/g, " ")}
               </span>
             </div>
           </div>
 
-          <div className="flex flex-row flex-wrap gap-4 border-t border-neutral-200 pt-4">
+          <div className="flex flex-row flex-wrap gap-4 border-t border-border pt-4">
             <div className="flex flex-col gap-1 flex-1 min-w-[120px]">
-              <span className="text-xs text-neutral-500">Subtotal</span>
+              <span className="text-xs text-muted-foreground">Subtotal</span>
               <span className="text-sm">{Number(order.subtotal).toFixed(2)} LKR</span>
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-[120px]">
-              <span className="text-xs text-neutral-500">Discount</span>
-              <span className="text-sm text-red-500">{Number(order.discountAmount).toFixed(2)} LKR</span>
+              <span className="text-xs text-muted-foreground">Discount</span>
+              <span className="text-sm text-destructive">{Number(order.discountAmount).toFixed(2)} LKR</span>
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-[120px]">
-              <span className="text-xs text-neutral-500">Shipping</span>
+              <span className="text-xs text-muted-foreground">Shipping</span>
               <span className="text-sm text-purple-500">{Number(order.shippingFee).toFixed(2)} LKR</span>
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-[120px]">
-              <span className="text-xs text-neutral-500">Tax</span>
+              <span className="text-xs text-muted-foreground">Tax</span>
               <span className="text-sm text-yellow-500">{Number(order.taxAmount).toFixed(2)} LKR</span>
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-[120px]">
-              <span className="text-xs text-neutral-500">Total</span>
-              <span className="text-sm font-semibold text-green-500">{Number(order.totalAmount).toFixed(2)} LKR</span>
+              <span className="text-xs text-muted-foreground">Total</span>
+              <span className="text-sm font-semibold text-emerald-600">{Number(order.totalAmount).toFixed(2)} LKR</span>
             </div>
           </div>
 
           {order.notes && (
-            <div className="border-t border-neutral-200 pt-3">
-              <span className="text-xs text-neutral-500">Notes</span>
-              <p className="text-sm mt-1 text-neutral-700 dark:text-neutral-300">{order.notes}</p>
+            <div className="border-t border-border pt-3">
+              <span className="text-xs text-muted-foreground">Notes</span>
+              <p className="text-sm mt-1 text-foreground">{order.notes}</p>
             </div>
           )}
         </div>
       )}
 
       {/* Order Items Table */}
-      <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
-        <h2 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">
+      <div className="border border-border bg-card rounded-2xl p-5 flex flex-col gap-4">
+        <h2 className="font-semibold text-foreground text-center">
           Order Items
         </h2>
 
         {isPending ? (
-          <div className="flex justify-center items-center py-12 text-neutral-500 text-sm">
+          <div className="flex justify-center items-center py-12 text-muted-foreground text-sm">
             Loading order items...
           </div>
         ) : !order?.orderItems?.length ? (
-          <div className="flex flex-col justify-center items-center py-12 gap-2 text-neutral-500">
+          <div className="flex flex-col justify-center items-center py-12 gap-2 text-muted-foreground">
             <Package className="h-8 w-8" />
             <span className="text-sm">No order items found</span>
           </div>

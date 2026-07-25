@@ -99,7 +99,7 @@ export default function SalesPerformanceSummary({
               {item.type === "positive" ? (
                 <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
               ) : item.type === "negative" ? (
-                <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-600" />
+                <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
               ) : (
                 <Minus className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
               )}

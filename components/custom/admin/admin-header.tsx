@@ -25,19 +25,19 @@ export function AdminHeader(props: Props) {
   const pathSegments = pathname.split("/").filter((segment) => segment !== "" && segment !== "admin")
 
   return (
-    <header className="bg-background dark:bg-neutral-800 dark:border-b-neutral-600 sticky top-0 z-50 flex w-full items-center border-b">
+    <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b border-border">
       <div className="flex h-(--header-height) w-full items-center justify-between gap-2 px-4">
         
         <div className="flex flex-row gap-4 h-full items-center justify-start">
           <Button
-            className="h-8 w-8 dark:border dark:border-neutral-700 dark:hover:bg-neutral-700"
+            className="h-8 w-8"
             variant="outline"
             size="icon"
             onClick={toggleSidebar}
           >
             <SidebarIcon/>
           </Button>
-          <Separator orientation="vertical" className="h-full bg-neutral-300 dark:bg-neutral-600" />
+          <Separator orientation="vertical" className="h-full bg-border" />
         
           <Breadcrumb>
             <BreadcrumbList>
@@ -68,7 +68,7 @@ export function AdminHeader(props: Props) {
         </div>
 
         <div className="flex flex-row gap-4 h-full items-center justify-start">
-          <Separator orientation="vertical" className="h-full bg-neutral-300 dark:bg-neutral-600" />
+          <Separator orientation="vertical" className="h-full bg-border" />
           <ThemeToggler />
           <AdminIndicator user={props.user} />
           <Logout />

@@ -95,8 +95,8 @@ function ErrorState({
   return (
     <Card>
       <CardContent className="flex flex-col items-center justify-center py-16">
-        <div className="flex size-12 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/50">
-          <AlertCircle className="size-6 text-red-600" />
+        <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10">
+          <AlertCircle className="size-6 text-destructive" />
         </div>
         <h3 className="mt-4 text-lg font-semibold">Something went wrong</h3>
         <p className="mt-2 text-sm text-muted-foreground">{message}</p>

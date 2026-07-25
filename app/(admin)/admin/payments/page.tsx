@@ -149,7 +149,7 @@ export default function PaymentsPage() {
         </ItemContent>
       </Item>
 
-      <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
+      <form className="flex flex-col gap-3 border border-border bg-card py-3 px-2 rounded-md">
         <FieldGroup className="flex flex-row flex-wrap justify-start items-end gap-3 w-full">
 
           {/* Search by Order Number or Customer Name */}

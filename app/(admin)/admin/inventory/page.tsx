@@ -131,7 +131,7 @@ export default function InventoryPage() {
           </ItemContent>
         </Item>
 
-      <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
+      <form className="flex flex-col gap-3 border border-border bg-card py-3 px-2 rounded-md">
         <div className="flex flex-row flex-wrap justify-start items-end gap-3 w-full">
           <div className="w-60 max-w-sm">
             <SearchableSelect

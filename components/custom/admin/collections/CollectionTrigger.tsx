@@ -64,7 +64,7 @@ export default function CollectionTrigger(props:Props) {
 
             {/* Active status Indicator */}
             {!props.collection.isActive && (
-              <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium border border-red-500 text-red-600 no-underline inline-block">
+              <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium border border-destructive text-destructive no-underline inline-block">
                 Inactive
               </span>
             )}

@@ -145,7 +145,7 @@ export default function SalesKpiCards({ kpis, chartData }: SalesKpiCardsProps) {
                   item.growth >= 0 ? (
                     <TrendingUp className="size-3 text-emerald-600" />
                   ) : (
-                    <TrendingDown className="size-3 text-red-600" />
+                    <TrendingDown className="size-3 text-destructive" />
                   )
                 ) : (
                   <Minus className="size-3 text-muted-foreground" />
@@ -157,7 +157,7 @@ export default function SalesKpiCards({ kpis, chartData }: SalesKpiCardsProps) {
                       ? "text-muted-foreground"
                       : item.growth >= 0
                         ? "text-emerald-600"
-                        : "text-red-600"
+                        : "text-destructive"
                   )}
                 >
                   {formatPercent(item.growth)}

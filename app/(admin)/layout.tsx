@@ -23,7 +23,7 @@ export default async function AdminDashboardLayout({
           <div className="flex flex-1">
             <AdminSidebar />
             <SidebarInset>
-              <main className='flex flex-col w-full h-full dark:bg-neutral-800 bg-neutral-100'>
+              <main className='flex flex-col w-full h-full bg-background'>
                 <div className="container flex flex-col gap-3 mx-auto p-5">
                   {children}
                 </div>

@@ -100,8 +100,8 @@ export default function EditInventoryItem({
 
       {/* header */}
       <div className="flex flex-col gap-1">
-        <h1 className="font-bold text-xl text-neutral-700 dark:text-neutral-200">Edit Inventory Item</h1>
-        <p className="text-sm text-neutral-500">
+        <h1 className="font-bold text-xl text-foreground">Edit Inventory Item</h1>
+        <p className="text-sm text-muted-foreground">
           Update the pricing, quantity, and status of this product variant.
         </p>
       </div>
@@ -109,8 +109,8 @@ export default function EditInventoryItem({
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
 
         {/* ── Read-only Variant Info ─────────────────────────────────── */}
-        <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
-          <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">Variant Info</h1>
+        <div className="border border-border bg-card rounded-2xl p-5 flex flex-col gap-4">
+          <h1 className="font-semibold text-foreground text-center">Variant Info</h1>
 
           <FieldGroup className="flex flex-row flex-wrap gap-4">
             <Field className="flex flex-col gap-2 flex-1 min-w-[180px]">
@@ -143,7 +143,7 @@ export default function EditInventoryItem({
                 />
                 {item?.variant.color.hexCode && (
                   <span
-                    className="h-8 w-8 shrink-0 rounded-full border border-neutral-400"
+                    className="h-8 w-8 shrink-0 rounded-full border border-border"
                     style={{ backgroundColor: `#${item.variant.color.hexCode}` }}
                   />
                 )}
@@ -171,8 +171,8 @@ export default function EditInventoryItem({
         </div>
 
         {/* ── Variant Details ────────────────────────────────────────── */}
-        <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
-          <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">Variant Details</h1>
+        <div className="border border-border bg-card rounded-2xl p-5 flex flex-col gap-4">
+          <h1 className="font-semibold text-foreground text-center">Variant Details</h1>
 
           <FieldGroup className="flex flex-row flex-wrap gap-6">
             <Field className="flex flex-row items-center gap-3 flex-1 min-w-[200px]">
@@ -189,7 +189,7 @@ export default function EditInventoryItem({
               />
               <div className="flex flex-col">
                 <Label htmlFor="isActive">Active</Label>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-muted-foreground">
                   Only active variants will be visible to customers
                 </p>
               </div>
@@ -198,8 +198,8 @@ export default function EditInventoryItem({
         </div>
 
         {/* ── Inventory Details ──────────────────────────────────────── */}
-        <div className="border border-neutral-300 rounded-2xl p-5 flex flex-col gap-4">
-          <h1 className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">
+        <div className="border border-border bg-card rounded-2xl p-5 flex flex-col gap-4">
+          <h1 className="font-semibold text-foreground text-center">
             Inventory Details
           </h1>
 
@@ -213,7 +213,7 @@ export default function EditInventoryItem({
                 {...register("quantity")}
               />
               {errors.quantity && (
-                <span className="text-sm text-red-500">
+                <span className="text-sm text-destructive">
                   {errors.quantity.message as string}
                 </span>
               )}
@@ -228,7 +228,7 @@ export default function EditInventoryItem({
                 {...register("lowStockThreshold")}
               />
               {errors.lowStockThreshold && (
-                <span className="text-sm text-red-500">
+                <span className="text-sm text-destructive">
                   {errors.lowStockThreshold.message as string}
                 </span>
               )}

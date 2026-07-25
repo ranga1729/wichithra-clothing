@@ -254,8 +254,8 @@ export default function ProductDetailPage() {
       <ProductImageCarousel productId={productId!} productImages={product?.productImages ?? []} />
 
       <div className="flex flex-col gap-2">
-        <h1 className="font-bold text-md text-neutral-600 text-center">Product Information</h1>
-        <div className="flex flex-col items-center justify-center border border-neutral-300 p-5 rounded-2xl gap-4">
+        <h1 className="font-bold text-md text-foreground text-center">Product Information</h1>
+        <div className="flex flex-col items-center justify-center border border-border bg-card p-5 rounded-2xl gap-4">
           <FieldGroup >
             <FieldGroup className="flex flex-row flex-wrap gap-4">
               <Field className="flex flex-col gap-2 flex-1">
@@ -268,7 +268,7 @@ export default function ProductDetailPage() {
                     disabled= {isPending}
                   />
                   {errors.name && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-sm text-destructive">
                       {errors.name.message as string}
                     </span>
                   )}
@@ -284,7 +284,7 @@ export default function ProductDetailPage() {
                     disabled= {isPending}
                   />
                   {errors.slug && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-sm text-destructive">
                       {errors.slug.message as string}
                     </span>
                   )}
@@ -302,7 +302,7 @@ export default function ProductDetailPage() {
                     disabled= {isPending}
                   />
                   {errors.description && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-sm text-destructive">
                       {errors.description.message as string}
                     </span>
                   )}
@@ -378,7 +378,7 @@ export default function ProductDetailPage() {
                     disabled={isPending}
                   />
                   {errors.sellingPrice && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-sm text-destructive">
                       {errors.sellingPrice.message as string}
                     </span>
                   )}
@@ -397,7 +397,7 @@ export default function ProductDetailPage() {
                     disabled={isPending}
                   />
                   {errors.costPrice && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-sm text-destructive">
                       {errors.costPrice.message as string}
                     </span>
                   )}
@@ -419,7 +419,7 @@ export default function ProductDetailPage() {
                   min={0}
                   max={100}
                   step={1}
-                  className="mx-auto w-full max-w-xs border border-neutral-500 rounded-2xl"
+                  className="mx-auto w-full max-w-xs border border-border rounded-2xl"
                   onValueChange={(value) => setValue("discountPercentage", value[0])}
                 />
               </Field>
@@ -435,7 +435,7 @@ export default function ProductDetailPage() {
                     disabled= {isPending}
                   />
                   {errors.brand && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-sm text-destructive">
                       {errors.brand.message as string}
                     </span>
                   )}
@@ -451,7 +451,7 @@ export default function ProductDetailPage() {
                     disabled= {isPending}
                   />
                   {errors.material && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-sm text-destructive">
                       {errors.material.message as string}
                     </span>
                   )}
@@ -469,7 +469,7 @@ export default function ProductDetailPage() {
                     disabled= {isPending}
                   />
                   {errors.careInstructions && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-sm text-destructive">
                       {errors.careInstructions.message as string}
                     </span>
                   )}
@@ -488,7 +488,7 @@ export default function ProductDetailPage() {
                     disabled={isPending}
                   />
                   {errors.metaTitle && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-sm text-destructive">
                       {errors.metaTitle.message as string}
                     </span>
                   )}
@@ -507,7 +507,7 @@ export default function ProductDetailPage() {
                     disabled={isPending}
                   />
                   {errors.metaDescription && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-sm text-destructive">
                       {errors.metaDescription.message as string}
                     </span>
                   )}
@@ -522,14 +522,14 @@ export default function ProductDetailPage() {
               </div>
             </FieldGroup>
 
-            <Separator className="bg-neutral-400" />
+            <Separator className="bg-border" />
 
             <FieldGroup className="flex lg:flex-row">
               <IsFeaturedToggler isFeatured={product?.isFeatured} isLoading={isPending} toggler={() => featuredStatustoggler(product!.id)} />
               <ProductStatusChanger productStatus={product?.status as ProductStatus} isLoading={isPending} changer={productStatusChanger} />
             </FieldGroup>
 
-            <Separator className="bg-neutral-400" />
+            <Separator className="bg-border" />
             
             <FieldGroup className="flex flex-col gap-2">
               <Field className="flex flex-col gap-2">
@@ -549,7 +549,7 @@ export default function ProductDetailPage() {
                     <img
                       src={sizeGuidePreview}
                       alt="Size guide preview"
-                      className="max-h-48 rounded-lg object-contain border border-neutral-300"
+                      className="max-h-48 rounded-lg object-contain border border-border"
                     />
                     <div className="flex gap-2">
                       <Button
@@ -582,8 +582,8 @@ export default function ProductDetailPage() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Separator className="bg-neutral-100"/>          
-        <h1 className="font-bold text-md text-neutral-600 text-center">Product Mappings</h1>
+        <Separator className="bg-border"/>          
+        <h1 className="font-bold text-md text-foreground text-center">Product Mappings</h1>
         <div className="flex flex-row items-start justify-center flex-wrap p-5 rounded-2xl gap-4">
           <ColorMapper variants={product?.variants}  />
           <DesignMapper designs={product?.productDesigns} productId={productId!} />

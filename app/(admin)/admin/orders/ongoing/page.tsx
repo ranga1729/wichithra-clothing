@@ -143,7 +143,7 @@ export default function OngoingOrdersPage() {
           </ItemContent>
         </Item>
 
-      <form className="flex flex-col gap-3 border py-3 px-2 rounded-md dark:border dark:border-neutral-600">
+      <form className="flex flex-col gap-3 border border-border bg-card py-3 px-2 rounded-md">
         <FieldGroup className="flex flex-row flex-wrap justify-start items-end gap-3 w-full">
           
           {/* Order Number */}
@@ -180,7 +180,7 @@ export default function OngoingOrdersPage() {
                 <Button
                   variant="outline"
                   id="date-picker-range"
-                  className="justify-start font-normal px-2.5 bg-transparent dark:border dark:border-neutral-600"
+                  className="justify-start font-normal px-2.5 bg-transparent border-border"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {dateRange?.from ? (
@@ -204,7 +204,7 @@ export default function OngoingOrdersPage() {
                   selected={dateRange}
                   onSelect={handleDateRangeSelect}
                   numberOfMonths={2}
-                  className="bg-neutral-600"
+                  className="bg-popover"
                 />
               </PopoverContent>
             </Popover>

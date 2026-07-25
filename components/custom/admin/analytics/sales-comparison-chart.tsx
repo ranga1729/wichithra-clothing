@@ -141,7 +141,7 @@ export default function SalesComparisonChart({ comparison }: ComparisonProps) {
                 growth >= 0 ? (
                   <TrendingUp className="size-3 text-emerald-600" />
                 ) : (
-                  <TrendingDown className="size-3 text-red-600" />
+                  <TrendingDown className="size-3 text-destructive" />
                 )
               ) : (
                 <Minus className="size-3 text-muted-foreground" />
@@ -153,7 +153,7 @@ export default function SalesComparisonChart({ comparison }: ComparisonProps) {
                     ? "text-muted-foreground"
                     : growth >= 0
                       ? "text-emerald-600"
-                      : "text-red-600"
+                      : "text-destructive"
                 )}
               >
                 {absoluteDiff >= 0 ? "+" : ""}
