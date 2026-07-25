@@ -7,10 +7,10 @@ import oops_dark from "@/public/images/oops-dark.png"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { AlertTriangle, Home, ArrowLeft } from "lucide-react"
 
-export default function OOPS() {
+function OOPSContent() {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const searchParams = useSearchParams()
@@ -105,5 +105,13 @@ export default function OOPS() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function OOPS() {
+  return (
+    <Suspense>
+      <OOPSContent />
+    </Suspense>
   )
 }

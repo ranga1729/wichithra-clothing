@@ -5,6 +5,8 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import React from 'react';
 import { getUserFromCookie } from '@/lib/get-cookie';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Admin Dashboard',
 };

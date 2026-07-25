@@ -11,6 +11,8 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'KOA - Premium Activewear',
   description: 'Discover premium activewear designed for athletes and fitness enthusiasts. High-performance clothing crafted for your active lifestyle.',
